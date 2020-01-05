@@ -12,20 +12,20 @@ CLASS zcl_abaplint_backend DEFINITION
 
     METHODS check_object
       RETURNING VALUE(rt_issues) TYPE ty_issues.
-protected section.
+  PROTECTED SECTION.
 
-  methods SEND
-    importing
-      !II_CLIENT type ref to IF_HTTP_CLIENT .
-  methods CREATE_CLIENT
-    returning
-      value(RI_CLIENT) type ref to IF_HTTP_CLIENT .
+    METHODS send
+      IMPORTING
+        !ii_client TYPE REF TO if_http_client .
+    METHODS create_client
+      RETURNING
+        VALUE(ri_client) TYPE REF TO if_http_client .
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
+CLASS zcl_abaplint_backend IMPLEMENTATION.
 
 
   METHOD check_object.
@@ -48,7 +48,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     DATA(lv_response) = li_client->response->get_cdata( ).
     DATA(lo_reader) = NEW zcl_abaplint_json_reader( lv_response ).
     LOOP AT lo_reader->members( '/issues' ) INTO DATA(lv_issue).
-      DATA(lv_message) = lo_reader->value_string( '/issues/' && lv_issue && '/message').
+      DATA(lv_message) = lo_reader->value_string( '/issues/' && lv_issue && '/message' ).
       APPEND VALUE #( message = lv_message ) TO rt_issues.
     ENDLOOP.
 
