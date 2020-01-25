@@ -4,11 +4,11 @@ CLASS zcl_abaplint_backend DEFINITION
 
   PUBLIC SECTION.
 
-    TYPES: BEGIN OF ty_position,
-             row TYPE token_row,
-             col TYPE token_col,
-           END OF ty_position.
-
+    TYPES:
+      BEGIN OF ty_position,
+        row TYPE token_row,
+        col TYPE token_col,
+      END OF ty_position .
     TYPES:
       BEGIN OF ty_issue,
         message  TYPE string,
@@ -26,7 +26,15 @@ CLASS zcl_abaplint_backend DEFINITION
         !iv_object_name   TYPE sobj_name
       RETURNING
         VALUE(rt_issues)  TYPE ty_issues .
+    METHODS ping
+      RETURNING
+        VALUE(rv_error) TYPE string .
+    METHODS constructor
+      IMPORTING
+        !is_config TYPE zabaplint_glob_data OPTIONAL .
   PROTECTED SECTION.
+
+    DATA ms_config TYPE zabaplint_glob_data .
 
     METHODS build_files
       IMPORTING
@@ -87,6 +95,10 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     DATA(li_client) = create_client( ).
 
+    cl_http_utility=>set_request_uri(
+      request = li_client->request
+      uri     = |/api/v1/check_file| ).
+
     DATA(lv_files) = build_files(
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
@@ -123,51 +135,65 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD constructor.
+
+    IF is_config IS SUPPLIED.
+      ms_config = is_config.
+    ELSE.
+      ms_config = NEW zcl_abaplint_configuration( )->get_global( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD create_client.
 
-*    IF NOT is_client-rfc IS INITIAL.
-*
-*      cl_http_client=>create_by_destination(
-*        EXPORTING
-*          destination              = is_client-rfc
-*        IMPORTING
-*          client                   = ri_client
-*        EXCEPTIONS
-*          argument_not_found       = 1
-*          destination_not_found    = 2
-*          destination_no_authority = 3
-*          plugin_not_active        = 4
-*          internal_error           = 5
-*          OTHERS                   = 6 ).
-*      ASSERT sy-subrc = 0.
-*
-*    ELSE.
+    IF NOT ms_config-rfc IS INITIAL.
+      cl_http_client=>create_by_destination(
+        EXPORTING
+          destination              = ms_config-rfc
+        IMPORTING
+          client                   = ri_client
+        EXCEPTIONS
+          argument_not_found       = 1
+          destination_not_found    = 2
+          destination_no_authority = 3
+          plugin_not_active        = 4
+          internal_error           = 5
+          OTHERS                   = 6 ).
+      ASSERT sy-subrc = 0.
+    ELSE.
+      cl_http_client=>create_by_url(
+        EXPORTING
+          url                = CONV #( ms_config-url )
+          ssl_id             = 'ANONYM'
+        IMPORTING
+          client             = ri_client
+        EXCEPTIONS
+          argument_not_found = 1
+          plugin_not_active  = 2
+          internal_error     = 3
+          OTHERS             = 4 ).
+      ASSERT sy-subrc = 0.
+    ENDIF.
 
-    cl_http_client=>create_by_url(
-      EXPORTING
-*          url                = is_client-url
-*          ssl_id             = is_client-ssl_id
-        url                = 'https://abaplint-relaxed-nyala-dg.cfapps.eu10.hana.ondemand.com/'
-        ssl_id             = 'ANONYM'
-      IMPORTING
-        client             = ri_client
-      EXCEPTIONS
-        argument_not_found = 1
-        plugin_not_active  = 2
-        internal_error     = 3
-        OTHERS             = 4 ).
-    ASSERT sy-subrc = 0.
+  ENDMETHOD.
 
-*      ri_client->propertytype_logon_popup = if_http_client=>co_disabled.
-*      ri_client->authenticate(
-*        username = is_client-user
-*        password = is_client-pass ).
-*
-*    ENDIF.
+
+  METHOD ping.
+
+    DATA(li_client) = create_client( ).
 
     cl_http_utility=>set_request_uri(
-      request = ri_client->request
-      uri     = |/api/v1/check_file| ).
+      request = li_client->request
+      uri     = |/api/v1/ping| ).
+
+    send( li_client ).
+
+    DATA(lv_response) = li_client->response->get_cdata( ).
+    MESSAGE lv_response TYPE 'S'.
+
+    li_client->close( ).
 
   ENDMETHOD.
 

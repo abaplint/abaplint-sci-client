@@ -9,13 +9,15 @@ CLASS zcl_abaplint_check DEFINITION
 
     METHODS get_message_text
         REDEFINITION .
+    METHODS get_result_node
+        REDEFINITION .
     METHODS if_ci_test~display_documentation
         REDEFINITION .
     METHODS if_ci_test~query_attributes
         REDEFINITION .
     METHODS run
         REDEFINITION .
-    METHODS get_result_node
+    METHODS get_attributes
         REDEFINITION .
   PROTECTED SECTION.
 
@@ -41,8 +43,17 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     add_obj_type( 'CLAS' ).
     add_obj_type( 'INTF' ).
 
+    has_attributes = abap_true.
+    has_documentation = abap_true.
+    attributes_ok = abap_true.
+
     mo_config = NEW #( ).
 
+  ENDMETHOD.
+
+
+  METHOD get_attributes.
+    RETURN.
   ENDMETHOD.
 
 
@@ -62,7 +73,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD if_ci_test~display_documentation.
 
-    BREAK-POINT.
+    cl_gui_frontend_services=>execute( document = 'https://abaplint.org' ).
 
   ENDMETHOD.
 
@@ -71,8 +82,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     CALL FUNCTION 'Z_ABAPLINT_CONFIGURATION'
       EXPORTING
-        iv_read_only = p_display
-        io_config    = mo_config.
+        iv_read_only = p_display.
 
     attributes_ok = abap_true.
 
