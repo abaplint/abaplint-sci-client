@@ -55,9 +55,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD get_result_node.
 
-    CREATE OBJECT p_result TYPE cl_ci_result_program
-      EXPORTING
-        p_kind = p_kind.
+    p_result = NEW cl_ci_result_program( p_kind ).
 
   ENDMETHOD.
 
@@ -83,7 +81,6 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD run.
 
-
     DATA: lv_sub_obj_type TYPE trobjtype,
           lv_sub_obj_name TYPE sobj_name.
 
@@ -95,13 +92,13 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       iv_object_type   = object_type
       iv_object_name   = object_name ).
 
-    WRITE |æøå|.
-
     LOOP AT lt_issues INTO DATA(ls_issue).
 
       CASE object_type.
         WHEN 'CLAS'.
 * todo, make sure the index exists?
+* todo, what if the issue is in the XML file?
+* todo, handle the 5 different global class includes
           DATA(li_index_helper) = CAST if_oo_source_pos_index_helper( NEW cl_oo_source_pos_index_helper( ) ).
           DATA(ls_position) = li_index_helper->get_class_include_by_position(
             class_name = object_name
@@ -111,6 +108,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
           lv_sub_obj_type = 'PROG'.
           lv_sub_obj_name = ls_position-include_name.
+          ls_issue-start-row = ls_position-start_line.
         WHEN OTHERS.
           lv_sub_obj_type = object_type.
           lv_sub_obj_name = object_name .
