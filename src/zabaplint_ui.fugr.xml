@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_FUGR" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <AREAT>abaplint - User Interface</AREAT>
+   <INCLUDES>
+    <SOBJ_NAME>LZABAPLINT_UITOP</SOBJ_NAME>
+    <SOBJ_NAME>SAPLZABAPLINT_UI</SOBJ_NAME>
+   </INCLUDES>
+   <FUNCTIONS>
+    <item>
+     <FUNCNAME>Z_ABAPLINT_CONFIGURATION</FUNCNAME>
+     <SHORT_TEXT>abaplint - Configuration User Interface</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>IV_READ_ONLY</PARAMETER>
+       <OPTIONAL>X</OPTIONAL>
+       <TYP>ABAP_BOOL</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IO_CONFIG</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>REF TO ZCL_ABAPLINT_CONFIGURATION</TYP>
+       <REF_CLASS>X</REF_CLASS>
+      </RSIMP>
+     </IMPORT>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>IV_READ_ONLY</PARAMETER>
+       <KIND>P</KIND>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IO_CONFIG</PARAMETER>
+       <KIND>P</KIND>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+   </FUNCTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>
