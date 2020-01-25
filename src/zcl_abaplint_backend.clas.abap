@@ -25,7 +25,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
   METHOD check_object.
@@ -48,7 +48,7 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
     DATA(lv_response) = li_client->response->get_cdata( ).
     DATA(lo_reader) = NEW zcl_abaplint_json_reader( lv_response ).
     LOOP AT lo_reader->members( '/issues' ) INTO DATA(lv_issue).
-      DATA(lv_message) = lo_reader->value_string( '/issues/' && lv_issue && '/message' ).
+      DATA(lv_message) = lo_reader->value_string( '/issues/' && lv_issue && '/message').
       APPEND VALUE #( message = lv_message ) TO rt_issues.
     ENDLOOP.
 
