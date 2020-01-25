@@ -38,9 +38,7 @@
     "begin_end_names": true,
     "chain_mainly_declarations": true,
     "check_abstract": true,
-    "check_comments": {
-      "allowEndOfLine": false
-    },
+    "check_comments": false,
     "check_ddic": true,
     "check_include": true,
     "check_no_handler_pragma": true,
