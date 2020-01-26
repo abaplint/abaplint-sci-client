@@ -47,8 +47,8 @@ CLASS lcl_editor IMPLEMENTATION.
 
   METHOD update.
 
-    go_editor->set_textstream( EXPORTING text = iv_json ).
-    go_editor->set_textmodified_status( EXPORTING status = 1 ).
+    go_editor->set_textstream( iv_json ).
+    go_editor->set_textmodified_status( 1 ).
     cl_gui_cfw=>flush( ).
 
   ENDMETHOD.
@@ -157,7 +157,7 @@ CLASS lcl_tree_content IMPLEMENTATION.
         illegal_event_combination = 3 ).
     ASSERT sy-subrc = 0.
 
-    lt_nodes = lcl_tree_content=>build( ).
+    lt_nodes = build( ).
 
     go_tree->add_nodes(
       EXPORTING
@@ -232,9 +232,7 @@ ENDCLASS.
 FORM init_2000.
 
   IF NOT go_container IS BOUND.
-    CREATE OBJECT go_container
-      EXPORTING
-        container_name = 'CUSTOM_2000'.
+    go_container = NEW #( 'CUSTOM_2000' ).
 
     CREATE OBJECT go_splitter
       EXPORTING
@@ -384,7 +382,7 @@ ENDFORM.
 *& -->  p1        text
 *& <--  p2        text
 *&---------------------------------------------------------------------*
-FORM update_git .
+FORM update_git.
 
   DATA(lv_devclass) = lcl_editor=>get_devclass( ).
   IF lv_devclass IS INITIAL.
@@ -395,7 +393,7 @@ FORM update_git .
   IF NOT lv_json IS INITIAL.
     lcl_editor=>update( lv_json ).
   ELSE.
-    BREAK-POINT.
+    MESSAGE e002(zabaplint).
   ENDIF.
 
 ENDFORM.

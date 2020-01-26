@@ -7,7 +7,7 @@ TYPES: BEGIN OF ty_node.
 TYPES: text TYPE text50,
        END OF ty_node.
 
-TYPES: ty_nodes TYPE STANDARD TABLE OF ty_node WITH DEFAULT KEY.
+TYPES: ty_nodes TYPE STANDARD TABLE OF ty_node WITH EMPTY KEY.
 
 DATA: gv_ok_code   LIKE sy-ucomm,
       go_container TYPE REF TO cl_gui_custom_container,

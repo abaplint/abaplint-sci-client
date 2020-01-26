@@ -20,6 +20,12 @@
      <MSGNR>001</MSGNR>
      <TEXT>Package does not exist</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPLINT</ARBGB>
+     <MSGNR>002</MSGNR>
+     <TEXT>Error fetching json</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>
