@@ -7,6 +7,8 @@ CLASS zcl_abaplint_check DEFINITION
 
     METHODS constructor .
 
+    METHODS get_attributes
+        REDEFINITION .
     METHODS get_message_text
         REDEFINITION .
     METHODS get_result_node
@@ -17,17 +19,35 @@ CLASS zcl_abaplint_check DEFINITION
         REDEFINITION .
     METHODS run
         REDEFINITION .
-    METHODS get_attributes
+    METHODS consolidate_for_display
         REDEFINITION .
   PROTECTED SECTION.
 
-    DATA mo_config TYPE REF TO zcl_abaplint_configuration .
+    CONSTANTS c_no_config TYPE sci_errc VALUE 'NO_CONFIG' ##NO_TEXT.
+    CONSTANTS c_stats TYPE trobjtype VALUE '1STA' ##NO_TEXT.
+
+    METHODS find_configuration
+      RETURNING
+        VALUE(rv_config) TYPE string .
+    METHODS output_issues
+      IMPORTING
+        !it_issues TYPE zcl_abaplint_backend=>ty_issues .
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
 CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
+
+
+  METHOD consolidate_for_display.
+
+    READ TABLE p_results WITH KEY test = myname sobjtype = c_stats code = c_no_config TRANSPORTING NO FIELDS.
+    IF sy-subrc = 0.
+      DELETE p_results FROM sy-tabix + 1 WHERE test = myname AND sobjtype = c_stats AND code = c_no_config.
+    ENDIF.
+
+  ENDMETHOD.
 
 
   METHOD constructor.
@@ -42,12 +62,38 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     add_obj_type( 'FUGR' ).
     add_obj_type( 'CLAS' ).
     add_obj_type( 'INTF' ).
+* todo, add all types that are supported by abapGit
 
+    has_display_consolidation = abap_true.
     has_attributes = abap_true.
     has_documentation = abap_true.
     attributes_ok = abap_true.
 
-    mo_config = NEW #( ).
+  ENDMETHOD.
+
+
+  METHOD find_configuration.
+
+    SELECT SINGLE devclass FROM tadir
+      INTO @DATA(lv_devclass)
+      WHERE pgmid = 'R3TR'
+      AND object = @object_type
+      AND obj_name = @object_name.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    DATA(lt_packages) = zcl_abapgit_factory=>get_sap_package( lv_devclass )->list_superpackages( ).
+* todo, cache this in static variable
+    DATA(lt_config) = NEW zcl_abaplint_configuration( )->list_packages( ).
+
+    LOOP AT lt_packages INTO DATA(lv_package).
+      READ TABLE lt_config WITH KEY devclass = lv_package INTO DATA(ls_config).
+      IF sy-subrc = 0.
+        rv_config = ls_config-json.
+        RETURN.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -59,7 +105,11 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD get_message_text.
 
-    p_text = '&1'.
+    IF p_code = c_no_config.
+      p_text = 'No configuration found when looking at package hierarchy, &1'.
+    ELSE.
+      p_text = '&1'.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -89,20 +139,13 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD run.
+  METHOD output_issues.
 
     DATA: lv_sub_obj_type TYPE trobjtype,
           lv_sub_obj_name TYPE sobj_name.
 
 
-    DATA(lo_backend) = NEW zcl_abaplint_backend( ).
-
-    DATA(lt_issues) = lo_backend->check_object(
-      iv_configuration = 'hello'
-      iv_object_type   = object_type
-      iv_object_name   = object_name ).
-
-    LOOP AT lt_issues INTO DATA(ls_issue).
+    LOOP AT it_issues INTO DATA(ls_issue).
 
       CASE object_type.
         WHEN 'CLAS'.
@@ -130,10 +173,33 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         p_line         = ls_issue-start-row
         p_column       = ls_issue-start-col
         p_test         = myname
-        p_kind         = 'E'
+        p_kind         = c_error
         p_param_1      = ls_issue-message
         p_code         = CONV #( ls_issue-key ) ).
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD run.
+
+    DATA(lv_config) = find_configuration( ).
+
+    IF lv_config IS INITIAL.
+      inform(
+        p_sub_obj_type = c_stats
+        p_test         = myname
+        p_kind         = c_note
+        p_param_1      = |{ object_type } { object_name }|
+        p_code         = c_no_config ).
+    ELSE.
+      DATA(lt_issues) = NEW zcl_abaplint_backend( )->check_object(
+        iv_configuration = lv_config
+        iv_object_type   = object_type
+        iv_object_name   = object_name ).
+
+      output_issues( lt_issues ).
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

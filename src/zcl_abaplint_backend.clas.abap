@@ -103,8 +103,9 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
 
+* todo, base64 encode config, { iv_configuration }
     DATA(lv_cdata) = |\{\n| &&
-      |  "configuration": "{ iv_configuration }",\n| &&
+      |  "configuration": "",\n| &&
       |  "object": \{\n| &&
       |    "objectName": "{ iv_object_name }",\n| &&
       |    "objectType": "{ iv_object_type }"\n| &&
