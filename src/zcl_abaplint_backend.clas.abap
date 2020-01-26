@@ -36,6 +36,17 @@ CLASS zcl_abaplint_backend DEFINITION
 
     DATA ms_config TYPE zabaplint_glob_data .
 
+    METHODS base64_encode
+      IMPORTING
+        !iv_bin          TYPE xstring
+      RETURNING
+        VALUE(rv_base64) TYPE string .
+    METHODS build_deps
+      IMPORTING
+        !iv_object_type TYPE trobjtype
+        !iv_object_name TYPE sobj_name
+      RETURNING
+        VALUE(rv_files) TYPE string .
     METHODS build_files
       IMPORTING
         !iv_object_type TYPE trobjtype
@@ -56,17 +67,48 @@ ENDCLASS.
 CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
+  METHOD base64_encode.
+
+    CALL FUNCTION 'SSFC_BASE64_ENCODE'
+      EXPORTING
+        bindata = iv_bin
+      IMPORTING
+        b64data = rv_base64.
+
+  ENDMETHOD.
+
+
+  METHOD build_deps.
+
+    DATA: lt_files TYPE STANDARD TABLE OF string WITH EMPTY KEY.
+
+
+    DATA(lt_found) = NEW zcl_abaplint_deps( )->find(
+      iv_object_type = iv_object_type
+      iv_object_name = iv_object_name ).
+
+    LOOP AT lt_found INTO DATA(ls_file).
+      DATA(lv_contents) = base64_encode( ls_file-data ).
+      APPEND |\{"name": "{ ls_file-filename }", "contents": "{ lv_contents }"\}| TO lt_files.
+    ENDLOOP.
+
+    CONCATENATE LINES OF lt_files INTO rv_files SEPARATED BY ','.
+    rv_files = |[{ rv_files }]|.
+
+  ENDMETHOD.
+
+
   METHOD build_files.
 
 * todo, this should be done relative to what is the root abapGit folder and
-* also take settings into account
+* also take settings into account, but not super important?
 
-    DATA: ls_files_item TYPE zcl_abapgit_objects=>ty_serialization,
-          lv_contents   TYPE string,
-          lt_files      TYPE STANDARD TABLE OF string WITH EMPTY KEY.
+    DATA: lt_files TYPE STANDARD TABLE OF string WITH EMPTY KEY.
 
-    ls_files_item-item-obj_type = iv_object_type.
-    ls_files_item-item-obj_name = iv_object_name.
+
+    DATA(ls_files_item) = VALUE zcl_abapgit_objects=>ty_serialization(
+      item-obj_type = iv_object_type
+      item-obj_name = iv_object_name ).
 
     TRY.
         ls_files_item = zcl_abapgit_objects=>serialize(
@@ -77,11 +119,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     ENDTRY.
 
     LOOP AT ls_files_item-files INTO DATA(ls_file).
-      CALL FUNCTION 'SSFC_BASE64_ENCODE'
-        EXPORTING
-          bindata = ls_file-data
-        IMPORTING
-          b64data = lv_contents.
+      DATA(lv_contents) = base64_encode( ls_file-data ).
       APPEND |\{"name": "{ ls_file-filename }", "contents": "{ lv_contents }"\}| TO lt_files.
     ENDLOOP.
 
@@ -103,13 +141,19 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
 
-* todo, base64 encode config, { iv_configuration }
+    DATA(lv_deps) = build_deps(
+      iv_object_type = iv_object_type
+      iv_object_name = iv_object_name ).
+
+    DATA(lv_config) = base64_encode( zcl_abapgit_convert=>string_to_xstring_utf8( iv_configuration ) ).
+
     DATA(lv_cdata) = |\{\n| &&
-      |  "configuration": "",\n| &&
+      |  "configuration": "{ lv_config }",\n| &&
       |  "object": \{\n| &&
       |    "objectName": "{ iv_object_name }",\n| &&
       |    "objectType": "{ iv_object_type }"\n| &&
       |  \},\n| &&
+      |  "deps": { lv_deps },\n| &&
       |  "files": { lv_files }\n| &&
       |\}|.
 
