@@ -49,6 +49,7 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
     DELETE lt_environment WHERE encl_obj IS NOT INITIAL.
     DELETE lt_environment WHERE type = 'STRU'.
     DELETE lt_environment WHERE type = 'TYPE'.
+    DELETE lt_environment WHERE type = 'INCL'.
 
     LOOP AT lt_environment INTO DATA(ls_environment).
       DATA(ls_files_item) = VALUE zcl_abapgit_objects=>ty_serialization(
