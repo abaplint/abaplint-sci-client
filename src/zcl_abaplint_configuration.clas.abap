@@ -67,8 +67,8 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
   METHOD get_global.
 
     SELECT SINGLE * FROM zabaplint_glob
-      INTO CORRESPONDING FIELDS OF rs_data
-      WHERE sysid = sy-sysid.
+      INTO CORRESPONDING FIELDS OF @rs_data
+      WHERE sysid = @sy-sysid.
 
   ENDMETHOD.
 
@@ -76,7 +76,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
   METHOD list_packages.
 
     SELECT * FROM zabaplint_pack
-      INTO TABLE rt_data
+      INTO TABLE @rt_data
       ORDER BY PRIMARY KEY.
 
   ENDMETHOD.
@@ -86,8 +86,8 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
     SELECT SINGLE json
       FROM zabaplint_pack
-      INTO rv_json
-      WHERE devclass = iv_devclass.
+      INTO @rv_json
+      WHERE devclass = @iv_devclass.
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.

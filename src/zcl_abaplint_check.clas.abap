@@ -121,7 +121,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
           ls_issue-start-row = ls_position-start_line.
         WHEN OTHERS.
           lv_sub_obj_type = object_type.
-          lv_sub_obj_name = object_name .
+          lv_sub_obj_name = object_name.
       ENDCASE.
 
       inform(
