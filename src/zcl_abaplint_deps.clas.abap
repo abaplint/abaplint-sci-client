@@ -11,6 +11,14 @@ CLASS zcl_abaplint_deps DEFINITION
       RETURNING
         VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt .
   PROTECTED SECTION.
+
+    METHODS list
+      IMPORTING
+        !iv_object_type   TYPE trobjtype
+        !iv_object_name   TYPE sobj_name
+        !iv_depth         TYPE i
+      RETURNING
+        VALUE(rt_objects) TYPE senvi_tab .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -21,35 +29,12 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 
   METHOD find.
 
-* todo, currently it only runs single level, this wont work in the general case
+    DATA(lt_environment) = list( iv_object_type = iv_object_type
+      iv_object_name = iv_object_name
+      iv_depth       = 2 ).
 
-    DATA: lt_environment TYPE senvi_tab,
-          lv_obj_type    TYPE euobj-id.
-
-
-    lv_obj_type = iv_object_type.
-
-    CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
-      EXPORTING
-        obj_type       = lv_obj_type
-        object_name    = iv_object_name
-        online_force   = abap_true
-      TABLES
-        environment    = lt_environment
-      EXCEPTIONS
-        batch          = 1
-        batchjob_error = 2
-        not_executed   = 3
-        OTHERS         = 4.
-    IF sy-subrc = 3.
-      RETURN.
-    ENDIF.
-
-* todo, not sure if this is alright to do
-    DELETE lt_environment WHERE encl_obj IS NOT INITIAL.
-    DELETE lt_environment WHERE type = 'STRU'.
-    DELETE lt_environment WHERE type = 'TYPE'.
-    DELETE lt_environment WHERE type = 'INCL'.
+* make sure itself is not a dependency of itself
+    DELETE lt_environment WHERE type = iv_object_type AND object = iv_object_name.
 
     LOOP AT lt_environment INTO DATA(ls_environment).
       DATA(ls_files_item) = VALUE zcl_abapgit_objects=>ty_serialization(
@@ -66,6 +51,52 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 
       APPEND LINES OF ls_files_item-files TO rt_files.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD list.
+
+    DATA: lt_next     TYPE senvi_tab,
+          lv_obj_type TYPE euobj-id.
+
+
+    lv_obj_type = iv_object_type.
+
+    CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
+      EXPORTING
+        obj_type       = lv_obj_type
+        object_name    = iv_object_name
+        online_force   = abap_true
+      TABLES
+        environment    = rt_objects
+      EXCEPTIONS
+        batch          = 1
+        batchjob_error = 2
+        not_executed   = 3
+        OTHERS         = 4.
+    IF sy-subrc = 3.
+      RETURN.
+    ENDIF.
+
+* todo, not sure if this is alright to do
+    DELETE rt_objects WHERE encl_obj IS NOT INITIAL.
+    DELETE rt_objects WHERE type = 'STRU'.
+    DELETE rt_objects WHERE type = 'TYPE'.
+    DELETE rt_objects WHERE type = 'INCL'.
+
+    IF iv_depth > 1.
+      LOOP AT rt_objects INTO DATA(ls_environment).
+        APPEND LINES OF list(
+          iv_object_type = CONV #( ls_environment-type )
+          iv_object_name = CONV #( ls_environment-object )
+          iv_depth       = iv_depth - 1 ) TO lt_next.
+      ENDLOOP.
+
+      APPEND LINES OF lt_next TO rt_objects.
+      SORT rt_objects BY type object.
+      DELETE ADJACENT DUPLICATES FROM rt_objects COMPARING type object.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

@@ -193,34 +193,18 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD create_client.
 
-    IF NOT ms_config-rfc IS INITIAL.
-      cl_http_client=>create_by_destination(
-        EXPORTING
-          destination              = ms_config-rfc
-        IMPORTING
-          client                   = ri_client
-        EXCEPTIONS
-          argument_not_found       = 1
-          destination_not_found    = 2
-          destination_no_authority = 3
-          plugin_not_active        = 4
-          internal_error           = 5
-          OTHERS                   = 6 ).
-      ASSERT sy-subrc = 0.
-    ELSE.
-      cl_http_client=>create_by_url(
-        EXPORTING
-          url                = CONV #( ms_config-url )
-          ssl_id             = 'ANONYM'
-        IMPORTING
-          client             = ri_client
-        EXCEPTIONS
-          argument_not_found = 1
-          plugin_not_active  = 2
-          internal_error     = 3
-          OTHERS             = 4 ).
-      ASSERT sy-subrc = 0.
-    ENDIF.
+    cl_http_client=>create_by_url(
+      EXPORTING
+        url                = CONV #( ms_config-url )
+        ssl_id             = 'ANONYM'
+      IMPORTING
+        client             = ri_client
+      EXCEPTIONS
+        argument_not_found = 1
+        plugin_not_active  = 2
+        internal_error     = 3
+        OTHERS             = 4 ).
+    ASSERT sy-subrc = 0.
 
   ENDMETHOD.
 
