@@ -167,6 +167,11 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
           lv_sub_obj_name = object_name.
       ENDCASE.
 
+      TRANSLATE ls_issue-filename TO UPPER CASE.
+      IF NOT ls_issue-filename CP |*{ object_name }*|.
+        ls_issue-message = |{ ls_issue-message }, { ls_issue-filename }|.
+      ENDIF.
+
       inform(
         p_sub_obj_type = lv_sub_obj_type
         p_sub_obj_name = lv_sub_obj_name
