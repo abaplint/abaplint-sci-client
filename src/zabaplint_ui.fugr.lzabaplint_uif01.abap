@@ -105,6 +105,7 @@ CLASS lcl_tree_content DEFINITION FINAL.
   PUBLIC SECTION.
     CLASS-METHODS:
       init,
+      refresh,
       get_by_key
         IMPORTING iv_key         TYPE tv_nodekey
         RETURNING VALUE(rv_devc) TYPE devclass.
@@ -140,7 +141,6 @@ CLASS lcl_tree_content IMPLEMENTATION.
   METHOD init.
 
     DATA: lt_events TYPE cntl_simple_events,
-          lt_nodes  TYPE ty_nodes,
           ls_event  LIKE LINE OF lt_events.
 
 
@@ -157,7 +157,15 @@ CLASS lcl_tree_content IMPLEMENTATION.
         illegal_event_combination = 3 ).
     ASSERT sy-subrc = 0.
 
+  ENDMETHOD.
+
+  METHOD refresh.
+
+    DATA: lt_nodes TYPE ty_nodes.
+
     lt_nodes = build( ).
+
+    go_tree->delete_all_nodes( ).
 
     go_tree->add_nodes(
       EXPORTING
@@ -191,6 +199,7 @@ CLASS lcl_tree_content IMPLEMENTATION.
 
     DATA: lv_index TYPE i.
 
+    CLEAR mt_packages.
     LOOP AT NEW zcl_abaplint_configuration( )->list_packages( ) INTO DATA(ls_package).
       lv_index = sy-tabix.
       APPEND VALUE #(
@@ -244,6 +253,7 @@ FORM init_2000.
       node_selection_mode = cl_gui_simple_tree=>node_sel_mode_single ).
     SET HANDLER lcl_handler=>double_click FOR go_tree.
     lcl_tree_content=>init( ).
+    lcl_tree_content=>refresh( ).
 
     go_editor = NEW #( parent = go_splitter->bottom_right_container ).
     go_editor->set_font_fixed( ).
@@ -286,7 +296,7 @@ FORM add_raw.
 
   NEW zcl_abaplint_configuration( )->add_package( CONV #( lt_fields[ 1 ]-value ) ).
 
-* todo, refresh tree
+  lcl_tree_content=>refresh( ).
 
 ENDFORM.
 
@@ -355,6 +365,8 @@ FORM add_git.
 * todo, remove already existing
 * todo, add url in list
 * todo, do like in ZIF_ABAPGIT_POPUPS~POPUP_TO_SELECT_FROM_LIST
+
+  lcl_tree_content=>refresh( ).
 
 ENDFORM.
 

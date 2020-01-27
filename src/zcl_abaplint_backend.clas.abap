@@ -236,7 +236,8 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       name  = '~request_method'
       value = 'POST' ).
 
-    ii_client->send( ).
+    ii_client->send( timeout = 600 ).
+
     ii_client->receive(
       EXCEPTIONS
         http_communication_failure = 1
@@ -250,6 +251,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
           message = DATA(lv_emessage) ).
 
 * todo,     RAISE EXCEPTION
+      BREAK-POINT.
     ENDIF.
 
     ii_client->response->get_status(
@@ -258,6 +260,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
         reason = DATA(lv_sreason) ).
     IF lv_scode <> 200.
 * todo,      RAISE EXCEPTION
+      DATA(lv_data) = ii_client->response->get_cdata( ). " good for debugging
       BREAK-POINT.
     ENDIF.
 
