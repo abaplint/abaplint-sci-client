@@ -14,6 +14,8 @@ MODULE user_command_2000 INPUT.
       PERFORM save.
     WHEN 'ADD_RAW'.
       PERFORM add_raw.
+    WHEN 'DELETE'.
+      PERFORM delete.
     WHEN 'ADD_GIT'.
       PERFORM add_git.
     WHEN 'CONFIG'.
@@ -36,6 +38,8 @@ MODULE user_command_3000 INPUT.
   CASE gv_ok_code.
     WHEN 'TEST'.
       PERFORM test.
+    WHEN 'PICK'.
+      PERFORM pick_3000.
     WHEN 'SAVE'.
       PERFORM save_config.
     WHEN 'BACK'.

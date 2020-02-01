@@ -214,12 +214,20 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         p_param_1      = |{ object_type } { object_name }|
         p_code         = c_no_config ).
     ELSE.
-      DATA(lt_issues) = NEW zcl_abaplint_backend( )->check_object(
-        iv_configuration = lv_config
-        iv_object_type   = object_type
-        iv_object_name   = object_name ).
+      TRY.
+          DATA(lt_issues) = NEW zcl_abaplint_backend( )->check_object(
+            iv_configuration = lv_config
+            iv_object_type   = object_type
+            iv_object_name   = object_name ).
 
-      output_issues( lt_issues ).
+          output_issues( lt_issues ).
+        CATCH zcx_abaplint_error INTO DATA(lx_error).
+          inform(
+            p_test    = myname
+            p_kind    = c_error
+            p_param_1 = lx_error->message
+            p_code    = 'ERROR' ).
+      ENDTRY.
     ENDIF.
 
   ENDMETHOD.
