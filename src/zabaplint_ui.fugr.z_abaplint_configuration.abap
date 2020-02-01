@@ -5,7 +5,7 @@ FUNCTION z_abaplint_configuration.
 *"     VALUE(IV_READ_ONLY) TYPE  ABAP_BOOL OPTIONAL
 *"----------------------------------------------------------------------
 
-* todo, respect read only mode
+  gv_read_only = iv_read_only.
 
   CALL SCREEN 2000.
 

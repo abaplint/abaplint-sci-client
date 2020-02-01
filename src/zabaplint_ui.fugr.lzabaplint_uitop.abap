@@ -9,7 +9,8 @@ TYPES: text TYPE text50,
 
 TYPES: ty_nodes TYPE STANDARD TABLE OF ty_node WITH EMPTY KEY.
 
-DATA: gv_ok_code   LIKE sy-ucomm,
+DATA: gv_read_only TYPE abap_bool,
+      gv_ok_code   LIKE sy-ucomm,
       go_container TYPE REF TO cl_gui_custom_container,
       go_editor    TYPE REF TO cl_gui_textedit,
       go_splitter  TYPE REF TO cl_gui_easy_splitter_container,

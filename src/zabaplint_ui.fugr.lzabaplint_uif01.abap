@@ -88,7 +88,12 @@ CLASS lcl_editor IMPLEMENTATION.
     mv_devclass = iv_devclass.
 
     go_editor->set_enable( abap_true ).
-    go_editor->set_readonly_mode( 0 ).
+
+    IF gv_read_only = abap_true.
+      go_editor->set_readonly_mode( 1 ).
+    ELSE.
+      go_editor->set_readonly_mode( 0 ).
+    ENDIF.
 
     lv_content = NEW zcl_abaplint_configuration( )->read_package( mv_devclass ).
 
@@ -403,5 +408,30 @@ FORM update_git.
   ELSE.
     MESSAGE e002(zabaplint).
   ENDIF.
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*& Form STATUS_2000
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM status_2000.
+
+  DATA: lt_exclude TYPE TABLE OF sy-ucomm.
+
+  IF gv_read_only = abap_true.
+    APPEND 'SAVE' TO lt_exclude.
+    APPEND 'CONFIG' TO lt_exclude.
+    APPEND 'ADD_RAW' TO lt_exclude.
+    APPEND 'ADD_GIT' TO lt_exclude.
+    APPEND 'UPDATE_GIT' TO lt_exclude.
+  ENDIF.
+
+  SET PF-STATUS 'STATUS_2000' EXCLUDING lt_exclude.
+  SET TITLEBAR 'TITLE_2000'.
 
 ENDFORM.
