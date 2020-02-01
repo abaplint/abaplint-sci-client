@@ -317,13 +317,17 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM test.
 
-  DATA(ls_message) = NEW zcl_abaplint_backend( zabaplint_glob_data )->ping( ).
+  TRY.
+      DATA(ls_message) = NEW zcl_abaplint_backend( zabaplint_glob_data )->ping( ).
+      IF ls_message-error = abap_true.
+        MESSAGE ls_message-message TYPE 'E'.
+      ELSE.
+        MESSAGE ls_message-message TYPE 'S'.
+      ENDIF.
+    CATCH zcx_abaplint_error INTO DATA(cx).
+      MESSAGE cx->message TYPE 'S' DISPLAY LIKE 'E'.
+  ENDTRY.
 
-  IF ls_message-error = abap_true.
-    MESSAGE ls_message-message TYPE 'E'.
-  ELSE.
-    MESSAGE ls_message-message TYPE 'S'.
-  ENDIF.
 
 ENDFORM.
 
