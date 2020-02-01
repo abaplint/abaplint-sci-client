@@ -35,7 +35,9 @@ CLASS zcl_abaplint_backend DEFINITION
         zcx_abaplint_error .
     METHODS ping
       RETURNING
-        VALUE(rs_message) TYPE ty_message .
+        VALUE(rs_message) TYPE ty_message
+      RAISING
+        zcx_abaplint_error .
     METHODS constructor
       IMPORTING
         !is_config TYPE zabaplint_glob_data OPTIONAL .
@@ -67,13 +69,15 @@ CLASS zcl_abaplint_backend DEFINITION
         zcx_abaplint_error .
     METHODS create_client
       RETURNING
-        VALUE(ri_client) TYPE REF TO if_http_client .
+        VALUE(ri_client) TYPE REF TO if_http_client
+      RAISING
+        zcx_abaplint_error .
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
+CLASS zcl_abaplint_backend IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -213,7 +217,12 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
         plugin_not_active  = 2
         internal_error     = 3
         OTHERS             = 4 ).
-    ASSERT sy-subrc = 0.
+
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |Create_client error: sy-subrc={ sy-subrc }, url={ ms_config-url }|.
+    ENDIF.
 
   ENDMETHOD.
 
