@@ -69,7 +69,7 @@ CLASS lcl_editor IMPLEMENTATION.
     NEW zcl_abaplint_configuration( )->change_package(
       iv_devclass = mv_devclass
       iv_json     = lv_string ).
-    MESSAGE 'Saved' TYPE 'S'.
+    MESSAGE s000(zabaplint).
 
     go_editor->set_textmodified_status( 0 ).
 
@@ -303,6 +303,8 @@ FORM add_raw.
 
   lcl_tree_content=>refresh( ).
 
+  MESSAGE s000(zabaplint).
+
 ENDFORM.
 
 *&---------------------------------------------------------------------*
@@ -315,9 +317,13 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM test.
 
-  DATA(lv_error) = NEW zcl_abaplint_backend( zabaplint_glob_data )->ping( ).
+  DATA(ls_message) = NEW zcl_abaplint_backend( zabaplint_glob_data )->ping( ).
 
-* todo, handle errors
+  IF ls_message-error = abap_true.
+    MESSAGE ls_message-message TYPE 'E'.
+  ELSE.
+    MESSAGE ls_message-message TYPE 'S'.
+  ENDIF.
 
 ENDFORM.
 
@@ -365,7 +371,7 @@ FORM add_git.
 
   DATA(lt_list) = NEW zcl_abaplint_abapgit( )->list_online( ).
 
-  BREAK-POINT.
+  MESSAGE 'todo' TYPE 'S'.
 
 * todo, remove already existing
 * todo, add url in list
@@ -402,12 +408,16 @@ FORM update_git.
     RETURN.
   ENDIF.
 
-  DATA(lv_json) = NEW zcl_abaplint_abapgit( )->fetch_config( lv_devclass ).
-  IF NOT lv_json IS INITIAL.
-    lcl_editor=>update( lv_json ).
-  ELSE.
-    MESSAGE e002(zabaplint).
-  ENDIF.
+  TRY.
+      DATA(lv_json) = NEW zcl_abaplint_abapgit( )->fetch_config( lv_devclass ).
+      IF NOT lv_json IS INITIAL.
+        lcl_editor=>update( lv_json ).
+      ELSE.
+        MESSAGE e002(zabaplint).
+      ENDIF.
+    CATCH zcx_abapgit_exception INTO DATA(lx_error).
+      MESSAGE lx_error TYPE 'E'.
+  ENDTRY.
 
 ENDFORM.
 
@@ -429,9 +439,90 @@ FORM status_2000.
     APPEND 'ADD_RAW' TO lt_exclude.
     APPEND 'ADD_GIT' TO lt_exclude.
     APPEND 'UPDATE_GIT' TO lt_exclude.
+    APPEND 'DELETE' TO lt_exclude.
   ENDIF.
 
   SET PF-STATUS 'STATUS_2000' EXCLUDING lt_exclude.
   SET TITLEBAR 'TITLE_2000'.
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*& Form DELETE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM delete.
+
+  DATA: lv_answer TYPE c LENGTH 1,
+        lt_fields TYPE TABLE OF sval.
+
+
+  lt_fields = VALUE #( (
+    tabname   = 'TADIR'
+    fieldname = 'DEVCLASS' ) ).
+
+  CALL FUNCTION 'POPUP_GET_VALUES'
+    EXPORTING
+      popup_title = 'Package'
+    IMPORTING
+      returncode  = lv_answer
+    TABLES
+      fields      = lt_fields
+    EXCEPTIONS
+      OTHERS      = 1 ##NO_TEXT.
+  IF sy-subrc <> 0 OR lv_answer = 'A'.
+    RETURN.
+  ENDIF.
+
+  NEW zcl_abaplint_configuration( )->remove_package( CONV #( lt_fields[ 1 ]-value ) ).
+
+  lcl_tree_content=>refresh( ).
+
+  MESSAGE s000(zabaplint).
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*& Form PICK_3000
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM pick_3000.
+
+  DATA: lv_field TYPE string,
+        lv_url   TYPE string.
+
+  GET CURSOR FIELD lv_field.
+
+  CASE lv_field.
+    WHEN 'TEXT05'.
+      lv_url = 'https://github.com/abaplint/abaplint-cloud-foundry'.
+    WHEN 'TEXT02'.
+      lv_url = 'http://sci.abaplint.org'.
+  ENDCASE.
+
+  IF NOT lv_url IS INITIAL.
+    cl_gui_frontend_services=>execute(
+      EXPORTING
+        document               = lv_url
+      EXCEPTIONS
+        cntl_error             = 1
+        error_no_gui           = 2
+        bad_parameter          = 3
+        file_not_found         = 4
+        path_not_found         = 5
+        file_extension_unknown = 6
+        error_execute_failed   = 7
+        synchronous_failed     = 8
+        not_supported_by_gui   = 9
+        OTHERS                 = 10 ).
+  ENDIF.
 
 ENDFORM.

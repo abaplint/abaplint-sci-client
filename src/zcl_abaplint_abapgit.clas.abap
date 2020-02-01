@@ -11,7 +11,9 @@ CLASS zcl_abaplint_abapgit DEFINITION
       IMPORTING
         !iv_devclass   TYPE devclass
       RETURNING
-        VALUE(rv_json) TYPE string .
+        VALUE(rv_json) TYPE string
+      RAISING
+        zcx_abapgit_exception .
     METHODS list_online
       RETURNING
         VALUE(rt_result) TYPE ty_devclass_tt .

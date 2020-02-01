@@ -18,6 +18,11 @@ CLASS zcl_abaplint_backend DEFINITION
       END OF ty_issue .
     TYPES:
       ty_issues TYPE STANDARD TABLE OF ty_issue WITH EMPTY KEY .
+    TYPES:
+      BEGIN OF ty_message,
+        error   TYPE abap_bool,
+        message TYPE string,
+      END OF ty_message .
 
     METHODS check_object
       IMPORTING
@@ -25,10 +30,12 @@ CLASS zcl_abaplint_backend DEFINITION
         !iv_object_type   TYPE trobjtype
         !iv_object_name   TYPE sobj_name
       RETURNING
-        VALUE(rt_issues)  TYPE ty_issues .
+        VALUE(rt_issues)  TYPE ty_issues
+      RAISING
+        zcx_abaplint_error .
     METHODS ping
       RETURNING
-        VALUE(rv_error) TYPE string .
+        VALUE(rs_message) TYPE ty_message .
     METHODS constructor
       IMPORTING
         !is_config TYPE zabaplint_glob_data OPTIONAL .
@@ -55,7 +62,9 @@ CLASS zcl_abaplint_backend DEFINITION
         VALUE(rv_files) TYPE string .
     METHODS send
       IMPORTING
-        !ii_client TYPE REF TO if_http_client .
+        !ii_client TYPE REF TO if_http_client
+      RAISING
+        zcx_abaplint_error .
     METHODS create_client
       RETURNING
         VALUE(ri_client) TYPE REF TO if_http_client .
@@ -217,10 +226,16 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       request = li_client->request
       uri     = |/api/v1/ping| ).
 
-    send( li_client ).
-
-    DATA(lv_response) = li_client->response->get_cdata( ).
-    MESSAGE lv_response TYPE 'S'.
+    TRY.
+        send( li_client ).
+        rs_message = VALUE #(
+          message = li_client->response->get_cdata( )
+          error   = abap_false ).
+      CATCH zcx_abaplint_error INTO DATA(lx_error).
+        rs_message = VALUE #(
+          message = lx_error->message
+          error   = abap_true ).
+    ENDTRY.
 
     li_client->close( ).
 
@@ -250,8 +265,9 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
           code    = DATA(lv_ecode)
           message = DATA(lv_emessage) ).
 
-* todo,     RAISE EXCEPTION
-      BREAK-POINT.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |{ lv_ecode } { lv_emessage }|.
     ENDIF.
 
     ii_client->response->get_status(
@@ -259,9 +275,11 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
         code   = DATA(lv_scode)
         reason = DATA(lv_sreason) ).
     IF lv_scode <> 200.
-* todo,      RAISE EXCEPTION
       DATA(lv_data) = ii_client->response->get_cdata( ). " good for debugging
-      BREAK-POINT.
+
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |{ lv_scode } { lv_sreason }|.
     ENDIF.
 
   ENDMETHOD.
