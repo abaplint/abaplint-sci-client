@@ -8,6 +8,7 @@ CLASS zcl_abaplint_deps DEFINITION
       IMPORTING
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
+        !iv_depth       TYPE zabaplint_glob-depth
       RETURNING
         VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt .
   PROTECTED SECTION.
@@ -29,9 +30,12 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 
   METHOD find.
 
-    DATA(lt_environment) = list( iv_object_type = iv_object_type
-      iv_object_name = iv_object_name
-      iv_depth       = 2 ).
+    IF iv_depth > 0.
+      DATA(lt_environment) = list(
+        iv_object_type = iv_object_type
+        iv_object_name = iv_object_name
+        iv_depth       = iv_depth ).
+    ENDIF.
 
 * make sure itself is not a dependency of itself
     DELETE lt_environment WHERE type = iv_object_type AND object = iv_object_name.

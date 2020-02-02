@@ -20,6 +20,7 @@ CLASS ltcl_test IMPLEMENTATION.
   METHOD find.
 
     DATA(lt_files) = mo_cut->find(
+      iv_depth       = 1
       iv_object_type = 'CLAS'
       iv_object_name = 'ZCL_ABAPGIT_BACKGROUND_PULL' ).
 

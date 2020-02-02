@@ -28,8 +28,9 @@ FORM run RAISING zcx_abapgit_exception zcx_abaplint_error cx_salv_msg.
   DELETE lt_objects FROM p_max + 1.
 
   LOOP AT lt_objects INTO ls_object.
+    DATA(lv_text) = |{ ls_object-object } { ls_object-obj_name } { sy-tabix }/{ lines( lt_objects ) }, { lines( lt_total ) } issues|.
     cl_progress_indicator=>progress_indicate(
-      i_text               = |{ ls_object-obj_name } { sy-tabix }/{ lines( lt_objects ) }|
+      i_text               = lv_text
       i_processed          = sy-tabix
       i_total              = lines( lt_objects )
       i_output_immediately = abap_true ).

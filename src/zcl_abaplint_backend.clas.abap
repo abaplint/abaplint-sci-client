@@ -97,6 +97,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
     DATA(lt_found) = NEW zcl_abaplint_deps( )->find(
+      iv_depth       = ms_config-depth
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
 

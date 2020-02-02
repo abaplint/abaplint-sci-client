@@ -203,7 +203,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT02</NAME>
        <TEXT>http://sci.abaplint.org</TEXT>
-       <LINE>007</LINE>
+       <LINE>006</LINE>
        <COLUMN>013</COLUMN>
        <LENGTH>023</LENGTH>
        <VISLENGTH>056</VISLENGTH>
@@ -218,7 +218,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT06</NAME>
        <TEXT>Use_at_own_risk!</TEXT>
-       <LINE>008</LINE>
+       <LINE>007</LINE>
        <COLUMN>016</COLUMN>
        <LENGTH>016</LENGTH>
        <VISLENGTH>016</VISLENGTH>
@@ -232,7 +232,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT03</NAME>
        <TEXT>Code_leaves_your_system</TEXT>
-       <LINE>009</LINE>
+       <LINE>008</LINE>
        <COLUMN>016</COLUMN>
        <LENGTH>023</LENGTH>
        <VISLENGTH>023</VISLENGTH>
@@ -246,13 +246,45 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT04</NAME>
        <TEXT>Connection_is_not_encrypted</TEXT>
-       <LINE>010</LINE>
+       <LINE>009</LINE>
        <COLUMN>016</COLUMN>
        <LENGTH>027</LENGTH>
        <VISLENGTH>027</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <REQU_ENTRY>N</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>TEXT09</NAME>
+       <TEXT>Dependency_depth</TEXT>
+       <LINE>011</LINE>
+       <COLUMN>003</COLUMN>
+       <LENGTH>016</LENGTH>
+       <VISLENGTH>016</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>ZABAPLINT_GLOB_DATA-DEPTH</NAME>
+       <TEXT>_______.___</TEXT>
+       <LINE>011</LINE>
+       <COLUMN>022</COLUMN>
+       <LENGTH>011</LENGTH>
+       <VISLENGTH>011</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>INT4</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <INPUT_FLD>X</INPUT_FLD>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <RIGHT_JUST>X</RIGHT_JUST>
       </RPY_DYFATC>
       <RPY_DYFATC>
        <CONT_TYPE>SCREEN</CONT_TYPE>
