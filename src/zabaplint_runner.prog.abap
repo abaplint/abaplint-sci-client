@@ -28,7 +28,8 @@ FORM run RAISING zcx_abapgit_exception zcx_abaplint_error cx_salv_msg.
   DELETE lt_objects FROM p_max + 1.
 
   LOOP AT lt_objects INTO ls_object.
-    DATA(lv_text) = |{ ls_object-object } { ls_object-obj_name } { sy-tabix }/{ lines( lt_objects ) }, { lines( lt_total ) } issues|.
+    DATA(lv_text) = |{ ls_object-object } { ls_object-obj_name } { sy-tabix }/{ lines( lt_objects ) }, {
+      lines( lt_total ) } issues|.
     cl_progress_indicator=>progress_indicate(
       i_text               = lv_text
       i_processed          = sy-tabix
@@ -58,6 +59,7 @@ FORM show USING pt_total TYPE zcl_abaplint_backend=>ty_issues RAISING cx_salv_ms
       t_table      = pt_total ).
 
   lo_alv->get_columns( )->set_optimize( ).
+  lo_alv->get_functions( )->set_all( ).
   lo_alv->display( ).
 
 ENDFORM.
