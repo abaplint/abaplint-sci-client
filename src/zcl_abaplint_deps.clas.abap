@@ -84,6 +84,8 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
     DELETE rt_objects WHERE type = 'STRU'.
     DELETE rt_objects WHERE type = 'TYPE'.
     DELETE rt_objects WHERE type = 'INCL'.
+    DELETE rt_objects WHERE type = 'FUNC'.
+    DELETE rt_objects WHERE type = 'ACCO'.
 
     IF iv_depth > 1.
       LOOP AT rt_objects INTO DATA(ls_environment).

@@ -77,7 +77,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -143,6 +143,10 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
 
 
   METHOD check_object.
+
+    IF iv_object_type = 'DEVC'.
+      RETURN.
+    ENDIF.
 
     DATA(li_client) = create_client( ).
 
@@ -260,7 +264,7 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
       name  = '~request_method'
       value = 'POST' ).
 
-    ii_client->send( timeout = 600 ).
+    ii_client->send( timeout = 6000 ).
 
     ii_client->receive(
       EXCEPTIONS
