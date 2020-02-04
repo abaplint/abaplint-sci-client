@@ -45,6 +45,11 @@ CLASS zcl_abaplint_backend DEFINITION
 
     DATA ms_config TYPE zabaplint_glob_data .
 
+    METHODS escape
+      IMPORTING
+        !iv_input        TYPE clike
+      RETURNING
+        VALUE(rv_output) TYPE string .
     METHODS base64_encode
       IMPORTING
         !iv_bin          TYPE xstring
@@ -168,7 +173,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     DATA(lv_cdata) = |\{\n| &&
       |  "configuration": "{ lv_config }",\n| &&
       |  "object": \{\n| &&
-      |    "objectName": "{ iv_object_name }",\n| &&
+      |    "objectName": "{ escape( iv_object_name ) }",\n| &&
       |    "objectType": "{ iv_object_type }"\n| &&
       |  \},\n| &&
       |  "deps": { lv_deps },\n| &&
@@ -228,6 +233,15 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
         EXPORTING
           message = |Create_client error: sy-subrc={ sy-subrc }, url={ ms_config-url }|.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD escape.
+
+    rv_output = iv_input.
+
+    REPLACE ALL OCCURRENCES OF '"' IN rv_output WITH '\"'.
 
   ENDMETHOD.
 
