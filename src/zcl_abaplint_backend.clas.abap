@@ -108,7 +108,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     LOOP AT lt_found INTO DATA(ls_file).
       DATA(lv_contents) = base64_encode( ls_file-data ).
-      APPEND |\{"name": "{ ls_file-filename }", "contents": "{ lv_contents }"\}| TO lt_files.
+      APPEND |\{"name": "{ escape( ls_file-filename ) }", "contents": "{ lv_contents }"\}| TO lt_files.
     ENDLOOP.
 
     CONCATENATE LINES OF lt_files INTO rv_files SEPARATED BY ','.
@@ -139,7 +139,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     LOOP AT ls_files_item-files INTO DATA(ls_file).
       DATA(lv_contents) = base64_encode( ls_file-data ).
-      APPEND |\{"name": "{ ls_file-filename }", "contents": "{ lv_contents }"\}| TO lt_files.
+      APPEND |\{"name": "{ escape( ls_file-filename ) }", "contents": "{ lv_contents }"\}| TO lt_files.
     ENDLOOP.
 
     CONCATENATE LINES OF lt_files INTO rv_files SEPARATED BY ','.
