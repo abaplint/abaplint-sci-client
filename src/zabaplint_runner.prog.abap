@@ -1,7 +1,8 @@
 REPORT zabaplint_runner.
 
 PARAMETERS: p_devc TYPE devclass OBLIGATORY,
-            p_max  TYPE i DEFAULT 10 OBLIGATORY.
+            p_max  TYPE i DEFAULT 10 OBLIGATORY,
+            p_inc  TYPE c AS CHECKBOX DEFAULT abap_true.
 
 START-OF-SELECTION.
   PERFORM run.
@@ -11,17 +12,24 @@ FORM run RAISING zcx_abapgit_exception zcx_abaplint_error cx_salv_msg.
   DATA: lt_total TYPE zcl_abaplint_backend=>ty_issues.
 
 
-  DATA(lt_supported) = zcl_abapgit_objects=>supported_list( ).
+*  DATA(lt_supported) = zcl_abapgit_objects=>supported_list( ).
+  DATA(lt_supported) = VALUE zcl_abapgit_objects=>ty_types_tt( ( 'CLAS' ) ( 'PROG' ) ( 'FUGR' ) ).
   DATA(lv_config) = NEW zcl_abaplint_configuration( )->read_package( p_devc ).
+
   DATA(lt_objects) = zcl_abapgit_factory=>get_tadir( )->read( p_devc ).
 
-  DELETE lt_objects WHERE object = 'AVAS'.
+  DELETE lt_objects WHERE obj_name CA '.'.
 
   LOOP AT lt_objects INTO DATA(ls_object).
     DATA(lv_index) = sy-tabix.
     READ TABLE lt_supported WITH KEY table_line = ls_object-object TRANSPORTING NO FIELDS.
     IF sy-subrc <> 0.
       DELETE lt_objects INDEX lv_index.
+    ELSEIF p_inc = abap_true AND ls_object-object = 'PROG'.
+      SELECT SINGLE subc FROM reposrc INTO @DATA(lv_subc) WHERE progname = @ls_object-obj_name AND r3state = 'A'.
+      IF sy-subrc = 0 AND lv_subc = 'I'.
+        DELETE lt_objects INDEX lv_index.
+      ENDIF.
     ENDIF.
   ENDLOOP.
 
