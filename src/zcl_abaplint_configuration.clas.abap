@@ -53,7 +53,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
     ls_data-devclass = iv_devclass.
 
-    INSERT zabaplint_pack FROM ls_data.
+    INSERT zabaplint_pack FROM @ls_data.
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.
@@ -62,8 +62,8 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
   METHOD change_package.
 
     UPDATE zabaplint_pack
-      SET json = iv_json
-      WHERE devclass = iv_devclass.
+      SET json = @iv_json
+      WHERE devclass = @iv_devclass.
     ASSERT sy-dbcnt = 1.
 
   ENDMETHOD.
@@ -117,7 +117,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
   METHOD remove_package.
 
-    DELETE FROM zabaplint_pack WHERE devclass = iv_devclass.
+    DELETE FROM zabaplint_pack WHERE devclass = @iv_devclass.
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.
@@ -130,7 +130,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
     MOVE-CORRESPONDING is_data TO ls_data.
     ls_data-sysid = sy-sysid.
 
-    MODIFY zabaplint_glob FROM ls_data.
+    MODIFY zabaplint_glob FROM @ls_data.
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.

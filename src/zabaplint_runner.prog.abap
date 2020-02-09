@@ -48,12 +48,19 @@ FORM run RAISING zcx_abapgit_exception zcx_abaplint_error cx_salv_msg.
       i_total              = lines( lt_objects )
       i_output_immediately = abap_true ).
 
-    DATA(lt_issues) = NEW zcl_abaplint_backend( )->check_object(
-      iv_configuration = lv_config
-      iv_object_type   = ls_object-object
-      iv_object_name   = ls_object-obj_name ).
+    TRY.
+        DATA(lt_issues) = NEW zcl_abaplint_backend( )->check_object(
+          iv_configuration = lv_config
+          iv_object_type   = ls_object-object
+          iv_object_name   = ls_object-obj_name ).
 
-    APPEND LINES OF lt_issues TO lt_total.
+        APPEND LINES OF lt_issues TO lt_total.
+      CATCH zcx_abaplint_error INTO DATA(lx_error).
+        APPEND VALUE #(
+          message  = lx_error->get_text( )
+          key      = 'EXCEPTION'
+          filename = |{ ls_object-object } { ls_object-obj_name }| ) TO lt_total.
+    ENDTRY.
   ENDLOOP.
 
   PERFORM show USING lt_total.
