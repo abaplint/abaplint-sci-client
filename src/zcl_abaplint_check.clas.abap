@@ -7,6 +7,8 @@ CLASS zcl_abaplint_check DEFINITION
 
     METHODS constructor .
 
+    METHODS consolidate_for_display
+        REDEFINITION .
     METHODS get_attributes
         REDEFINITION .
     METHODS get_message_text
@@ -19,19 +21,17 @@ CLASS zcl_abaplint_check DEFINITION
         REDEFINITION .
     METHODS run
         REDEFINITION .
-    METHODS consolidate_for_display
-        REDEFINITION .
   PROTECTED SECTION.
 
     CONSTANTS c_no_config TYPE sci_errc VALUE 'NO_CONFIG' ##NO_TEXT.
     CONSTANTS c_stats TYPE trobjtype VALUE '1STA' ##NO_TEXT.
 
-    METHODS find_configuration
-      RETURNING
-        VALUE(rv_config) TYPE string .
     METHODS output_issues
       IMPORTING
         !it_issues TYPE zcl_abaplint_backend=>ty_issues .
+    METHODS find_configuration
+      RETURNING
+        VALUE(rv_config) TYPE string .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -83,17 +83,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA(lt_packages) = zcl_abapgit_factory=>get_sap_package( lv_devclass )->list_superpackages( ).
-* todo, cache this in static variable
-    DATA(lt_config) = NEW zcl_abaplint_configuration( )->list_packages( ).
-
-    LOOP AT lt_packages INTO DATA(lv_package).
-      READ TABLE lt_config WITH KEY devclass = lv_package INTO DATA(ls_config).
-      IF sy-subrc = 0.
-        rv_config = ls_config-json.
-        RETURN.
-      ENDIF.
-    ENDLOOP.
+    rv_config = zcl_abaplint_configuration=>find_from_package( lv_devclass ).
 
   ENDMETHOD.
 

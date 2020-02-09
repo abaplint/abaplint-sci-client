@@ -31,6 +31,11 @@ CLASS zcl_abaplint_configuration DEFINITION
       IMPORTING
         !iv_devclass TYPE zabaplint_pack-devclass
         !iv_json     TYPE zabaplint_pack-json .
+    CLASS-METHODS find_from_package
+      IMPORTING
+        !iv_devclass     TYPE devclass
+      RETURNING
+        VALUE(rv_config) TYPE string .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -60,6 +65,23 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
       SET json = iv_json
       WHERE devclass = iv_devclass.
     ASSERT sy-dbcnt = 1.
+
+  ENDMETHOD.
+
+
+  METHOD find_from_package.
+
+    DATA(lt_packages) = zcl_abapgit_factory=>get_sap_package( iv_devclass )->list_superpackages( ).
+* todo, cache this in static variable
+    DATA(lt_config) = NEW zcl_abaplint_configuration( )->list_packages( ).
+
+    LOOP AT lt_packages INTO DATA(lv_package).
+      READ TABLE lt_config WITH KEY devclass = lv_package INTO DATA(ls_config).
+      IF sy-subrc = 0.
+        rv_config = ls_config-json.
+        RETURN.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 

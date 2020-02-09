@@ -26,6 +26,12 @@
      <MSGNR>002</MSGNR>
      <TEXT>Error fetching json</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPLINT</ARBGB>
+     <MSGNR>003</MSGNR>
+     <TEXT>No configuration found for &amp;1</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

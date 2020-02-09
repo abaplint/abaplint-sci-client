@@ -14,7 +14,11 @@ FORM run RAISING zcx_abapgit_exception zcx_abaplint_error cx_salv_msg.
 
 *  DATA(lt_supported) = zcl_abapgit_objects=>supported_list( ).
   DATA(lt_supported) = VALUE zcl_abapgit_objects=>ty_types_tt( ( 'CLAS' ) ( 'PROG' ) ( 'FUGR' ) ).
-  DATA(lv_config) = NEW zcl_abaplint_configuration( )->read_package( p_devc ).
+  DATA(lv_config) = zcl_abaplint_configuration=>find_from_package( p_devc ).
+  IF lv_config IS INITIAL.
+    MESSAGE e003(zabaplint) WITH p_devc.
+    RETURN.
+  ENDIF.
 
   DATA(lt_objects) = zcl_abapgit_factory=>get_tadir( )->read( p_devc ).
 
