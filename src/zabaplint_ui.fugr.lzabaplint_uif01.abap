@@ -66,7 +66,9 @@ CLASS lcl_editor IMPLEMENTATION.
     go_editor->get_textstream( IMPORTING text = lv_string ).
     cl_gui_cfw=>flush( ).
 
-    NEW zcl_abaplint_configuration( )->change_package(
+    DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+    CREATE OBJECT lo_config.
+    lo_config->change_package(
       iv_devclass = mv_devclass
       iv_json     = lv_string ).
     MESSAGE s000(zabaplint).
@@ -95,7 +97,9 @@ CLASS lcl_editor IMPLEMENTATION.
       go_editor->set_readonly_mode( 0 ).
     ENDIF.
 
-    lv_content = NEW zcl_abaplint_configuration( )->read_package( mv_devclass ).
+    DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+    CREATE OBJECT lo_config.
+    lv_content = lo_config->read_package( mv_devclass ).
 
     go_editor->set_textstream( lv_content ).
     go_editor->set_focus( go_editor ).
@@ -192,7 +196,8 @@ CLASS lcl_tree_content IMPLEMENTATION.
 
     find_config( ).
 
-    LOOP AT mt_packages INTO DATA(ls_smim).
+    DATA ls_smim LIKE LINE OF mt_packages.
+    LOOP AT mt_packages INTO ls_smim.
       ls_node-node_key = ls_smim-key.
       ls_node-text     = ls_smim-text.
       APPEND ls_node TO rt_nodes.
@@ -205,11 +210,20 @@ CLASS lcl_tree_content IMPLEMENTATION.
     DATA: lv_index TYPE i.
 
     CLEAR mt_packages.
-    LOOP AT NEW zcl_abaplint_configuration( )->list_packages( ) INTO DATA(ls_package).
+
+    DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+    DATA lt_packages TYPE zcl_abaplint_configuration=>ty_packages.
+    DATA ls_package LIKE LINE OF lt_packages.
+    FIELD-SYMBOLS <pkg> LIKE LINE OF mt_packages.
+
+    CREATE OBJECT lo_config.
+    lt_packages = lo_config->list_packages( ).
+
+    LOOP AT lt_packages INTO ls_package.
       lv_index = sy-tabix.
-      APPEND VALUE #(
-        key      = |KEY{ lv_index }|
-        text     = ls_package-devclass ) TO mt_packages.
+      APPEND INITIAL LINE TO mt_packages ASSIGNING <pkg>.
+      <pkg>-key  = |KEY{ lv_index }|.
+      <pkg>-text = ls_package-devclass.
     ENDLOOP.
 
   ENDMETHOD.
@@ -246,21 +260,24 @@ ENDCLASS.
 FORM init_2000.
 
   IF NOT go_container IS BOUND.
-    go_container = NEW #( 'CUSTOM_2000' ).
+    CREATE OBJECT go_container EXPORTING container_name = 'CUSTOM_2000'.
 
-    go_splitter = NEW #(
-      parent      = go_container
-      orientation = 1 ).
+    CREATE OBJECT go_splitter
+      EXPORTING
+        parent      = go_container
+        orientation = 1.
     go_splitter->set_sash_position( 20 ).
 
-    go_tree = NEW #(
-      parent              = go_splitter->top_left_container
-      node_selection_mode = cl_gui_simple_tree=>node_sel_mode_single ).
+    CREATE OBJECT go_tree
+      EXPORTING
+        parent              = go_splitter->top_left_container
+        node_selection_mode = cl_gui_simple_tree=>node_sel_mode_single.
+
     SET HANDLER lcl_handler=>double_click FOR go_tree.
     lcl_tree_content=>init( ).
     lcl_tree_content=>refresh( ).
 
-    go_editor = NEW #( parent = go_splitter->bottom_right_container ).
+    CREATE OBJECT go_editor EXPORTING parent = go_splitter->bottom_right_container.
     go_editor->set_font_fixed( ).
     go_editor->set_enable( abap_false ).
     go_editor->set_readonly_mode( 1 ).
@@ -281,10 +298,10 @@ FORM add_raw.
   DATA: lv_answer TYPE c LENGTH 1,
         lt_fields TYPE TABLE OF sval.
 
-
-  lt_fields = VALUE #( (
-    tabname   = 'TADIR'
-    fieldname = 'DEVCLASS' ) ).
+  FIELD-SYMBOLS <field> LIKE LINE OF lt_fields.
+  APPEND INITIAL LINE TO lt_fields ASSIGNING <field>.
+  <field>-tabname   = 'TADIR'.
+  <field>-fieldname = 'DEVCLASS'.
 
   CALL FUNCTION 'POPUP_GET_VALUES'
     EXPORTING
@@ -299,8 +316,12 @@ FORM add_raw.
     RETURN.
   ENDIF.
 
-  NEW zcl_abaplint_configuration( )->add_package( CONV #( lt_fields[ 1 ]-value ) ).
+  DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+  DATA ls_field LIKE LINE OF lt_fields.
 
+  CREATE OBJECT lo_config.
+  READ TABLE lt_fields INTO ls_field INDEX 1.
+  lo_config->add_package( |{ ls_field-value }| ).
   lcl_tree_content=>refresh( ).
 
   MESSAGE s000(zabaplint).
@@ -317,14 +338,19 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM test.
 
+  DATA cx TYPE REF TO zcx_abaplint_error.
+  DATA lo_backend TYPE REF TO zcl_abaplint_backend.
+  DATA ls_message TYPE zcl_abaplint_backend=>ty_message.
+  CREATE OBJECT lo_backend EXPORTING is_config = zabaplint_glob_data.
+
   TRY.
-      DATA(ls_message) = NEW zcl_abaplint_backend( zabaplint_glob_data )->ping( ).
+      ls_message = lo_backend->ping( ).
       IF ls_message-error = abap_true.
         MESSAGE ls_message-message TYPE 'E'.
       ELSE.
         MESSAGE ls_message-message TYPE 'S'.
       ENDIF.
-    CATCH zcx_abaplint_error INTO DATA(cx).
+    CATCH zcx_abaplint_error INTO cx.
       MESSAGE cx->message TYPE 'S' DISPLAY LIKE 'E'.
   ENDTRY.
 
@@ -341,7 +367,10 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM save_config.
 
-  NEW zcl_abaplint_configuration( )->set_global( zabaplint_glob_data ).
+  DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+
+  CREATE OBJECT lo_config.
+  lo_config->set_global( zabaplint_glob_data ).
 
   MESSAGE s000(zabaplint).
 
@@ -357,7 +386,10 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM call_3000.
 
-  zabaplint_glob_data = NEW zcl_abaplint_configuration( )->get_global( ).
+  DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+
+  CREATE OBJECT lo_config.
+  lo_config->get_global( ).
 
   CALL SCREEN 3000.
 
@@ -373,7 +405,11 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM add_git.
 
-  DATA(lt_list) = NEW zcl_abaplint_abapgit( )->list_online( ).
+  DATA lo_abaplint TYPE REF TO zcl_abaplint_abapgit.
+  CREATE OBJECT lo_abaplint.
+
+  DATA lt_list TYPE zcl_abaplint_abapgit=>ty_devclass_tt.
+  lt_list = lo_abaplint->list_online( ).
 
   MESSAGE 'todo' TYPE 'S'.
 
@@ -407,19 +443,25 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM update_git.
 
-  DATA(lv_devclass) = lcl_editor=>get_devclass( ).
+  DATA lv_devclass TYPE devclass.
+  lv_devclass = lcl_editor=>get_devclass( ).
   IF lv_devclass IS INITIAL.
     RETURN.
   ENDIF.
 
+  DATA lx_error TYPE REF TO zcx_abapgit_exception.
   TRY.
-      DATA(lv_json) = NEW zcl_abaplint_abapgit( )->fetch_config( lv_devclass ).
+      DATA lo_abaplint TYPE REF TO zcl_abaplint_abapgit.
+      DATA lv_json TYPE string.
+      CREATE OBJECT lo_abaplint.
+
+      lv_json = lo_abaplint->fetch_config( lv_devclass ).
       IF NOT lv_json IS INITIAL.
         lcl_editor=>update( lv_json ).
       ELSE.
         MESSAGE e002(zabaplint).
       ENDIF.
-    CATCH zcx_abapgit_exception INTO DATA(lx_error).
+    CATCH zcx_abapgit_exception INTO lx_error.
       MESSAGE lx_error TYPE 'E'.
   ENDTRY.
 
@@ -464,10 +506,10 @@ FORM delete.
   DATA: lv_answer TYPE c LENGTH 1,
         lt_fields TYPE TABLE OF sval.
 
-
-  lt_fields = VALUE #( (
-    tabname   = 'TADIR'
-    fieldname = 'DEVCLASS' ) ).
+  FIELD-SYMBOLS <field> LIKE LINE OF lt_fields.
+  APPEND INITIAL LINE TO lt_fields ASSIGNING <field>.
+  <field>-tabname   = 'TADIR'.
+  <field>-fieldname = 'DEVCLASS'.
 
   CALL FUNCTION 'POPUP_GET_VALUES'
     EXPORTING
@@ -482,8 +524,12 @@ FORM delete.
     RETURN.
   ENDIF.
 
-  NEW zcl_abaplint_configuration( )->remove_package( CONV #( lt_fields[ 1 ]-value ) ).
+  DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+  DATA ls_field LIKE LINE OF lt_fields.
 
+  READ TABLE lt_fields INTO ls_field INDEX 1.
+  CREATE OBJECT lo_config.
+  lo_config->remove_package( |{ ls_field-value }| ).
   lcl_tree_content=>refresh( ).
 
   MESSAGE s000(zabaplint).

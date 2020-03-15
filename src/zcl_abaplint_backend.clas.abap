@@ -17,7 +17,7 @@ CLASS zcl_abaplint_backend DEFINITION
         start    TYPE ty_position,
       END OF ty_issue .
     TYPES:
-      ty_issues TYPE STANDARD TABLE OF ty_issue WITH EMPTY KEY .
+      ty_issues TYPE STANDARD TABLE OF ty_issue WITH DEFAULT KEY .
     TYPES:
       BEGIN OF ty_message,
         error   TYPE abap_bool,
@@ -98,17 +98,22 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD build_deps.
 
-    DATA: lt_files TYPE STANDARD TABLE OF string WITH EMPTY KEY.
+    DATA lt_files TYPE STANDARD TABLE OF string WITH DEFAULT KEY.
+    DATA lo_deps TYPE REF TO zcl_abaplint_deps.
+    DATA lt_found TYPE zif_abapgit_definitions=>ty_files_tt.
 
-
-    DATA(lt_found) = NEW zcl_abaplint_deps( )->find(
+    CREATE OBJECT lo_deps.
+    lt_found = lo_deps->find(
       iv_depth       = ms_config-depth
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
 
-    LOOP AT lt_found INTO DATA(ls_file).
-      DATA(lv_contents) = base64_encode( ls_file-data ).
-      APPEND |\{"name": "{ escape( ls_file-filename ) }", "contents": "{ lv_contents }"\}| TO lt_files.
+    DATA ls_file LIKE LINE OF lt_found.
+    DATA lv_contents TYPE string.
+    LOOP AT lt_found INTO ls_file.
+      lv_contents = base64_encode( ls_file-data ).
+      lv_contents = |\{"name": "{ escape( ls_file-filename ) }", "contents": "{ lv_contents }"\}|.
+      APPEND lv_contents TO lt_files.
     ENDLOOP.
 
     CONCATENATE LINES OF lt_files INTO rv_files SEPARATED BY ','.
@@ -122,12 +127,11 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 * todo, this should be done relative to what is the root abapGit folder and
 * also take settings into account, but not super important?
 
-    DATA: lt_files TYPE STANDARD TABLE OF string WITH EMPTY KEY.
+    DATA lt_files TYPE string_table.
+    DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
 
-
-    DATA(ls_files_item) = VALUE zcl_abapgit_objects=>ty_serialization(
-      item-obj_type = iv_object_type
-      item-obj_name = iv_object_name ).
+    ls_files_item-item-obj_type = iv_object_type.
+    ls_files_item-item-obj_name = iv_object_name.
 
     TRY.
         ls_files_item = zcl_abapgit_objects=>serialize(
@@ -137,9 +141,12 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
         ASSERT 0 = 1.
     ENDTRY.
 
-    LOOP AT ls_files_item-files INTO DATA(ls_file).
-      DATA(lv_contents) = base64_encode( ls_file-data ).
-      APPEND |\{"name": "{ escape( ls_file-filename ) }", "contents": "{ lv_contents }"\}| TO lt_files.
+    DATA ls_file LIKE LINE OF ls_files_item-files.
+    DATA lv_contents TYPE string.
+    LOOP AT ls_files_item-files INTO ls_file.
+      lv_contents = base64_encode( ls_file-data ).
+      lv_contents = |\{"name": "{ escape( ls_file-filename ) }", "contents": "{ lv_contents }"\}|.
+      APPEND lv_contents TO lt_files.
     ENDLOOP.
 
     CONCATENATE LINES OF lt_files INTO rv_files SEPARATED BY ','.
@@ -154,23 +161,28 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA(li_client) = create_client( ).
+    DATA li_client TYPE REF TO if_http_client.
+    li_client = create_client( ).
 
     cl_http_utility=>set_request_uri(
       request = li_client->request
       uri     = |/api/v1/check_file| ).
 
-    DATA(lv_files) = build_files(
+    DATA lv_files TYPE string.
+    lv_files = build_files(
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
 
-    DATA(lv_deps) = build_deps(
+    DATA lv_deps TYPE string.
+    lv_deps = build_deps(
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
 
-    DATA(lv_config) = base64_encode( zcl_abapgit_convert=>string_to_xstring_utf8( iv_configuration ) ).
+    DATA lv_config TYPE string.
+    lv_config = base64_encode( zcl_abapgit_convert=>string_to_xstring_utf8( iv_configuration ) ).
 
-    DATA(lv_cdata) = |\{\n| &&
+    DATA lv_cdata TYPE string.
+    lv_cdata = |\{\n| &&
       |  "configuration": "{ lv_config }",\n| &&
       |  "object": \{\n| &&
       |    "objectName": "{ escape( iv_object_name ) }",\n| &&
@@ -184,18 +196,27 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     send( li_client ).
 
-    DATA(lv_response) = li_client->response->get_cdata( ).
-    DATA(lo_reader) = NEW zcl_abaplint_json_reader( lv_response ).
-    LOOP AT lo_reader->members( '/issues' ) INTO DATA(lv_issue).
-      DATA(lv_prefix) = '/issues/' && lv_issue.
-      APPEND VALUE #(
-        message  = lo_reader->value_string( lv_prefix && '/message' )
-        key      = lo_reader->value_string( lv_prefix && '/key' )
-        filename = lo_reader->value_string( lv_prefix && '/filename' )
-        start    = VALUE #(
-          row = lo_reader->value_string( lv_prefix && '/start/row' )
-          col = lo_reader->value_string( lv_prefix && '/start/col' ) )
-        ) TO rt_issues.
+    DATA lv_response TYPE string.
+    lv_response = li_client->response->get_cdata( ).
+
+    DATA lo_reader TYPE REF TO zcl_abaplint_json_reader.
+    CREATE OBJECT lo_reader EXPORTING iv_json = lv_response.
+
+    DATA lt_issues TYPE string_table.
+    DATA lv_issue LIKE LINE OF lt_issues.
+    DATA lv_prefix TYPE string.
+    FIELD-SYMBOLS <issue> LIKE LINE OF rt_issues.
+
+    lt_issues = lo_reader->members( '/issues' ).
+
+    LOOP AT lt_issues INTO lv_issue.
+      lv_prefix = '/issues/' && lv_issue.
+      APPEND INITIAL LINE TO rt_issues ASSIGNING <issue>.
+      <issue>-message   = lo_reader->value_string( lv_prefix && '/message' ).
+      <issue>-key       = lo_reader->value_string( lv_prefix && '/key' ).
+      <issue>-filename  = lo_reader->value_string( lv_prefix && '/filename' ).
+      <issue>-start-row = lo_reader->value_string( lv_prefix && '/start/row' ).
+      <issue>-start-col = lo_reader->value_string( lv_prefix && '/start/col' ).
     ENDLOOP.
 
     li_client->close( ).
@@ -208,7 +229,9 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     IF is_config IS SUPPLIED.
       ms_config = is_config.
     ELSE.
-      ms_config = NEW zcl_abaplint_configuration( )->get_global( ).
+      DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+      CREATE OBJECT lo_config.
+      ms_config = lo_config->get_global( ).
     ENDIF.
 
   ENDMETHOD.
@@ -218,7 +241,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     cl_http_client=>create_by_url(
       EXPORTING
-        url                = CONV #( ms_config-url )
+        url                = |{ ms_config-url }|
         ssl_id             = 'ANONYM'
       IMPORTING
         client             = ri_client
@@ -248,21 +271,21 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD ping.
 
-    DATA(li_client) = create_client( ).
+    DATA li_client TYPE REF TO if_http_client.
+    li_client = create_client( ).
 
     cl_http_utility=>set_request_uri(
       request = li_client->request
       uri     = |/api/v1/ping| ).
 
+    DATA lx_error TYPE REF TO zcx_abaplint_error.
     TRY.
         send( li_client ).
-        rs_message = VALUE #(
-          message = li_client->response->get_cdata( )
-          error   = abap_false ).
-      CATCH zcx_abaplint_error INTO DATA(lx_error).
-        rs_message = VALUE #(
-          message = lx_error->message
-          error   = abap_true ).
+        rs_message-message = li_client->response->get_cdata( ).
+        rs_message-error   = abap_false.
+      CATCH zcx_abaplint_error INTO lx_error.
+        rs_message-message = lx_error->message.
+        rs_message-error   = abap_true.
     ENDTRY.
 
     li_client->close( ).
@@ -288,22 +311,27 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
         http_processing_failed     = 3
         OTHERS                     = 4 ).
     IF sy-subrc <> 0.
+      DATA lv_ecode TYPE i.
+      DATA lv_emessage TYPE string.
       ii_client->get_last_error(
         IMPORTING
-          code    = DATA(lv_ecode)
-          message = DATA(lv_emessage) ).
+          code    = lv_ecode
+          message = lv_emessage ).
 
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING
           message = |{ lv_ecode } { lv_emessage }|.
     ENDIF.
 
+    DATA lv_scode TYPE i.
+    DATA lv_sreason TYPE string.
     ii_client->response->get_status(
       IMPORTING
-        code   = DATA(lv_scode)
-        reason = DATA(lv_sreason) ).
+        code   = lv_scode
+        reason = lv_sreason ).
     IF lv_scode <> 200.
-      DATA(lv_data) = ii_client->response->get_cdata( ). " good for debugging
+      DATA lv_error_response TYPE string.
+      lv_error_response = ii_client->response->get_cdata( ). " good for debugging
 
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING

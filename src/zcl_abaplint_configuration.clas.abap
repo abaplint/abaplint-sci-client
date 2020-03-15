@@ -5,7 +5,7 @@ CLASS zcl_abaplint_configuration DEFINITION
   PUBLIC SECTION.
 
     TYPES:
-      ty_packages TYPE STANDARD TABLE OF zabaplint_pack WITH EMPTY KEY .
+      ty_packages TYPE STANDARD TABLE OF zabaplint_pack WITH KEY devclass .
 
     METHODS read_package
       IMPORTING
@@ -47,13 +47,13 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
   METHOD add_package.
 
-    DATA: ls_data TYPE zabaplint_pack.
+    DATA ls_data TYPE zabaplint_pack.
 
     ASSERT zcl_abapgit_factory=>get_sap_package( iv_devclass )->exists( ) = abap_true.
 
     ls_data-devclass = iv_devclass.
 
-    INSERT zabaplint_pack FROM @ls_data.
+    INSERT zabaplint_pack FROM ls_data.
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.
@@ -62,8 +62,8 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
   METHOD change_package.
 
     UPDATE zabaplint_pack
-      SET json = @iv_json
-      WHERE devclass = @iv_devclass.
+      SET json = iv_json
+      WHERE devclass = iv_devclass.
     ASSERT sy-dbcnt = 1.
 
   ENDMETHOD.
@@ -71,12 +71,19 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
   METHOD find_from_package.
 
-    DATA(lt_packages) = zcl_abapgit_factory=>get_sap_package( iv_devclass )->list_superpackages( ).
-* todo, cache this in static variable
-    DATA(lt_config) = NEW zcl_abaplint_configuration( )->list_packages( ).
+    DATA lt_packages TYPE zif_abapgit_sap_package=>ty_devclass_tt.
+    DATA lt_config TYPE ty_packages.
+    DATA lo_abaplint_conf TYPE REF TO zcl_abaplint_configuration.
 
-    LOOP AT lt_packages INTO DATA(lv_package).
-      READ TABLE lt_config WITH KEY devclass = lv_package INTO DATA(ls_config).
+    lt_packages = zcl_abapgit_factory=>get_sap_package( iv_devclass )->list_superpackages( ).
+* todo, cache this in static variable
+    CREATE OBJECT lo_abaplint_conf.
+    lt_config = lo_abaplint_conf->list_packages( ).
+
+    DATA lv_package LIKE LINE OF lt_packages.
+    DATA ls_config LIKE LINE OF lt_config.
+    LOOP AT lt_packages INTO lv_package.
+      READ TABLE lt_config WITH KEY devclass = lv_package INTO ls_config.
       IF sy-subrc = 0.
         rv_config = ls_config-json.
         RETURN.
@@ -89,8 +96,8 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
   METHOD get_global.
 
     SELECT SINGLE * FROM zabaplint_glob
-      INTO CORRESPONDING FIELDS OF @rs_data
-      WHERE sysid = @sy-sysid.
+      INTO CORRESPONDING FIELDS OF rs_data
+      WHERE sysid = sy-sysid.
 
   ENDMETHOD.
 
@@ -98,7 +105,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
   METHOD list_packages.
 
     SELECT * FROM zabaplint_pack
-      INTO TABLE @rt_data
+      INTO TABLE rt_data
       ORDER BY PRIMARY KEY.
 
   ENDMETHOD.
@@ -108,8 +115,8 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
     SELECT SINGLE json
       FROM zabaplint_pack
-      INTO @rv_json
-      WHERE devclass = @iv_devclass.
+      INTO rv_json
+      WHERE devclass = iv_devclass.
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.
@@ -117,7 +124,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
   METHOD remove_package.
 
-    DELETE FROM zabaplint_pack WHERE devclass = @iv_devclass.
+    DELETE FROM zabaplint_pack WHERE devclass = iv_devclass.
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.
@@ -130,7 +137,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
     MOVE-CORRESPONDING is_data TO ls_data.
     ls_data-sysid = sy-sysid.
 
-    MODIFY zabaplint_glob FROM @ls_data.
+    MODIFY zabaplint_glob FROM ls_data.
     ASSERT sy-subrc = 0.
 
   ENDMETHOD.
