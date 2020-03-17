@@ -5,21 +5,21 @@ CLASS lcl_parser_test DEFINITION FINAL
 
   PRIVATE SECTION.
 
-    METHODS integrated FOR TESTING.
+    METHODS parse FOR TESTING RAISING zcx_abaplint_error.
 
 ENDCLASS.
 
 CLASS lcl_parser_test IMPLEMENTATION.
 
-  METHOD integrated.
+  METHOD parse.
 
     DATA lv_sample TYPE string.
     lv_sample =
       '{' &&
-      '  "str": "abc",' &&
-      '  "num": 123,' &&
+      '  "string": "abc",' &&
+      '  "number": 123,' &&
       '  "float": 123.45,' &&
-      '  "bool": true,' &&
+      '  "boolean": true,' &&
       '  "null": null,' &&
       '  "date": "2020-03-15",' &&
       '  "issues": [' &&
@@ -52,10 +52,17 @@ CLASS lcl_parser_test IMPLEMENTATION.
       '  ]' &&
       '}'.
 
-    DATA lo_cut TYPE REF TO zcl_abaplint_json_reader.
-    lo_cut = zcl_abaplint_json_reader=>parse( lv_sample ).
+    DATA lo_cut TYPE REF TO lcl_json_parser.
+    DATA lt_act TYPE zif_abaplint_json_reader=>tt_nodes.
+    DATA lt_exp LIKE lt_act.
+    FIELD-SYMBOLS <exp> LIKE LINE OF lt_exp.
 
-    " TODO
+
+    CREATE OBJECT lo_cut.
+    lt_act = lo_cut->parse( lv_sample ).
+    cl_abap_unit_assert=>assert_equals(
+      act = lt_act
+      exp = lt_exp ).
 
   ENDMETHOD.
 

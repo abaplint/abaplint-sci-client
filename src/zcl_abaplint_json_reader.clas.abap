@@ -1,51 +1,31 @@
-CLASS zcl_abaplint_json_reader DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_ABAPLINT_JSON_READER definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS constructor
-      IMPORTING
-        !iv_json TYPE string .
-    METHODS exists
-      IMPORTING
-        !iv_path         TYPE string
-      RETURNING
-        VALUE(rv_exists) TYPE abap_bool .
-    METHODS members
-      IMPORTING
-        !iv_path          TYPE string
-      RETURNING
-        VALUE(rt_members) TYPE string_table .
-    METHODS value
-      IMPORTING
-        !iv_path        TYPE string
-      RETURNING
-        VALUE(rv_value) TYPE string .
-    METHODS value_boolean
-      IMPORTING
-        !iv_path        TYPE string
-      RETURNING
-        VALUE(rv_value) TYPE abap_bool .
-    METHODS value_integer
-      IMPORTING
-        !iv_path        TYPE string
-      RETURNING
-        VALUE(rv_value) TYPE i .
-    METHODS value_number
-      IMPORTING
-        !iv_path        TYPE string
-      RETURNING
-        VALUE(rv_value) TYPE i .
-    METHODS value_string
-      IMPORTING
-        !iv_path        TYPE string
-      RETURNING
-        VALUE(rv_value) TYPE string .
+  INTERFACES zif_abaplint_json_reader.
+
+  CLASS-METHODS parse
+    IMPORTING
+      !IV_JSON type STRING
+    RETURNING
+      VALUE(ro_instance) TYPE REF TO zcl_abaplint_json_reader
+    RAISING
+      zcx_abaplint_error.
+
+  METHODS CONSTRUCTOR
+    IMPORTING
+      !IV_JSON type STRING
+    RAISING
+      zcx_abaplint_error.
+
   PROTECTED SECTION.
 
-    DATA mo_parser TYPE REF TO /ui5/cl_json_parser .
   PRIVATE SECTION.
+
+    DATA mt_json_tree TYPE zif_abaplint_json_reader=>tt_nodes.
+
 ENDCLASS.
 
 
@@ -55,62 +35,70 @@ CLASS ZCL_ABAPLINT_JSON_READER IMPLEMENTATION.
 
   METHOD constructor.
 
-    mo_parser = NEW /ui5/cl_json_parser( ).
-    mo_parser->parse( iv_json ).
+    DATA lo_parser TYPE REF TO lcl_json_parser.
+    CREATE OBJECT lo_parser.
+    mt_json_tree = lo_parser->parse( iv_json ).
 
   ENDMETHOD.
 
 
-  METHOD exists.
+  METHOD parse.
 
-    rv_exists = mo_parser->exists( iv_path ).
-
-  ENDMETHOD.
-
-
-  METHOD members.
-
-    rt_members = mo_parser->members( iv_path ).
+    CREATE OBJECT ro_instance EXPORTING iv_json = iv_json.
 
   ENDMETHOD.
 
 
-  METHOD value.
+  METHOD zif_abaplint_json_reader~exists.
 
-    rv_value = mo_parser->value( iv_path ).
-
-  ENDMETHOD.
-
-
-  METHOD value_boolean.
-
-    DATA(lv_value) = mo_parser->value( iv_path ).
-
-    rv_value = boolc( lv_value = 'true' ) ##NO_TEXT.
+*    rv_exists = mo_parser->exists( iv_path ).
 
   ENDMETHOD.
 
 
-  METHOD value_integer.
+  METHOD zif_abaplint_json_reader~members.
 
-    DATA(lv_value) = mo_parser->value( iv_path ).
-    IF lv_value <> 'null'.
-      rv_value = lv_value.
-    ENDIF.
+*    rt_members = mo_parser->members( iv_path ).
 
   ENDMETHOD.
 
 
-  METHOD value_number.
+  METHOD zif_abaplint_json_reader~value.
 
-    rv_value = mo_parser->value( iv_path ).
+*    rv_value = mo_parser->value( iv_path ).
 
   ENDMETHOD.
 
 
-  METHOD value_string.
+  METHOD zif_abaplint_json_reader~value_boolean.
 
-    rv_value = mo_parser->value( iv_path ).
+*    DATA(lv_value) = mo_parser->value( iv_path ).
+*
+*    rv_value = boolc( lv_value = 'true' ) ##NO_TEXT.
+
+  ENDMETHOD.
+
+
+  METHOD zif_abaplint_json_reader~value_integer.
+
+*    DATA(lv_value) = mo_parser->value( iv_path ).
+*    IF lv_value <> 'null'.
+*      rv_value = lv_value.
+*    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_abaplint_json_reader~value_number.
+
+*    rv_value = mo_parser->value( iv_path ).
+
+  ENDMETHOD.
+
+
+  METHOD zif_abaplint_json_reader~value_string.
+
+*    rv_value = mo_parser->value( iv_path ).
 
   ENDMETHOD.
 ENDCLASS.
