@@ -11,6 +11,7 @@ INTERFACE zif_abaplint_json_reader
     END OF ty_node.
 
   TYPES tt_nodes TYPE STANDARD TABLE OF ty_node WITH KEY path name.
+  TYPES ts_nodes TYPE SORTED TABLE OF ty_node WITH UNIQUE KEY path name.
 
   methods EXISTS
     importing
@@ -41,7 +42,7 @@ INTERFACE zif_abaplint_json_reader
     importing
       !IV_PATH type STRING
     returning
-      value(RV_VALUE) type I .
+      value(RV_VALUE) type f .
   methods VALUE_STRING
     importing
       !IV_PATH type STRING
