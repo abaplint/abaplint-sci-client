@@ -123,7 +123,7 @@ CLASS lcl_parser_test IMPLEMENTATION.
   METHOD parse.
 
     DATA lo_cut TYPE REF TO lcl_json_parser.
-    DATA lt_act TYPE zif_abaplint_json_reader=>tt_nodes.
+    DATA lt_act TYPE zif_abaplint_json_reader=>ty_nodes_tt.
     DATA lt_exp LIKE lt_act.
     FIELD-SYMBOLS <exp> LIKE LINE OF lt_exp.
 

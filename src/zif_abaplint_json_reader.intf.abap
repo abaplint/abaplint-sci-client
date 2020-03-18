@@ -10,43 +10,43 @@ INTERFACE zif_abaplint_json_reader
       children TYPE i,
     END OF ty_node.
 
-  TYPES tt_nodes TYPE STANDARD TABLE OF ty_node WITH KEY path name.
-  TYPES ts_nodes TYPE SORTED TABLE OF ty_node WITH UNIQUE KEY path name.
+  TYPES ty_nodes_tt TYPE STANDARD TABLE OF ty_node WITH KEY path name.
+  TYPES ty_nodes_ts TYPE SORTED TABLE OF ty_node WITH UNIQUE KEY path name.
 
-  methods EXISTS
-    importing
-      !IV_PATH type STRING
-    returning
-      value(RV_EXISTS) type ABAP_BOOL .
-  methods MEMBERS
-    importing
-      !IV_PATH type STRING
-    returning
-      value(RT_MEMBERS) type STRING_TABLE .
-  methods VALUE
-    importing
-      !IV_PATH type STRING
-    returning
-      value(RV_VALUE) type STRING .
-  methods VALUE_BOOLEAN
-    importing
-      !IV_PATH type STRING
-    returning
-      value(RV_VALUE) type ABAP_BOOL .
-  methods VALUE_INTEGER
-    importing
-      !IV_PATH type STRING
-    returning
-      value(RV_VALUE) type I .
-  methods VALUE_NUMBER
-    importing
-      !IV_PATH type STRING
-    returning
-      value(RV_VALUE) type f .
-  methods VALUE_STRING
-    importing
-      !IV_PATH type STRING
-    returning
-      value(RV_VALUE) type STRING .
+  METHODS exists
+    IMPORTING
+      !iv_path TYPE string
+    RETURNING
+      VALUE(rv_exists) TYPE abap_bool .
+  METHODS members
+    IMPORTING
+      !iv_path TYPE string
+    RETURNING
+      VALUE(rt_members) TYPE string_table .
+  METHODS VALUE
+    IMPORTING
+      !iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE string .
+  METHODS value_boolean
+    IMPORTING
+      !iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE abap_bool .
+  METHODS value_integer
+    IMPORTING
+      !iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE i .
+  METHODS value_number
+    IMPORTING
+      !iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE f .
+  METHODS value_string
+    IMPORTING
+      !iv_path TYPE string
+    RETURNING
+      VALUE(rv_value) TYPE string .
 
 ENDINTERFACE.

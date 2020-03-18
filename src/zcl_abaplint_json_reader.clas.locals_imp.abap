@@ -3,22 +3,22 @@ CLASS lcl_json_parser DEFINITION FINAL.
 
     METHODS parse
       IMPORTING
-        !IV_JSON type STRING
+        iv_json TYPE string
       RETURNING
-        VALUE(rt_json_tree) TYPE zif_abaplint_json_reader=>tt_nodes
+        VALUE(rt_json_tree) TYPE zif_abaplint_json_reader=>ty_nodes_tt
       RAISING
         zcx_abaplint_error.
 
   PRIVATE SECTION.
 
     TYPES:
-      tt_stack TYPE STANDARD TABLE OF REF TO zif_abaplint_json_reader=>ty_node.
+      ty_stack_tt TYPE STANDARD TABLE OF REF TO zif_abaplint_json_reader=>ty_node.
 
-    DATA mt_stack TYPE tt_stack.
+    DATA mt_stack TYPE ty_stack_tt.
 
     CLASS-METHODS join_path
       IMPORTING
-        it_stack TYPE tt_stack
+        it_stack TYPE ty_stack_tt
       RETURNING
         VALUE(rv_path) TYPE string.
 
@@ -84,7 +84,7 @@ CLASS lcl_json_parser IMPLEMENTATION.
 
         WHEN if_sxml_node=>co_nt_element_close.
           DATA lo_close TYPE REF TO if_sxml_close_element.
-          lo_close ?= lo_node .
+          lo_close ?= lo_node.
 
           READ TABLE mt_stack INDEX 1 INTO lr_stack_top.
           DELETE mt_stack INDEX 1.
@@ -114,7 +114,7 @@ CLASS lcl_json_parser IMPLEMENTATION.
     FIELD-SYMBOLS <ref> LIKE LINE OF it_stack.
 
     LOOP AT it_stack ASSIGNING <ref>.
-      rv_path =  <ref>->name && '/' && rv_path.
+      rv_path = <ref>->name && '/' && rv_path.
     ENDLOOP.
 
   ENDMETHOD.

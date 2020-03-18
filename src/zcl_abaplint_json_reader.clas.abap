@@ -1,4 +1,4 @@
-class ZCL_ABAPLINT_JSON_READER definition
+CLASS ZCL_ABAPLINT_JSON_READER DEFINITION
   PUBLIC
   CREATE PUBLIC .
 
@@ -30,7 +30,7 @@ class ZCL_ABAPLINT_JSON_READER definition
         name TYPE string,
       END OF ty_path_name.
 
-    DATA mt_json_tree TYPE zif_abaplint_json_reader=>ts_nodes.
+    DATA mt_json_tree TYPE zif_abaplint_json_reader=>ty_nodes_ts.
 
     CLASS-METHODS normalize_path
       IMPORTING
