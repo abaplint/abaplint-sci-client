@@ -1,4 +1,4 @@
-CLASS ZCL_ABAPLINT_JSON_READER DEFINITION
+CLASS zcl_abaplint_json_reader DEFINITION
   PUBLIC
   CREATE PUBLIC .
 
@@ -8,15 +8,15 @@ CLASS ZCL_ABAPLINT_JSON_READER DEFINITION
 
     CLASS-METHODS parse
       IMPORTING
-        !IV_JSON type STRING
+        iv_json TYPE string
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abaplint_json_reader
       RAISING
         zcx_abaplint_error.
 
-    METHODS CONSTRUCTOR
+    METHODS constructor
       IMPORTING
-        !IV_JSON type STRING
+        iv_json TYPE string
       RAISING
         zcx_abaplint_error.
 

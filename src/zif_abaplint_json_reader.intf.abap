@@ -23,7 +23,7 @@ INTERFACE zif_abaplint_json_reader
       !iv_path TYPE string
     RETURNING
       VALUE(rt_members) TYPE string_table .
-  METHODS VALUE
+  METHODS value
     IMPORTING
       !iv_path TYPE string
     RETURNING

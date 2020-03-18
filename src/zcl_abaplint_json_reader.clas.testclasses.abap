@@ -1,4 +1,4 @@
-CLASS lcl_parser_test DEFINITION FINAL
+CLASS ltcl_parser_test DEFINITION FINAL
   FOR TESTING
   RISK LEVEL HARMLESS
   DURATION SHORT.
@@ -20,9 +20,9 @@ CLASS lcl_parser_test DEFINITION FINAL
 
 ENDCLASS.
 
-CLASS zcl_abaplint_json_reader DEFINITION LOCAL FRIENDS lcl_parser_test.
+CLASS zcl_abaplint_json_reader DEFINITION LOCAL FRIENDS ltcl_parser_test.
 
-CLASS lcl_parser_test IMPLEMENTATION.
+CLASS ltcl_parser_test IMPLEMENTATION.
 
   METHOD normalize_path.
 
