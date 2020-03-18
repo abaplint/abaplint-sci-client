@@ -199,24 +199,24 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     DATA lv_response TYPE string.
     lv_response = li_client->response->get_cdata( ).
 
-    DATA lo_reader TYPE REF TO zcl_abaplint_json_reader.
-    CREATE OBJECT lo_reader EXPORTING iv_json = lv_response.
+    DATA li_reader TYPE REF TO zif_abaplint_json_reader.
+    li_reader = zcl_abaplint_json_reader=>parse( lv_response ).
 
     DATA lt_issues TYPE string_table.
     DATA lv_issue LIKE LINE OF lt_issues.
     DATA lv_prefix TYPE string.
     FIELD-SYMBOLS <issue> LIKE LINE OF rt_issues.
 
-    lt_issues = lo_reader->members( '/issues' ).
+    lt_issues = li_reader->members( '/issues' ).
 
     LOOP AT lt_issues INTO lv_issue.
       lv_prefix = '/issues/' && lv_issue.
       APPEND INITIAL LINE TO rt_issues ASSIGNING <issue>.
-      <issue>-message   = lo_reader->value_string( lv_prefix && '/message' ).
-      <issue>-key       = lo_reader->value_string( lv_prefix && '/key' ).
-      <issue>-filename  = lo_reader->value_string( lv_prefix && '/filename' ).
-      <issue>-start-row = lo_reader->value_string( lv_prefix && '/start/row' ).
-      <issue>-start-col = lo_reader->value_string( lv_prefix && '/start/col' ).
+      <issue>-message   = li_reader->value_string( lv_prefix && '/message' ).
+      <issue>-key       = li_reader->value_string( lv_prefix && '/key' ).
+      <issue>-filename  = li_reader->value_string( lv_prefix && '/filename' ).
+      <issue>-start-row = li_reader->value_string( lv_prefix && '/start/row' ).
+      <issue>-start-col = li_reader->value_string( lv_prefix && '/start/col' ).
     ENDLOOP.
 
     li_client->close( ).
