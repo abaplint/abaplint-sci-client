@@ -13,7 +13,7 @@
     }
   ],
   "syntax": {
-    "version": "v740sp08",
+    "version": "v702",
     "errorNamespace": "^(Z|Y)",
     "globalConstants": [],
     "globalMacros": []
@@ -25,7 +25,7 @@
     "allowed_object_types": true,
     "ambiguous_statement": true,
     "avoid_use": {
-      "define": true,
+      "define": false,
       "endselect": true,
       "defaultKey": true,
       "execSQL": true,
@@ -59,7 +59,6 @@
     "commented_code": true,
     "constructor_visibility_public": true,
     "contains_tab": true,
-    "definitions_top": true,
     "description_empty": true,
     "double_space": {
       "keywords": true,
@@ -136,8 +135,7 @@
       "ignoreNames": [],
       "ignorePatterns": [],
       "expectedData": "^L._.+$",
-      "expectedConstant": "^LC_.+$",
-      "expectedFS": "^<L._.+>$"
+      "expectedConstant": "^LC_.+$"
     },
     "main_file_contents": true,
     "max_one_statement": true,
@@ -250,7 +248,6 @@
     },
     "unreachable_code": true,
     "unused_variables": true,
-    "use_new": true,
     "when_others_last": true,
     "whitespace_end": true,
     "xml_consistency": true
