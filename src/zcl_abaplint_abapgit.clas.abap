@@ -5,7 +5,7 @@ CLASS zcl_abaplint_abapgit DEFINITION
   PUBLIC SECTION.
 
     TYPES:
-      ty_devclass_tt TYPE STANDARD TABLE OF devclass WITH DEFAULT KEY .
+      ty_devclass_tt TYPE STANDARD TABLE OF devclass WITH KEY table_line.
 
     METHODS fetch_config
       IMPORTING

@@ -17,7 +17,7 @@ CLASS zcl_abaplint_backend DEFINITION
         start    TYPE ty_position,
       END OF ty_issue .
     TYPES:
-      ty_issues TYPE STANDARD TABLE OF ty_issue WITH DEFAULT KEY .
+      ty_issues TYPE STANDARD TABLE OF ty_issue WITH KEY table_line.
     TYPES:
       BEGIN OF ty_message,
         error   TYPE abap_bool,
@@ -98,7 +98,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD build_deps.
 
-    DATA lt_files TYPE STANDARD TABLE OF string WITH DEFAULT KEY.
+    DATA lt_files TYPE string_table.
     DATA lo_deps TYPE REF TO zcl_abaplint_deps.
     DATA lt_found TYPE zif_abapgit_definitions=>ty_files_tt.
 
