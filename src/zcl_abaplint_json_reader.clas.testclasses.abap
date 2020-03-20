@@ -18,6 +18,11 @@ CLASS ltcl_parser_test DEFINITION FINAL
     METHODS value_boolean FOR TESTING RAISING zcx_abaplint_error.
     METHODS members FOR TESTING RAISING zcx_abaplint_error.
 
+    DATA mt_exp TYPE zif_abaplint_json_reader=>ty_nodes_tt.
+    METHODS _exp
+      IMPORTING
+        iv_str TYPE string.
+
 ENDCLASS.
 
 CLASS zcl_abaplint_json_reader DEFINITION LOCAL FRIENDS ltcl_parser_test.
@@ -120,57 +125,68 @@ CLASS ltcl_parser_test IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD _exp.
+
+    FIELD-SYMBOLS <exp> LIKE LINE OF mt_exp.
+    DATA lv_children TYPE string.
+
+    APPEND INITIAL LINE TO mt_exp ASSIGNING <exp>.
+
+    SPLIT iv_str AT '|' INTO
+      <exp>-path
+      <exp>-name
+      <exp>-type
+      <exp>-value
+      lv_children.
+    CONDENSE <exp>-path.
+    CONDENSE <exp>-name.
+    CONDENSE <exp>-type.
+    CONDENSE <exp>-value.
+    <exp>-children = lv_children.
+
+  ENDMETHOD.
+
   METHOD parse.
 
     DATA lo_cut TYPE REF TO lcl_json_parser.
     DATA lt_act TYPE zif_abaplint_json_reader=>ty_nodes_tt.
-    DATA lt_exp LIKE lt_act.
-    FIELD-SYMBOLS <exp> LIKE LINE OF lt_exp.
 
-    DEFINE _exp.
-      APPEND INITIAL LINE TO lt_exp ASSIGNING <exp>.
-      <exp>-path = &1.
-      <exp>-name = &2.
-      <exp>-type = &3.
-      <exp>-value = &4.
-      <exp>-children = &5.
-    END-OF-DEFINITION.
-
-    _exp ''                 ''         'object' ''       8.
-    _exp '/'                'string'   'str'    'abc'    0.
-    _exp '/'                'number'   'num'    '123'    0.
-    _exp '/'                'float'    'num'    '123.45' 0.
-    _exp '/'                'boolean'  'bool'   'true'   0.
-    _exp '/'                'false'    'bool'   'false'  0.
-    _exp '/'                'null'     'null'   ''       0.
-    _exp '/'                'date'     'str'    '2020-03-15' 0.
-    _exp '/'                'issues'   'array'  ''       2.
-    _exp '/issues/'         '1'        'object' ''       5.
-    _exp '/issues/1/'       'message'  'str'    'Indentation problem ...' 0.
-    _exp '/issues/1/'       'key'      'str'    'indentation' 0.
-    _exp '/issues/1/'       'start'    'object' ''       2.
-    _exp '/issues/1/start/' 'row'      'num'    '4'      0.
-    _exp '/issues/1/start/' 'col'      'num'    '3'      0.
-    _exp '/issues/1/'       'end'      'object' ''       2.
-    _exp '/issues/1/end/'   'row'      'num'    '4'      0.
-    _exp '/issues/1/end/'   'col'      'num'    '26'     0.
-    _exp '/issues/1/'       'filename' 'str'    './zxxx.prog.abap' 0.
-    _exp '/issues/'         '2'        'object' ''       5.
-    _exp '/issues/2/'       'message'  'str'    'Remove space before XXX' 0.
-    _exp '/issues/2/'       'key'      'str'    'space_before_dot' 0.
-    _exp '/issues/2/'       'start'    'object' ''       2.
-    _exp '/issues/2/start/' 'row'      'num'    '3'      0.
-    _exp '/issues/2/start/' 'col'      'num'    '21'     0.
-    _exp '/issues/2/'       'end'      'object' ''       2.
-    _exp '/issues/2/end/'   'row'      'num'    '3'      0.
-    _exp '/issues/2/end/'   'col'      'num'    '22'     0.
-    _exp '/issues/2/'       'filename' 'str'    './zxxx.prog.abap' 0.
+    CLEAR mt_exp.
+    _exp( '                 |         |object |                        |8' ).
+    _exp( '/                |string   |str    |abc                     |0' ).
+    _exp( '/                |number   |num    |123                     |0' ).
+    _exp( '/                |float    |num    |123.45                  |0' ).
+    _exp( '/                |boolean  |bool   |true                    |0' ).
+    _exp( '/                |false    |bool   |false                   |0' ).
+    _exp( '/                |null     |null   |                        |0' ).
+    _exp( '/                |date     |str    |2020-03-15              |0' ).
+    _exp( '/                |issues   |array  |                        |2' ).
+    _exp( '/issues/         |1        |object |                        |5' ).
+    _exp( '/issues/1/       |message  |str    |Indentation problem ... |0' ).
+    _exp( '/issues/1/       |key      |str    |indentation             |0' ).
+    _exp( '/issues/1/       |start    |object |                        |2' ).
+    _exp( '/issues/1/start/ |row      |num    |4                       |0' ).
+    _exp( '/issues/1/start/ |col      |num    |3                       |0' ).
+    _exp( '/issues/1/       |end      |object |                        |2' ).
+    _exp( '/issues/1/end/   |row      |num    |4                       |0' ).
+    _exp( '/issues/1/end/   |col      |num    |26                      |0' ).
+    _exp( '/issues/1/       |filename |str    |./zxxx.prog.abap        |0' ).
+    _exp( '/issues/         |2        |object |                        |5' ).
+    _exp( '/issues/2/       |message  |str    |Remove space before XXX |0' ).
+    _exp( '/issues/2/       |key      |str    |space_before_dot        |0' ).
+    _exp( '/issues/2/       |start    |object |                        |2' ).
+    _exp( '/issues/2/start/ |row      |num    |3                       |0' ).
+    _exp( '/issues/2/start/ |col      |num    |21                      |0' ).
+    _exp( '/issues/2/       |end      |object |                        |2' ).
+    _exp( '/issues/2/end/   |row      |num    |3                       |0' ).
+    _exp( '/issues/2/end/   |col      |num    |22                      |0' ).
+    _exp( '/issues/2/       |filename |str    |./zxxx.prog.abap        |0' ).
 
     CREATE OBJECT lo_cut.
     lt_act = lo_cut->parse( gv_sample ).
     cl_abap_unit_assert=>assert_equals(
       act = lt_act
-      exp = lt_exp ).
+      exp = mt_exp ).
 
   ENDMETHOD.
 
