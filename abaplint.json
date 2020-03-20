@@ -25,7 +25,7 @@
     "allowed_object_types": true,
     "ambiguous_statement": true,
     "avoid_use": {
-      "define": false,
+      "define": true,
       "endselect": true,
       "defaultKey": true,
       "execSQL": true,
