@@ -5,7 +5,6 @@ class ZCX_ABAPLINT_ERROR definition
 
 public section.
 
-  interfaces IF_T100_DYN_MSG .
   interfaces IF_T100_MESSAGE .
 
   data MESSAGE type STRING .
@@ -24,7 +23,7 @@ ENDCLASS.
 CLASS ZCX_ABAPLINT_ERROR IMPLEMENTATION.
 
 
-  method CONSTRUCTOR.
+method CONSTRUCTOR.
 CALL METHOD SUPER->CONSTRUCTOR
 EXPORTING
 PREVIOUS = PREVIOUS
@@ -36,5 +35,5 @@ if textid is initial.
 else.
   IF_T100_MESSAGE~T100KEY = TEXTID.
 endif.
-  endmethod.
+endmethod.
 ENDCLASS.

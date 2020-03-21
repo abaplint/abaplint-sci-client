@@ -5,7 +5,7 @@ CLASS zcl_abaplint_abapgit DEFINITION
   PUBLIC SECTION.
 
     TYPES:
-      ty_devclass_tt TYPE STANDARD TABLE OF devclass WITH EMPTY KEY .
+      ty_devclass_tt TYPE STANDARD TABLE OF devclass WITH KEY table_line.
 
     METHODS fetch_config
       IMPORTING
@@ -29,12 +29,14 @@ CLASS ZCL_ABAPLINT_ABAPGIT IMPLEMENTATION.
   METHOD fetch_config.
 
     TRY.
-        DATA(lt_repos) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
+        DATA lt_repos TYPE zif_abapgit_definitions=>ty_repo_ref_tt.
+        lt_repos = zcl_abapgit_repo_srv=>get_instance( )->list( ).
       CATCH zcx_abapgit_exception.
         RETURN.
     ENDTRY.
 
-    LOOP AT lt_repos INTO DATA(lo_repo).
+    DATA lo_repo LIKE LINE OF lt_repos.
+    LOOP AT lt_repos INTO lo_repo.
       TRY.
           IF lo_repo->is_offline( ) = abap_true.
             CONTINUE.
@@ -44,8 +46,10 @@ CLASS ZCL_ABAPLINT_ABAPGIT IMPLEMENTATION.
       ENDTRY.
 
       IF lo_repo->get_package( ) = iv_devclass.
-        DATA(lt_files) = lo_repo->get_files_remote( ).
-        READ TABLE lt_files WITH KEY path = '/' filename = 'abaplint.json' INTO DATA(ls_file).
+        DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
+        DATA ls_file LIKE LINE OF lt_files.
+        lt_files = lo_repo->get_files_remote( ).
+        READ TABLE lt_files WITH KEY path = '/' filename = 'abaplint.json' INTO ls_file.
         IF sy-subrc = 0.
           rv_json = zcl_abapgit_convert=>xstring_to_string_utf8( ls_file-data ).
         ENDIF.
@@ -60,12 +64,14 @@ CLASS ZCL_ABAPLINT_ABAPGIT IMPLEMENTATION.
   METHOD list_online.
 
     TRY.
-        DATA(lt_repos) = zcl_abapgit_repo_srv=>get_instance( )->list( ).
+        DATA lt_repos TYPE zif_abapgit_definitions=>ty_repo_ref_tt.
+        lt_repos = zcl_abapgit_repo_srv=>get_instance( )->list( ).
       CATCH zcx_abapgit_exception.
         RETURN.
     ENDTRY.
 
-    LOOP AT lt_repos INTO DATA(lo_repo).
+    DATA lo_repo LIKE LINE OF lt_repos.
+    LOOP AT lt_repos INTO lo_repo.
       TRY.
           IF lo_repo->is_offline( ) = abap_true.
             CONTINUE.

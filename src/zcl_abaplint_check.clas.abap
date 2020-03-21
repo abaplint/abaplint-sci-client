@@ -74,11 +74,13 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD find_configuration.
 
+    DATA lv_devclass TYPE tadir-devclass.
+
     SELECT SINGLE devclass FROM tadir
-      INTO @DATA(lv_devclass)
+      INTO lv_devclass
       WHERE pgmid = 'R3TR'
-      AND object = @object_type
-      AND obj_name = @object_name.
+      AND object = object_type
+      AND obj_name = object_name.
     IF sy-subrc <> 0.
       RETURN.
     ENDIF.
@@ -106,7 +108,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD get_result_node.
 
-    p_result = NEW cl_ci_result_program( p_kind ).
+    CREATE OBJECT p_result EXPORTING p_kind = p_kind.
 
   ENDMETHOD.
 
@@ -150,20 +152,28 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     DATA: lv_sub_obj_type TYPE trobjtype,
           lv_sub_obj_name TYPE sobj_name.
 
+    DATA ls_issue LIKE LINE OF it_issues.
+    DATA lo_pih TYPE REF TO cl_oo_source_pos_index_helper.
+    DATA li_index_helper TYPE REF TO if_oo_source_pos_index_helper.
 
-    LOOP AT it_issues INTO DATA(ls_issue).
+    LOOP AT it_issues INTO ls_issue.
 
       CASE object_type.
         WHEN 'CLAS'.
 * todo, make sure the index exists?
 * todo, what if the issue is in the XML file?
 * todo, handle the 5 different global class includes
-          DATA(li_index_helper) = CAST if_oo_source_pos_index_helper( NEW cl_oo_source_pos_index_helper( ) ).
-          DATA(ls_position) = li_index_helper->get_class_include_by_position(
+          CREATE OBJECT lo_pih.
+          li_index_helper ?= lo_pih.
+
+          DATA ls_position TYPE if_oo_source_pos_index_helper=>ty_source_pos_index.
+          DATA lv_col TYPE i.
+          lv_col = ls_issue-start-col. " ??? how to avoid ?
+          ls_position = li_index_helper->get_class_include_by_position(
             class_name = object_name
             version    = 'A'
             line       = ls_issue-start-row
-            column     = CONV #( ls_issue-start-col ) ).
+            column     = lv_col ).
 
           lv_sub_obj_type = 'PROG'.
           lv_sub_obj_name = ls_position-include_name.
@@ -186,7 +196,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         p_test         = myname
         p_kind         = c_error
         p_param_1      = ls_issue-message
-        p_code         = CONV #( ls_issue-key ) ).
+        p_code         = |{ ls_issue-key }| ).
     ENDLOOP.
 
   ENDMETHOD.
@@ -194,7 +204,9 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD run.
 
-    DATA(lv_config) = find_configuration( ).
+    DATA lx_error TYPE REF TO zcx_abaplint_error.
+    DATA lv_config TYPE string.
+    lv_config = find_configuration( ).
 
     IF lv_config IS INITIAL.
       inform(
@@ -205,13 +217,16 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         p_code         = c_no_config ).
     ELSE.
       TRY.
-          DATA(lt_issues) = NEW zcl_abaplint_backend( )->check_object(
+          DATA lo_backend TYPE REF TO zcl_abaplint_backend.
+          DATA lt_issues TYPE zcl_abaplint_backend=>ty_issues.
+          CREATE OBJECT lo_backend.
+          lt_issues = lo_backend->check_object(
             iv_configuration = lv_config
             iv_object_type   = object_type
             iv_object_name   = object_name ).
 
           output_issues( lt_issues ).
-        CATCH zcx_abaplint_error INTO DATA(lx_error).
+        CATCH zcx_abaplint_error INTO lx_error.
           inform(
             p_test    = myname
             p_kind    = c_error

@@ -30,8 +30,9 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 
   METHOD find.
 
+    DATA lt_environment TYPE senvi_tab.
     IF iv_depth > 0.
-      DATA(lt_environment) = list(
+      lt_environment = list(
         iv_object_type = iv_object_type
         iv_object_name = iv_object_name
         iv_depth       = iv_depth ).
@@ -40,10 +41,11 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 * make sure itself is not a dependency of itself
     DELETE lt_environment WHERE type = iv_object_type AND object = iv_object_name.
 
-    LOOP AT lt_environment INTO DATA(ls_environment).
-      DATA(ls_files_item) = VALUE zcl_abapgit_objects=>ty_serialization(
-        item-obj_type = ls_environment-type
-        item-obj_name = ls_environment-object ).
+    DATA ls_environment LIKE LINE OF lt_environment.
+    DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
+    LOOP AT lt_environment INTO ls_environment.
+      ls_files_item-item-obj_type = ls_environment-type.
+      ls_files_item-item-obj_name = ls_environment-object.
 
       TRY.
           ls_files_item = zcl_abapgit_objects=>serialize(
@@ -92,11 +94,14 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
     DELETE rt_objects WHERE type = 'ACCO'.
 
     IF iv_depth > 1.
-      LOOP AT rt_objects INTO DATA(ls_environment).
-        APPEND LINES OF list(
-          iv_object_type = CONV #( ls_environment-type )
-          iv_object_name = CONV #( ls_environment-object )
-          iv_depth       = iv_depth - 1 ) TO lt_next.
+      DATA ls_environment LIKE LINE OF rt_objects.
+      DATA lt_obj_batch LIKE lt_next.
+      LOOP AT rt_objects INTO ls_environment.
+        lt_obj_batch = list(
+          iv_object_type = |{ ls_environment-type }|
+          iv_object_name = |{ ls_environment-object }|
+          iv_depth       = iv_depth - 1 ).
+        APPEND LINES OF lt_obj_batch TO lt_next.
       ENDLOOP.
 
       APPEND LINES OF lt_next TO rt_objects.
