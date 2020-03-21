@@ -11,8 +11,8 @@ FORM run RAISING zcx_abapgit_exception zcx_abaplint_error cx_salv_msg.
 
   DATA lt_total TYPE zcl_abaplint_backend=>ty_issues.
 
-*  DATA(lt_supported) = zcl_abapgit_objects=>supported_list( ).
-
+* todo, call zcl_abapgit_objects=>supported_list( ) to get the full list of supported
+* this will be required in the future to perform full checks
   DATA lt_supported TYPE zcl_abapgit_objects=>ty_types_tt.
   APPEND 'CLAS' TO lt_supported.
   APPEND 'PROG' TO lt_supported.
