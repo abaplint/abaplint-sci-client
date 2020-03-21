@@ -338,7 +338,7 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM test.
 
-  DATA cx TYPE REF TO zcx_abaplint_error.
+  DATA lx_cx TYPE REF TO zcx_abaplint_error.
   DATA lo_backend TYPE REF TO zcl_abaplint_backend.
   DATA ls_message TYPE zcl_abaplint_backend=>ty_message.
   CREATE OBJECT lo_backend EXPORTING is_config = zabaplint_glob_data.
@@ -350,8 +350,8 @@ FORM test.
       ELSE.
         MESSAGE ls_message-message TYPE 'S'.
       ENDIF.
-    CATCH zcx_abaplint_error INTO cx.
-      MESSAGE cx->message TYPE 'S' DISPLAY LIKE 'E'.
+    CATCH zcx_abaplint_error INTO lx_cx.
+      MESSAGE lx_cx->message TYPE 'S' DISPLAY LIKE 'E'.
   ENDTRY.
 
 
