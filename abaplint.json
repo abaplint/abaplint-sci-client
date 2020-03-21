@@ -214,7 +214,8 @@
     "prefix_is_current_class": true,
     "release_idoc": true,
     "remove_descriptions": {
-      "ignoreExceptions": false
+      "ignoreExceptions": false,
+      "exclude": ["zcx_abaplint_error"]
     },
     "rfc_error_handling": true,
     "selection_screen_naming": {
