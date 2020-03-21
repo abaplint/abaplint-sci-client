@@ -158,7 +158,7 @@
     "mix_returning": true,
     "msag_consistency": true,
     "nesting": {
-      "depth": 5
+      "depth": 6
     },
     "newline_between_methods": {
       "count": 3,
