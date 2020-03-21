@@ -27,7 +27,7 @@
     "avoid_use": {
       "define": true,
       "endselect": true,
-      "defaultKey": true,
+      "defaultKey": false,
       "execSQL": true,
       "break": true,
       "kernelCall": true,
