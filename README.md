@@ -16,7 +16,7 @@ It consist of 2 parts: (1) the abap backend (this repo), which integrates with S
 
 * Prerequisites: 
     * abapGit dev version must be installed (with all the separate classes, not a simple file version)
-    * ABAP731 required, potentially works with 702. Though downported json xml parser should be availble.
+    * ABAP731 required, potentially works with 702. Though downported json xml parser should be available.
 * Install on ABAP backend (this repo) using abapGit
 * Activate check in SCI -> Management of -> Tests
 * Adjust check variants, maintain connection to [abaplint-cloud-foundry](https://github.com/abaplint/abaplint-cloud-foundry)
