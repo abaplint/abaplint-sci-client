@@ -213,6 +213,20 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     DATA li_reader TYPE REF TO zif_abaplint_json_reader.
     li_reader = zcl_abaplint_json_reader=>parse( lv_response ).
 
+    IF li_reader->exists( '/success' ) = abap_false.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |Unexpected API response shape|.
+    ENDIF.
+
+    IF li_reader->value_integer( '/success' ) <> 1.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |API request failed: { li_reader->value_string( '/error/message' ) }|.
+    ENDIF.
+
+    li_reader = li_reader->sub_section( '/payload' ).
+
     DATA lt_issues TYPE string_table.
     DATA lv_issue LIKE LINE OF lt_issues.
     DATA lv_prefix TYPE string.
