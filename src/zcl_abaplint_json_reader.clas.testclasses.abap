@@ -227,7 +227,6 @@ CLASS ltcl_parser_test IMPLEMENTATION.
   METHOD sub_section.
 
     DATA lo_cut TYPE REF TO zcl_abaplint_json_reader.
-    DATA lt_act TYPE zif_abaplint_json_reader=>ty_nodes_tt.
 
     CLEAR mt_exp.
     _exp( '          |         |array  |                        |2' ).
