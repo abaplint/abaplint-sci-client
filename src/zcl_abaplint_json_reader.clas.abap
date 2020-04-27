@@ -160,7 +160,7 @@ CLASS ZCL_ABAPLINT_JSON_READER IMPLEMENTATION.
     ls_path_parts      = split_path( lv_normalized_path ).
 
     LOOP AT mt_json_tree INTO ls_item.
-      IF strlen( ls_item-path ) >= lv_path_len 
+      IF strlen( ls_item-path ) >= lv_path_len
           AND substring( val = ls_item-path len = lv_path_len ) = lv_normalized_path.
         ls_item-path = substring( val = ls_item-path off = lv_path_len - 1 ). " less closing '/'
         INSERT ls_item INTO TABLE lo_section->mt_json_tree.
