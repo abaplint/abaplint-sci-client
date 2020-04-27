@@ -67,9 +67,20 @@ CLASS zcl_abaplint_backend DEFINITION
         !iv_object_name TYPE sobj_name
       RETURNING
         VALUE(rv_files) TYPE string .
+    METHODS send_get
+      IMPORTING
+        !ii_client TYPE REF TO if_http_client
+      RAISING
+        zcx_abaplint_error .
+    METHODS send_post
+      IMPORTING
+        !ii_client TYPE REF TO if_http_client
+      RAISING
+        zcx_abaplint_error .
     METHODS send
       IMPORTING
         !ii_client TYPE REF TO if_http_client
+        !iv_method TYPE string
       RAISING
         zcx_abaplint_error .
     METHODS create_client
@@ -194,13 +205,27 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     li_client->request->set_cdata( lv_cdata ).
 
-    send( li_client ).
+    send_post( li_client ).
 
     DATA lv_response TYPE string.
     lv_response = li_client->response->get_cdata( ).
 
     DATA li_reader TYPE REF TO zif_abaplint_json_reader.
     li_reader = zcl_abaplint_json_reader=>parse( lv_response ).
+
+    IF li_reader->exists( '/success' ) = abap_false.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |Unexpected API response shape|.
+    ENDIF.
+
+    IF li_reader->value_integer( '/success' ) <> 1.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |API request failed: { li_reader->value_string( '/error/message' ) }|.
+    ENDIF.
+
+    li_reader = li_reader->sub_section( '/payload' ).
 
     DATA lt_issues TYPE string_table.
     DATA lv_issue LIKE LINE OF lt_issues.
@@ -280,7 +305,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
     TRY.
-        send( li_client ).
+        send_get( li_client ).
         rs_message-message = li_client->response->get_cdata( ).
         rs_message-error   = abap_false.
       CATCH zcx_abaplint_error INTO lx_error.
@@ -295,21 +320,29 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD send.
 
+    ii_client->request->set_method( iv_method ).
     ii_client->request->set_header_field(
       name  = 'content-type'
       value = 'application/json' ).
-    ii_client->request->set_header_field(
-      name  = '~request_method'
-      value = 'POST' ).
 
-    ii_client->send( timeout = 6000 ).
-
-    ii_client->receive(
+    ii_client->send(
+      EXPORTING
+        timeout = 6000
       EXCEPTIONS
         http_communication_failure = 1
         http_invalid_state         = 2
         http_processing_failed     = 3
-        OTHERS                     = 4 ).
+        http_invalid_timeout       = 4
+        OTHERS                     = 5 ).
+    IF sy-subrc  = 0.
+      ii_client->receive(
+        EXCEPTIONS
+          http_communication_failure = 1
+          http_invalid_state         = 2
+          http_processing_failed     = 3
+          OTHERS                     = 4 ).
+    ENDIF.
+
     IF sy-subrc <> 0.
       DATA lv_ecode TYPE i.
       DATA lv_emessage TYPE string.
@@ -329,7 +362,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       IMPORTING
         code   = lv_scode
         reason = lv_sreason ).
-    IF lv_scode <> 200.
+    IF lv_scode < 200 OR lv_scode >= 300.
       DATA lv_error_response TYPE string.
       lv_error_response = ii_client->response->get_cdata( ). " good for debugging
 
@@ -338,5 +371,19 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
           message = |{ lv_scode } { lv_sreason }|.
     ENDIF.
 
+  ENDMETHOD.
+
+
+  METHOD send_get.
+    send(
+      ii_client = ii_client
+      iv_method = if_http_request=>co_request_method_get ).
+  ENDMETHOD.
+
+
+  METHOD send_post.
+    send(
+      ii_client = ii_client
+      iv_method = if_http_request=>co_request_method_post ).
   ENDMETHOD.
 ENDCLASS.

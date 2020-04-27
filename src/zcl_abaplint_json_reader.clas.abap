@@ -1,6 +1,6 @@
 CLASS zcl_abaplint_json_reader DEFINITION
   PUBLIC
-  CREATE PUBLIC .
+  CREATE PRIVATE .
 
   PUBLIC SECTION.
 
@@ -11,12 +11,6 @@ CLASS zcl_abaplint_json_reader DEFINITION
         iv_json TYPE string
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abaplint_json_reader
-      RAISING
-        zcx_abaplint_error.
-
-    METHODS constructor
-      IMPORTING
-        iv_json TYPE string
       RAISING
         zcx_abaplint_error.
 
@@ -55,15 +49,6 @@ ENDCLASS.
 CLASS ZCL_ABAPLINT_JSON_READER IMPLEMENTATION.
 
 
-  METHOD constructor.
-
-    DATA lo_parser TYPE REF TO lcl_json_parser.
-    CREATE OBJECT lo_parser.
-    mt_json_tree = lo_parser->parse( iv_json ).
-
-  ENDMETHOD.
-
-
   METHOD get_item.
 
     FIELD-SYMBOLS <item> LIKE LINE OF mt_json_tree.
@@ -100,7 +85,11 @@ CLASS ZCL_ABAPLINT_JSON_READER IMPLEMENTATION.
 
   METHOD parse.
 
-    CREATE OBJECT ro_instance EXPORTING iv_json = iv_json.
+    DATA lo_parser TYPE REF TO lcl_json_parser.
+
+    CREATE OBJECT ro_instance.
+    CREATE OBJECT lo_parser.
+    ro_instance->mt_json_tree = lo_parser->parse( iv_json ).
 
   ENDMETHOD.
 
@@ -108,15 +97,26 @@ CLASS ZCL_ABAPLINT_JSON_READER IMPLEMENTATION.
   METHOD split_path.
 
     DATA lv_offs TYPE i.
+    DATA lv_len TYPE i.
+    DATA lv_trim_slash TYPE i.
 
-    lv_offs = find( val = reverse( iv_path ) sub = '/' ).
-    IF lv_offs = -1.
-      lv_offs = 0.
+    lv_len = strlen( iv_path ).
+    IF lv_len = 0 OR iv_path = '/'.
+      RETURN. " empty path is the alias for root item = '' + ''
     ENDIF.
-    lv_offs = strlen( iv_path ) - lv_offs.
+
+    IF substring( val = iv_path off = lv_len - 1 ) = '/'.
+      lv_trim_slash = 1. " ignore last '/'
+    ENDIF.
+
+    lv_offs = find( val = reverse( iv_path ) sub = '/' off = lv_trim_slash ).
+    IF lv_offs = -1.
+      lv_offs  = lv_len. " treat whole string as the 'name' part
+    ENDIF.
+    lv_offs = lv_len - lv_offs.
 
     rv_path_name-path = normalize_path( substring( val = iv_path len = lv_offs ) ).
-    rv_path_name-name = substring( val = iv_path off = lv_offs ).
+    rv_path_name-name = substring( val = iv_path off = lv_offs len = lv_len - lv_offs - lv_trim_slash ).
 
   ENDMETHOD.
 
@@ -142,6 +142,35 @@ CLASS ZCL_ABAPLINT_JSON_READER IMPLEMENTATION.
     LOOP AT mt_json_tree ASSIGNING <item> WHERE path = lv_normalized_path.
       APPEND <item>-name TO rt_members.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD zif_abaplint_json_reader~sub_section.
+
+    DATA lo_section         TYPE REF TO zcl_abaplint_json_reader.
+    DATA ls_item            LIKE LINE OF mt_json_tree.
+    DATA lv_normalized_path TYPE string.
+    DATA ls_path_parts      TYPE ty_path_name.
+    DATA lv_path_len        TYPE i.
+
+    CREATE OBJECT lo_section.
+    lv_normalized_path = normalize_path( iv_path ).
+    lv_path_len        = strlen( lv_normalized_path ).
+    ls_path_parts      = split_path( lv_normalized_path ).
+
+    LOOP AT mt_json_tree INTO ls_item.
+      IF strlen( ls_item-path ) >= lv_path_len
+          AND substring( val = ls_item-path len = lv_path_len ) = lv_normalized_path.
+        ls_item-path = substring( val = ls_item-path off = lv_path_len - 1 ). " less closing '/'
+        INSERT ls_item INTO TABLE lo_section->mt_json_tree.
+      ELSEIF ls_item-path = ls_path_parts-path AND ls_item-name = ls_path_parts-name.
+        CLEAR: ls_item-path, ls_item-name. " this becomes a new root
+        INSERT ls_item INTO TABLE lo_section->mt_json_tree.
+      ENDIF.
+    ENDLOOP.
+
+    ri_json = lo_section.
 
   ENDMETHOD.
 

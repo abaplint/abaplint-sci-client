@@ -17,6 +17,7 @@ CLASS ltcl_parser_test DEFINITION FINAL
     METHODS value_integer FOR TESTING RAISING zcx_abaplint_error.
     METHODS value_boolean FOR TESTING RAISING zcx_abaplint_error.
     METHODS members FOR TESTING RAISING zcx_abaplint_error.
+    METHODS sub_section FOR TESTING RAISING zcx_abaplint_error.
 
     DATA mt_exp TYPE zif_abaplint_json_reader=>ty_nodes_tt.
     METHODS _exp
@@ -55,29 +56,62 @@ CLASS ltcl_parser_test IMPLEMENTATION.
   METHOD split_path.
 
     DATA ls_exp TYPE zcl_abaplint_json_reader=>ty_path_name.
+    DATA lv_path TYPE string.
 
-    ls_exp-path = '/'.
+    lv_path     = ''. " alias to root
+    ls_exp-path = ''.
     ls_exp-name = ''.
     cl_abap_unit_assert=>assert_equals(
-      act = zcl_abaplint_json_reader=>split_path( '/' )
+      act = zcl_abaplint_json_reader=>split_path( lv_path )
       exp = ls_exp ).
 
+    lv_path     = '/'.
+    ls_exp-path = ''.
+    ls_exp-name = ''.
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abaplint_json_reader=>split_path( lv_path )
+      exp = ls_exp ).
+
+    lv_path     = '/abc/'.
+    ls_exp-path = '/'.
+    ls_exp-name = 'abc'.
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abaplint_json_reader=>split_path( lv_path )
+      exp = ls_exp ).
+
+    lv_path     = 'abc'.
+    ls_exp-path = '/'.
+    ls_exp-name = 'abc'.
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abaplint_json_reader=>split_path( lv_path )
+      exp = ls_exp ).
+
+    lv_path     = '/abc'.
+    ls_exp-path = '/'.
+    ls_exp-name = 'abc'.
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abaplint_json_reader=>split_path( lv_path )
+      exp = ls_exp ).
+
+    lv_path     = 'abc/'.
+    ls_exp-path = '/'.
+    ls_exp-name = 'abc'.
+    cl_abap_unit_assert=>assert_equals(
+      act = zcl_abaplint_json_reader=>split_path( lv_path )
+      exp = ls_exp ).
+
+    lv_path     = '/abc/xyz'.
     ls_exp-path = '/abc/'.
     ls_exp-name = 'xyz'.
     cl_abap_unit_assert=>assert_equals(
-      act = zcl_abaplint_json_reader=>split_path( '/abc/xyz' )
+      act = zcl_abaplint_json_reader=>split_path( lv_path )
       exp = ls_exp ).
 
+    lv_path     = '/abc/xyz/'.
     ls_exp-path = '/abc/'.
-    ls_exp-name = ''.
+    ls_exp-name = 'xyz'.
     cl_abap_unit_assert=>assert_equals(
-      act = zcl_abaplint_json_reader=>split_path( '/abc/' )
-      exp = ls_exp ).
-
-    ls_exp-path = '/abc/xyz/'.
-    ls_exp-name = ''.
-    cl_abap_unit_assert=>assert_equals(
-      act = zcl_abaplint_json_reader=>split_path( '/abc/xyz/' )
+      act = zcl_abaplint_json_reader=>split_path( lv_path )
       exp = ls_exp ).
 
   ENDMETHOD.
@@ -190,6 +224,96 @@ CLASS ltcl_parser_test IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD sub_section.
+
+    DATA lo_cut TYPE REF TO zcl_abaplint_json_reader.
+
+    CLEAR mt_exp.
+    _exp( '          |         |array  |                        |2' ).
+    _exp( '/         |1        |object |                        |5' ).
+    _exp( '/1/       |message  |str    |Indentation problem ... |0' ).
+    _exp( '/1/       |key      |str    |indentation             |0' ).
+    _exp( '/1/       |start    |object |                        |2' ).
+    _exp( '/1/start/ |row      |num    |4                       |0' ).
+    _exp( '/1/start/ |col      |num    |3                       |0' ).
+    _exp( '/1/       |end      |object |                        |2' ).
+    _exp( '/1/end/   |row      |num    |4                       |0' ).
+    _exp( '/1/end/   |col      |num    |26                      |0' ).
+    _exp( '/1/       |filename |str    |./zxxx.prog.abap        |0' ).
+    _exp( '/         |2        |object |                        |5' ).
+    _exp( '/2/       |message  |str    |Remove space before XXX |0' ).
+    _exp( '/2/       |key      |str    |space_before_dot        |0' ).
+    _exp( '/2/       |start    |object |                        |2' ).
+    _exp( '/2/start/ |row      |num    |3                       |0' ).
+    _exp( '/2/start/ |col      |num    |21                      |0' ).
+    _exp( '/2/       |end      |object |                        |2' ).
+    _exp( '/2/end/   |row      |num    |3                       |0' ).
+    _exp( '/2/end/   |col      |num    |22                      |0' ).
+    _exp( '/2/       |filename |str    |./zxxx.prog.abap        |0' ).
+    SORT mt_exp BY path name. " Imitate sorted tab
+
+    lo_cut = zcl_abaplint_json_reader=>parse( gv_sample ).
+    lo_cut ?= lo_cut->zif_abaplint_json_reader~sub_section( '/issues' ).
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_cut->mt_json_tree
+      exp = mt_exp ).
+
+    " **********************************************************************
+
+    CLEAR mt_exp.
+    _exp( '                 |         |object |                        |8' ).
+    _exp( '/                |string   |str    |abc                     |0' ).
+    _exp( '/                |number   |num    |123                     |0' ).
+    _exp( '/                |float    |num    |123.45                  |0' ).
+    _exp( '/                |boolean  |bool   |true                    |0' ).
+    _exp( '/                |false    |bool   |false                   |0' ).
+    _exp( '/                |null     |null   |                        |0' ).
+    _exp( '/                |date     |str    |2020-03-15              |0' ).
+    _exp( '/                |issues   |array  |                        |2' ).
+    _exp( '/issues/         |1        |object |                        |5' ).
+    _exp( '/issues/1/       |message  |str    |Indentation problem ... |0' ).
+    _exp( '/issues/1/       |key      |str    |indentation             |0' ).
+    _exp( '/issues/1/       |start    |object |                        |2' ).
+    _exp( '/issues/1/start/ |row      |num    |4                       |0' ).
+    _exp( '/issues/1/start/ |col      |num    |3                       |0' ).
+    _exp( '/issues/1/       |end      |object |                        |2' ).
+    _exp( '/issues/1/end/   |row      |num    |4                       |0' ).
+    _exp( '/issues/1/end/   |col      |num    |26                      |0' ).
+    _exp( '/issues/1/       |filename |str    |./zxxx.prog.abap        |0' ).
+    _exp( '/issues/         |2        |object |                        |5' ).
+    _exp( '/issues/2/       |message  |str    |Remove space before XXX |0' ).
+    _exp( '/issues/2/       |key      |str    |space_before_dot        |0' ).
+    _exp( '/issues/2/       |start    |object |                        |2' ).
+    _exp( '/issues/2/start/ |row      |num    |3                       |0' ).
+    _exp( '/issues/2/start/ |col      |num    |21                      |0' ).
+    _exp( '/issues/2/       |end      |object |                        |2' ).
+    _exp( '/issues/2/end/   |row      |num    |3                       |0' ).
+    _exp( '/issues/2/end/   |col      |num    |22                      |0' ).
+    _exp( '/issues/2/       |filename |str    |./zxxx.prog.abap        |0' ).
+    SORT mt_exp BY path name. " Imitate sorted tab
+
+    lo_cut = zcl_abaplint_json_reader=>parse( gv_sample ).
+    lo_cut ?= lo_cut->zif_abaplint_json_reader~sub_section( '/' ).
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_cut->mt_json_tree
+      exp = mt_exp ).
+
+    " **********************************************************************
+
+    CLEAR mt_exp.
+    _exp( '  |         |object |                        |2' ).
+    _exp( '/ |row      |num    |3                       |0' ).
+    _exp( '/ |col      |num    |21                      |0' ).
+    SORT mt_exp BY path name. " Imitate sorted tab
+
+    lo_cut = zcl_abaplint_json_reader=>parse( gv_sample ).
+    lo_cut ?= lo_cut->zif_abaplint_json_reader~sub_section( '/issues/2/start/' ).
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_cut->mt_json_tree
+      exp = mt_exp ).
+
+  ENDMETHOD.
+
   METHOD get_value.
 
     DATA lo_cut TYPE REF TO zif_abaplint_json_reader.
@@ -201,7 +325,7 @@ CLASS ltcl_parser_test IMPLEMENTATION.
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_cut->value( '/string/' )
-      exp = '' ).
+      exp = 'abc' ). " Hmmm ?
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_cut->value( '/boolean' )
@@ -225,7 +349,7 @@ CLASS ltcl_parser_test IMPLEMENTATION.
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_cut->exists( '/string/' )
-      exp = abap_false ).
+      exp = abap_true ). " mmmm ?
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_cut->exists( '/xxx' )

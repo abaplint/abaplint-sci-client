@@ -48,5 +48,10 @@ INTERFACE zif_abaplint_json_reader
       !iv_path TYPE string
     RETURNING
       VALUE(rv_value) TYPE string .
+  METHODS sub_section
+    IMPORTING
+      !iv_path TYPE string
+    RETURNING
+      VALUE(ri_json) TYPE REF TO zif_abaplint_json_reader .
 
 ENDINTERFACE.
