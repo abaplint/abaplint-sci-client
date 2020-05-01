@@ -296,24 +296,20 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD ping.
 
-    DATA li_client TYPE REF TO if_http_client.
-    li_client = create_client( ).
-
-    cl_http_utility=>set_request_uri(
-      request = li_client->request
-      uri     = |/api/v1/ping| ).
-
     DATA lx_error TYPE REF TO zcx_abaplint_error.
+    DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
+    DATA li_json TYPE REF TO zif_abaplint_json_reader.
+
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+
     TRY.
-        send_get( li_client ).
-        rs_message-message = li_client->response->get_cdata( ).
+        li_json = lo_agent->request( '/api/v1/ping' ).
+        rs_message-message = li_json->value_string( '' ).
         rs_message-error   = abap_false.
       CATCH zcx_abaplint_error INTO lx_error.
         rs_message-message = lx_error->message.
         rs_message-error   = abap_true.
     ENDTRY.
-
-    li_client->close( ).
 
   ENDMETHOD.
 
