@@ -172,13 +172,6 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA li_client TYPE REF TO if_http_client.
-    li_client = create_client( ).
-
-    cl_http_utility=>set_request_uri(
-      request = li_client->request
-      uri     = |/api/v1/check_file| ).
-
     DATA lv_files TYPE string.
     lv_files = build_files(
       iv_object_type = iv_object_type
@@ -203,48 +196,31 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       |  "files": { lv_files }\n| &&
       |\}|.
 
-    li_client->request->set_cdata( lv_cdata ).
+    DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
+    DATA li_json TYPE REF TO zif_abaplint_json_reader.
 
-    send_post( li_client ).
-
-    DATA lv_response TYPE string.
-    lv_response = li_client->response->get_cdata( ).
-
-    DATA li_reader TYPE REF TO zif_abaplint_json_reader.
-    li_reader = zcl_abaplint_json_reader=>parse( lv_response ).
-
-    IF li_reader->exists( '/success' ) = abap_false.
-      RAISE EXCEPTION TYPE zcx_abaplint_error
-        EXPORTING
-          message = |Unexpected API response shape|.
-    ENDIF.
-
-    IF li_reader->value_integer( '/success' ) <> 1.
-      RAISE EXCEPTION TYPE zcx_abaplint_error
-        EXPORTING
-          message = |API request failed: { li_reader->value_string( '/error/message' ) }|.
-    ENDIF.
-
-    li_reader = li_reader->sub_section( '/payload' ).
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+    li_json = lo_agent->request(
+      iv_method = if_http_request=>co_request_method_post
+      iv_uri    = '/api/v1/check_file'
+      iv_payload = lv_cdata ).
 
     DATA lt_issues TYPE string_table.
     DATA lv_issue LIKE LINE OF lt_issues.
     DATA lv_prefix TYPE string.
     FIELD-SYMBOLS <issue> LIKE LINE OF rt_issues.
 
-    lt_issues = li_reader->members( '/issues' ).
+    lt_issues = li_json->members( '/issues' ).
 
     LOOP AT lt_issues INTO lv_issue.
       lv_prefix = '/issues/' && lv_issue.
       APPEND INITIAL LINE TO rt_issues ASSIGNING <issue>.
-      <issue>-message   = li_reader->value_string( lv_prefix && '/message' ).
-      <issue>-key       = li_reader->value_string( lv_prefix && '/key' ).
-      <issue>-filename  = li_reader->value_string( lv_prefix && '/filename' ).
-      <issue>-start-row = li_reader->value_string( lv_prefix && '/start/row' ).
-      <issue>-start-col = li_reader->value_string( lv_prefix && '/start/col' ).
+      <issue>-message   = li_json->value_string( lv_prefix && '/message' ).
+      <issue>-key       = li_json->value_string( lv_prefix && '/key' ).
+      <issue>-filename  = li_json->value_string( lv_prefix && '/filename' ).
+      <issue>-start-row = li_json->value_string( lv_prefix && '/start/row' ).
+      <issue>-start-col = li_json->value_string( lv_prefix && '/start/col' ).
     ENDLOOP.
-
-    li_client->close( ).
 
   ENDMETHOD.
 

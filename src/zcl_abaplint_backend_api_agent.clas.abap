@@ -15,7 +15,7 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT DEFINITION
         iv_method TYPE string DEFAULT if_http_request=>co_request_method_get
         " TODO query ?
         " TODO headers ?
-        iv_json TYPE string OPTIONAL
+        iv_payload TYPE string OPTIONAL
       RETURNING
         VALUE(ro_json) TYPE REF TO zif_abaplint_json_reader
       RAISING
@@ -137,6 +137,10 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
     li_client->request->set_header_field(
       name  = 'content-type'
       value = 'application/json' ).
+
+    IF iv_method = 'POST' AND iv_payload IS NOT INITIAL. " OR PUT ... maybe in future
+      li_client->request->set_cdata( iv_payload ).
+    ENDIF.
 
     send_receive( li_client ).
     ro_json = parse_response( li_client->response ).
