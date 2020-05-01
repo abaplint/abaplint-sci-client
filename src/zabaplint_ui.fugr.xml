@@ -304,6 +304,9 @@
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW>
+       <LINE>MODULE init_3000.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
        <LINE>MODULE status_3000.</LINE>
       </RPY_DYFLOW>
       <RPY_DYFLOW/>
@@ -316,6 +319,7 @@
      </FLOW_LOGIC>
      <SPACES>
       <item>0</item>
+      <item>2</item>
       <item>2</item>
       <item>0</item>
       <item>0</item>

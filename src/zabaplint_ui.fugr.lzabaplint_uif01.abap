@@ -285,6 +285,15 @@ FORM init_2000.
 
 ENDFORM.
 
+FORM init_3000.
+
+  DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+
+  CREATE OBJECT lo_config.
+  zabaplint_glob_data = lo_config->get_global( ).
+
+ENDFORM.
+
 *&---------------------------------------------------------------------*
 *& Form ADD_RAW
 *&---------------------------------------------------------------------*

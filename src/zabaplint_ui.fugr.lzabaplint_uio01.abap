@@ -20,6 +20,10 @@ MODULE init_2000 OUTPUT.
   PERFORM init_2000.
 ENDMODULE.
 
+MODULE init_3000 OUTPUT.
+  PERFORM init_3000.
+ENDMODULE.
+
 *&---------------------------------------------------------------------*
 *& Module STATUS_3000 OUTPUT
 *&---------------------------------------------------------------------*
