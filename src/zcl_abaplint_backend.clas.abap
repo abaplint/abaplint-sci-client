@@ -67,27 +67,7 @@ CLASS zcl_abaplint_backend DEFINITION
         !iv_object_name TYPE sobj_name
       RETURNING
         VALUE(rv_files) TYPE string .
-    METHODS send_get
-      IMPORTING
-        !ii_client TYPE REF TO if_http_client
-      RAISING
-        zcx_abaplint_error .
-    METHODS send_post
-      IMPORTING
-        !ii_client TYPE REF TO if_http_client
-      RAISING
-        zcx_abaplint_error .
-    METHODS send
-      IMPORTING
-        !ii_client TYPE REF TO if_http_client
-        !iv_method TYPE string
-      RAISING
-        zcx_abaplint_error .
-    METHODS create_client
-      RETURNING
-        VALUE(ri_client) TYPE REF TO if_http_client
-      RAISING
-        zcx_abaplint_error .
+
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -238,29 +218,6 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD create_client.
-
-    cl_http_client=>create_by_url(
-      EXPORTING
-        url                = |{ ms_config-url }|
-        ssl_id             = 'ANONYM'
-      IMPORTING
-        client             = ri_client
-      EXCEPTIONS
-        argument_not_found = 1
-        plugin_not_active  = 2
-        internal_error     = 3
-        OTHERS             = 4 ).
-
-    IF sy-subrc <> 0.
-      RAISE EXCEPTION TYPE zcx_abaplint_error
-        EXPORTING
-          message = |Create_client error: sy-subrc={ sy-subrc }, url={ ms_config-url }|.
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD escape.
 
     rv_output = iv_input.
@@ -287,75 +244,5 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
         rs_message-error   = abap_true.
     ENDTRY.
 
-  ENDMETHOD.
-
-
-  METHOD send.
-
-    ii_client->request->set_method( iv_method ).
-    ii_client->request->set_header_field(
-      name  = 'content-type'
-      value = 'application/json' ).
-
-    ii_client->send(
-      EXPORTING
-        timeout = 6000
-      EXCEPTIONS
-        http_communication_failure = 1
-        http_invalid_state         = 2
-        http_processing_failed     = 3
-        http_invalid_timeout       = 4
-        OTHERS                     = 5 ).
-    IF sy-subrc  = 0.
-      ii_client->receive(
-        EXCEPTIONS
-          http_communication_failure = 1
-          http_invalid_state         = 2
-          http_processing_failed     = 3
-          OTHERS                     = 4 ).
-    ENDIF.
-
-    IF sy-subrc <> 0.
-      DATA lv_ecode TYPE i.
-      DATA lv_emessage TYPE string.
-      ii_client->get_last_error(
-        IMPORTING
-          code    = lv_ecode
-          message = lv_emessage ).
-
-      RAISE EXCEPTION TYPE zcx_abaplint_error
-        EXPORTING
-          message = |{ lv_ecode } { lv_emessage }|.
-    ENDIF.
-
-    DATA lv_scode TYPE i.
-    DATA lv_sreason TYPE string.
-    ii_client->response->get_status(
-      IMPORTING
-        code   = lv_scode
-        reason = lv_sreason ).
-    IF lv_scode < 200 OR lv_scode >= 300.
-      DATA lv_error_response TYPE string.
-      lv_error_response = ii_client->response->get_cdata( ). " good for debugging
-
-      RAISE EXCEPTION TYPE zcx_abaplint_error
-        EXPORTING
-          message = |{ lv_scode } { lv_sreason }|.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD send_get.
-    send(
-      ii_client = ii_client
-      iv_method = if_http_request=>co_request_method_get ).
-  ENDMETHOD.
-
-
-  METHOD send_post.
-    send(
-      ii_client = ii_client
-      iv_method = if_http_request=>co_request_method_post ).
   ENDMETHOD.
 ENDCLASS.
