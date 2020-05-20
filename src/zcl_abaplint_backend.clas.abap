@@ -73,7 +73,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
+CLASS zcl_abaplint_backend IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -193,7 +193,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     lt_issues = li_json->members( '/issues' ).
 
     LOOP AT lt_issues INTO lv_issue.
-      lv_prefix = '/issues/' && lv_issue.
+      lv_prefix = '/issues/' && lv_issue && '/data'.
       APPEND INITIAL LINE TO rt_issues ASSIGNING <issue>.
       <issue>-message   = li_json->value_string( lv_prefix && '/message' ).
       <issue>-key       = li_json->value_string( lv_prefix && '/key' ).
