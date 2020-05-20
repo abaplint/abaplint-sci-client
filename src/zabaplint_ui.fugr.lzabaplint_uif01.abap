@@ -14,14 +14,14 @@ CLASS lcl_editor DEFINITION FINAL.
 
   PRIVATE SECTION.
     CLASS-DATA:
-      mv_devclass TYPE devclass.
+      gv_devclass TYPE devclass.
 
 ENDCLASS.
 
 CLASS lcl_editor IMPLEMENTATION.
 
   METHOD get_devclass.
-    rv_devclass = mv_devclass.
+    rv_devclass = gv_devclass.
   ENDMETHOD.
 
   METHOD is_dirty.
@@ -29,7 +29,7 @@ CLASS lcl_editor IMPLEMENTATION.
     DATA: lv_status TYPE i.
 
 
-    IF mv_devclass IS INITIAL.
+    IF gv_devclass IS INITIAL.
       rv_dirty = abap_false.
       RETURN.
     ENDIF.
@@ -69,7 +69,7 @@ CLASS lcl_editor IMPLEMENTATION.
     DATA lo_config TYPE REF TO zcl_abaplint_configuration.
     CREATE OBJECT lo_config.
     lo_config->change_package(
-      iv_devclass = mv_devclass
+      iv_devclass = gv_devclass
       iv_json     = lv_string ).
     MESSAGE s000(zabaplint).
 
@@ -87,7 +87,7 @@ CLASS lcl_editor IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    mv_devclass = iv_devclass.
+    gv_devclass = iv_devclass.
 
     go_editor->set_enable( abap_true ).
 
@@ -99,7 +99,7 @@ CLASS lcl_editor IMPLEMENTATION.
 
     DATA lo_config TYPE REF TO zcl_abaplint_configuration.
     CREATE OBJECT lo_config.
-    lv_content = lo_config->read_package( mv_devclass ).
+    lv_content = lo_config->read_package( gv_devclass ).
 
     go_editor->set_textstream( lv_content ).
     go_editor->set_focus( go_editor ).
@@ -125,7 +125,7 @@ CLASS lcl_tree_content DEFINITION FINAL.
              text TYPE string,
            END OF ty_package.
 
-    CLASS-DATA: mt_packages TYPE STANDARD TABLE OF ty_package WITH DEFAULT KEY.
+    CLASS-DATA: gt_packages TYPE STANDARD TABLE OF ty_package WITH DEFAULT KEY.
 
     CLASS-METHODS:
       build
@@ -138,9 +138,9 @@ CLASS lcl_tree_content IMPLEMENTATION.
 
   METHOD get_by_key.
 
-    DATA: ls_package LIKE LINE OF mt_packages.
+    DATA: ls_package LIKE LINE OF gt_packages.
 
-    READ TABLE mt_packages INTO ls_package WITH KEY key = iv_key.
+    READ TABLE gt_packages INTO ls_package WITH KEY key = iv_key.
     ASSERT sy-subrc = 0.
 
     rv_devc = ls_package-text.
@@ -196,8 +196,8 @@ CLASS lcl_tree_content IMPLEMENTATION.
 
     find_config( ).
 
-    DATA ls_smim LIKE LINE OF mt_packages.
-    LOOP AT mt_packages INTO ls_smim.
+    DATA ls_smim LIKE LINE OF gt_packages.
+    LOOP AT gt_packages INTO ls_smim.
       ls_node-node_key = ls_smim-key.
       ls_node-text     = ls_smim-text.
       APPEND ls_node TO rt_nodes.
@@ -209,19 +209,19 @@ CLASS lcl_tree_content IMPLEMENTATION.
 
     DATA: lv_index TYPE i.
 
-    CLEAR mt_packages.
+    CLEAR gt_packages.
 
     DATA lo_config TYPE REF TO zcl_abaplint_configuration.
     DATA lt_packages TYPE zcl_abaplint_configuration=>ty_packages.
     DATA ls_package LIKE LINE OF lt_packages.
-    FIELD-SYMBOLS <pkg> LIKE LINE OF mt_packages.
+    FIELD-SYMBOLS <pkg> LIKE LINE OF gt_packages.
 
     CREATE OBJECT lo_config.
     lt_packages = lo_config->list_packages( ).
 
     LOOP AT lt_packages INTO ls_package.
       lv_index = sy-tabix.
-      APPEND INITIAL LINE TO mt_packages ASSIGNING <pkg>.
+      APPEND INITIAL LINE TO gt_packages ASSIGNING <pkg>.
       <pkg>-key  = |KEY{ lv_index }|.
       <pkg>-text = ls_package-devclass.
     ENDLOOP.
