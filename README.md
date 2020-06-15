@@ -12,6 +12,8 @@ It consist of 2 parts: (1) the abap backend (this repo), which integrates with S
 
 **Important:** the code under test leaves your abap instance! Be sure to use secure and controllable abaplint server. For a test you might use common one: [http://sci.abaplint.org/](http://sci.abaplint.org/) (but please don't post any proprietary code).
 
+Dependencies from `abaplint.json` are ignored when running via SCI, instead the dependencies are taken from the running ABAP system.
+
 ## Installation
 
 * Prerequisites: 
