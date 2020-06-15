@@ -8,7 +8,7 @@
   "dependencies": [
     {
       "url": "https://github.com/abaplint/deps",
-      "folder": "/deps",
+      "folder": "/deps1",
       "files": "/src/**/*.*"
     },
     {
@@ -24,6 +24,14 @@
     "globalMacros": []
   },
   "rules": {
+    "definitions_top": false,
+    "downport": false,
+    "forbidden_identifier": false,
+    "forbidden_void_type": false,
+    "line_break_multiple_parameters": false,
+    "prefer_inline": false,
+    "try_without_catch": true,
+    "unknown_types": true,
     "7bit_ascii": true,
     "abapdoc": false,
     "allowed_object_naming": true,
@@ -50,15 +58,7 @@
     "check_syntax": true,
     "check_text_elements": true,
     "check_transformation_exists": true,
-    "class_attribute_names": {
-
-      "patternKind": "required",
-      "ignoreNames": [],
-      "ignorePatterns": [],
-      "ignoreExceptions": true,
-      "statics": "^G._.+$",
-      "instance": "^M._.+$"
-    },
+    "class_attribute_names": true,
     "cloud_types": true,
     "colon_missing_space": true,
     "commented_code": true,
@@ -112,14 +112,7 @@
     "keep_single_parameter_on_one_line": {
       "length": 120
     },
-    "keyword_case": {
-      "style": "upper",
-      "ignoreExceptions": true,
-      "ignoreLowerClassImplmentationStatement": true,
-      "ignoreGlobalClassDefinition": false,
-      "ignoreGlobalInterface": false,
-      "ignoreFunctionModuleName": false
-    },
+    "keyword_case": true,
     "line_length": {
       "length": 120
     },
@@ -140,7 +133,8 @@
       "ignoreNames": [],
       "ignorePatterns": [],
       "expectedData": "^L._.+$",
-      "expectedConstant": "^LC_.+$"
+      "expectedConstant": "^LC_.+$",
+      "expectedFS": ""
     },
     "main_file_contents": true,
     "max_one_statement": true,
@@ -190,6 +184,8 @@
       "auth": "^Z",
       "pinf": "^Z",
       "idoc": "^Z",
+      "ssfo": "^Z",
+      "ssst": "^Z",
       "xslt": "^Z"
     },
     "obsolete_statement": {
@@ -201,6 +197,7 @@
       "move": true,
       "divide": true,
       "requested": true,
+      "setExtended": true,
       "occurs": true
     },
     "parser_error": true,
