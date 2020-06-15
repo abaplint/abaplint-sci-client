@@ -10,6 +10,11 @@
       "url": "https://github.com/abaplint/deps",
       "folder": "/deps",
       "files": "/src/**/*.*"
+    },
+    {
+      "url": "https://github.com/larshp/abapGit",
+      "folder": "/deps2",
+      "files": "/src/**/*.*"
     }
   ],
   "syntax": {
