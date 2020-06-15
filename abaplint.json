@@ -11,6 +11,7 @@
       "folder": "/deps",
       "files": "/src/**/*.*"
     },
+    
     {
       "url": "https://github.com/larshp/abapGit",
       "folder": "/deps2",
