@@ -108,7 +108,9 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD get_result_node.
 
-    CREATE OBJECT p_result EXPORTING p_kind = p_kind.
+    CREATE OBJECT p_result TYPE cl_ci_result_program
+      EXPORTING
+        p_kind = p_kind.
 
   ENDMETHOD.
 
