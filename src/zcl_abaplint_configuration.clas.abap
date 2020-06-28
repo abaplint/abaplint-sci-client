@@ -35,7 +35,9 @@ CLASS zcl_abaplint_configuration DEFINITION
       IMPORTING
         !iv_devclass     TYPE devclass
       RETURNING
-        VALUE(rv_config) TYPE string .
+        VALUE(rv_config) TYPE string
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
