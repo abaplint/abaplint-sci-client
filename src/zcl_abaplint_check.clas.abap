@@ -31,7 +31,9 @@ CLASS zcl_abaplint_check DEFINITION
         !it_issues TYPE zcl_abaplint_backend=>ty_issues .
     METHODS find_configuration
       RETURNING
-        VALUE(rv_config) TYPE string .
+        VALUE(rv_config) TYPE string
+      RAISING
+        zcx_abapgit_exception .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -208,7 +210,11 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
     DATA lv_config TYPE string.
-    lv_config = find_configuration( ).
+
+    TRY.
+        lv_config = find_configuration( ).
+      CATCH zcx_abapgit_exception.
+    ENDTRY.
 
     IF lv_config IS INITIAL.
       inform(
