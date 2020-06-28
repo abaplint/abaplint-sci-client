@@ -163,6 +163,48 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     LOOP AT it_issues INTO ls_issue.
 
       CASE object_type.
+        WHEN 'FUGR'.
+          "Different cases need to be distinguished
+          "1. Function Group Level  @TODO
+          "2. Function Level (TFDIR-PNAME_MAIN)
+          "3. Include Level (TRDIR-SUBC = I)
+
+          DATA: lv_tabl      TYPE TABLE OF string,
+                lv_subc      TYPE subc,
+                lv_name      TYPE string,
+                lv_pname     TYPE pname,
+                lv_include   TYPE includenr,
+                lv_namespace TYPE namespace,
+                lv_area      TYPE rs38l_area.
+
+          "Determine Object name
+          SPLIT ls_issue-filename AT '.' INTO TABLE lv_tabl.
+          READ TABLE lv_tabl INDEX 3 INTO lv_name. "Object Name
+          TRANSLATE lv_name TO UPPER CASE.
+          REPLACE ALL OCCURRENCES OF '#' IN lv_name WITH '/'.
+
+          "3. Include?
+          SELECT SINGLE subc FROM trdir INTO lv_subc WHERE name EQ lv_name.
+          IF lv_subc = 'I'.
+            lv_sub_obj_type = 'PROG'.
+            lv_sub_obj_name = lv_name.
+          ELSE.
+            "2. Function Module?
+            SELECT SINGLE pname include FROM tfdir INTO (lv_pname, lv_include) WHERE funcname = lv_name.
+            IF sy-subrc = 0.
+              CALL FUNCTION 'FUNCTION_INCLUDE_SPLIT'
+                EXPORTING
+                  program   = lv_pname
+                IMPORTING
+                  namespace = lv_namespace
+                  group     = lv_area
+                EXCEPTIONS
+                  OTHERS    = 6.
+              CONCATENATE lv_namespace 'L' lv_area 'U' lv_include INTO lv_name.
+              lv_sub_obj_type = 'PROG'.
+              lv_sub_obj_name = lv_name.
+            ENDIF.
+          ENDIF.
         WHEN 'CLAS'.
 * todo, make sure the index exists?
 * todo, what if the issue is in the XML file?
