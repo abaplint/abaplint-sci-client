@@ -126,8 +126,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DELETE ADJACENT DUPLICATES FROM lt_total COMPARING ref_obj_type ref_obj_name.
 
     LOOP AT lt_total INTO DATA(ls_total).
-      WRITE: / ls_total-ref_obj_type, ls_total-ref_obj_name.
-
       APPEND VALUE #(
         object   = ls_total-ref_obj_type
         obj_name = ls_total-ref_obj_name ) TO rt_tadir.
