@@ -4,10 +4,16 @@ CLASS zcl_abaplint_deps_find DEFINITION
 
   PUBLIC SECTION.
 
-    METHODS constructor
+    METHODS find_by_item
       IMPORTING
-        !iv_package TYPE devclass .
-    METHODS find
+        !iv_package     TYPE devclass
+      RETURNING
+        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
+      RAISING
+        zcx_abapgit_exception .
+    METHODS find_by_package
+      IMPORTING
+        !iv_package     TYPE devclass
       RETURNING
         VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
@@ -22,9 +28,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     TYPES:
       ty_tadir_tt TYPE STANDARD TABLE OF ty_tadir WITH DEFAULT KEY .
 
-    DATA mt_total TYPE ty_tadir_tt .
     DATA mv_max_level TYPE i VALUE 20 ##NO_TEXT.
-    DATA mv_package TYPE devclass .
 
     METHODS convert_senvi_to_tadir
       IMPORTING
@@ -39,8 +43,11 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !ct_tadir TYPE ty_tadir_tt .
     METHODS get_dependencies
       IMPORTING
-        !is_object TYPE zif_abapgit_definitions=>ty_tadir
-        !iv_level  TYPE i .
+        !iv_package     TYPE devclass
+        !is_object      TYPE zif_abapgit_definitions=>ty_tadir
+        !iv_level       TYPE i
+      RETURNING
+        VALUE(rt_total) TYPE ty_tadir_tt .
     METHODS resolve
       IMPORTING
         !it_wbcrossgt TYPE wbcrossgtt
@@ -55,15 +62,6 @@ ENDCLASS.
 
 
 CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
-
-
-  METHOD constructor.
-
-    ASSERT NOT iv_package IS INITIAL.
-
-    mv_package = iv_package.
-
-  ENDMETHOD.
 
 
   METHOD convert_senvi_to_tadir.
@@ -89,9 +87,18 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD find.
+  METHOD find_by_item.
 
-    DATA(lt_objects) = zcl_abapgit_factory=>get_tadir( )->read( mv_package ).
+* todo
+
+  ENDMETHOD.
+
+
+  METHOD find_by_package.
+
+    DATA lt_total TYPE ty_tadir_tt.
+
+    DATA(lt_objects) = zcl_abapgit_factory=>get_tadir( )->read( iv_package ).
     DELETE lt_objects WHERE object = 'DEVC'.
     DELETE lt_objects WHERE object = 'TRAN'. " todo, hmm?
 
@@ -104,15 +111,16 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         i_total              = lines( lt_objects )
         i_output_immediately = abap_true ).
 
-      get_dependencies(
-        is_object = ls_object
-        iv_level  = 1 ).
+      APPEND LINES OF get_dependencies(
+        iv_package = iv_package
+        is_object  = ls_object
+        iv_level   = 1 ) TO lt_total.
     ENDLOOP.
 
-    SORT mt_total BY ref_obj_type ASCENDING ref_obj_name ASCENDING.
-    DELETE ADJACENT DUPLICATES FROM mt_total COMPARING ref_obj_type ref_obj_name.
+    SORT lt_total BY ref_obj_type ASCENDING ref_obj_name ASCENDING.
+    DELETE ADJACENT DUPLICATES FROM lt_total COMPARING ref_obj_type ref_obj_name.
 
-    LOOP AT mt_total INTO DATA(ls_total).
+    LOOP AT lt_total INTO DATA(ls_total).
       WRITE: / ls_total-ref_obj_type, ls_total-ref_obj_name.
 
       APPEND VALUE #(
@@ -228,31 +236,25 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         AND object = @ls_tadir-ref_obj_type
         AND obj_name = @ls_tadir-ref_obj_name.
 * todo, should check if its a sub-package
-      IF sy-subrc <> 0 OR lv_devclass CP |{ mv_package }*|.
+      IF sy-subrc <> 0 OR lv_devclass CP |{ iv_package }*|.
         DELETE lt_tadir INDEX lv_index.
         CONTINUE.
       ENDIF.
-
-      READ TABLE mt_total WITH KEY
-        ref_obj_type = ls_tadir-ref_obj_type
-        ref_obj_name = ls_tadir-ref_obj_name TRANSPORTING NO FIELDS.
-      IF sy-subrc = 0.
-        DELETE lt_tadir INDEX lv_index.
-      ENDIF.
     ENDLOOP.
 
-    APPEND LINES OF lt_tadir TO mt_total.
+    APPEND LINES OF lt_tadir TO rt_total.
 
     LOOP AT lt_tadir INTO ls_tadir.
       DATA(ls_object) = VALUE zif_abapgit_definitions=>ty_tadir(
-        object = ls_tadir-ref_obj_type
+        object   = ls_tadir-ref_obj_type
         obj_name = ls_tadir-ref_obj_name ).
 
       DATA(lv_level) = iv_level + 1.
 
       get_dependencies(
-        is_object = ls_object
-        iv_level  = lv_level ).
+        iv_package = iv_package
+        is_object  = ls_object
+        iv_level   = lv_level ).
     ENDLOOP.
 
   ENDMETHOD.
