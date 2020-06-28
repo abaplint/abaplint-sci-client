@@ -30,6 +30,10 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 
   METHOD find.
 
+    DATA lo_serializer TYPE REF TO zcl_abaplint_deps_serializer.
+
+    CREATE OBJECT lo_serializer.
+
     DATA lt_environment TYPE senvi_tab.
     IF iv_depth > 0.
       lt_environment = list(
@@ -48,9 +52,7 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
       ls_files_item-item-obj_name = ls_environment-object.
 
       TRY.
-          ls_files_item = zcl_abapgit_objects=>serialize(
-            is_item     = ls_files_item-item
-            iv_language = sy-langu ).
+          ls_files_item-files = lo_serializer->serialize_item( ls_files_item-item ).
         CATCH zcx_abapgit_exception.
           ASSERT 0 = 1.
       ENDTRY.
