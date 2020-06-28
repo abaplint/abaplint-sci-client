@@ -4,23 +4,23 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
+
     CLASS-METHODS create
       IMPORTING
-        iv_host TYPE zabaplint_glob_data-url
+        !iv_host           TYPE zabaplint_glob_data-url
       RETURNING
-        VALUE(ro_instance) TYPE REF TO zcl_abaplint_backend_api_agent.
+        VALUE(ro_instance) TYPE REF TO zcl_abaplint_backend_api_agent .
+    " TODO query ?
+    " TODO headers ?
     METHODS request
       IMPORTING
-        iv_uri TYPE string
-        iv_method TYPE string DEFAULT if_http_request=>co_request_method_get
-        " TODO query ?
-        " TODO headers ?
-        iv_payload TYPE string OPTIONAL
+        !iv_uri        TYPE string
+        !iv_method     TYPE string DEFAULT if_http_request=>co_request_method_get
+        !iv_payload    TYPE string OPTIONAL
       RETURNING
         VALUE(ro_json) TYPE REF TO zif_abaplint_json_reader
       RAISING
         zcx_abaplint_error .
-
   PROTECTED SECTION.
   PRIVATE SECTION.
     DATA mv_host TYPE zabaplint_glob_data-url.
@@ -32,7 +32,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
         zcx_abaplint_error .
     METHODS parse_response
       IMPORTING
-        ii_response TYPE REF TO if_http_response
+        ii_response    TYPE REF TO if_http_response
       RETURNING
         VALUE(ro_json) TYPE REF TO zif_abaplint_json_reader
       RAISING
