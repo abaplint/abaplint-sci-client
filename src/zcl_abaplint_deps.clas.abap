@@ -11,7 +11,7 @@ CLASS zcl_abaplint_deps DEFINITION
         !iv_depth       TYPE zabaplint_glob-depth
       RETURNING
         VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt .
-protected section.
+  PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
 
