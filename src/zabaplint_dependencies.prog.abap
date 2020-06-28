@@ -5,7 +5,7 @@ TABLES: sscrfields, tdevc.
 DATA: ltb_devc TYPE tab_packages.
 
 PARAMETERS: p_git  TYPE text200 OBLIGATORY.
-SELECT-OPTIONS: p_devc FOR tdevc-devclass OBLIGATORY.
+SELECT-OPTIONS: s_devc FOR tdevc-devclass OBLIGATORY.
 PARAMETERS: p_test   TYPE c AS CHECKBOX.
 
 SELECTION-SCREEN: SKIP,
@@ -37,7 +37,7 @@ START-OF-SELECTION.
 
 FORM deps.
 
-  SELECT devclass FROM tdevc INTO TABLE ltb_devc WHERE devclass IN p_devc.
+  SELECT devclass FROM tdevc INTO TABLE ltb_devc WHERE devclass IN s_devc.
   TRY.
       NEW zcl_abaplint_deps_git(
         iv_git_url     = CONV #( p_git )

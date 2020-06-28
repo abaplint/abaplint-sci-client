@@ -36,7 +36,7 @@
     "abapdoc": false,
     "allowed_object_naming": true,
     "allowed_object_types": true,
-    "ambiguous_statement": true,
+    "ambiguous_statement": false,
     "avoid_use": {
       "define": true,
       "endselect": true,
@@ -172,7 +172,7 @@
       "ignorePatterns": [],
       "clas": "^ZC(L|X)\\_",
       "intf": "^ZIF\\_",
-      "prog": "^Z",
+      "prog": "^ZABAPLINT",
       "fugr": "^Z",
       "tabl": "^Z",
       "ttyp": "^Z",
@@ -186,6 +186,7 @@
       "idoc": "^Z",
       "ssfo": "^Z",
       "ssst": "^Z",
+      "shlp": "^Z",
       "xslt": "^Z"
     },
     "obsolete_statement": {
@@ -240,7 +241,7 @@
       "ignoreGlobalDefinition": true,
       "ignoreExceptions": true
     },
-    "sql_escape_host_variables": true,
+    "sql_escape_host_variables": false,
     "start_at_tab": true,
     "superclass_final": true,
     "tabl_enhancement_category": true,
@@ -253,7 +254,7 @@
     "unused_variables": {
       "exclude": ["zcx_abaplint_error"]
     },
-    "use_new": true,
+    "use_new": false,
     "when_others_last": true,
     "whitespace_end": true,
     "xml_consistency": true
