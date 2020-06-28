@@ -2,32 +2,57 @@
 # Pull from GitHub source repository
 #
 stages:
-  - github-pull
+  - pre
+  - pull
+  - test
 
-before_script:
-#   - set -x
-  - git remote set-url --push origin "${TOKEN_URL_PUSH}"
-  - git remote add source "${URL_SOURCE}"
-#   - git remote -v
-  - git config user.email "github@redwood.com"
-  - git config user.name "github"
-  - git config http.sslverify false
-
-after_script:
-  - git log -5 --oneline
-  - git remote rm source
-
-do-pull:
-  stage: github-pull
+default:
+  tags:
+    - docker
   image: 
     name: alpine/git
     entrypoint: [""]
-  tags:
-  - docker
+
+pre:
+  stage: pre
+  script:
+    - echo "Request $CI_PIPELINE_SOURCE"
+    - echo "Commit  $CI_COMMIT_MESSAGE"
+    - echo "Ref     $CI_COMMIT_REF_NAME"
+    - echo "For     $GITLAB_USER_NAME"
+
+abaplint:
+  stage: test
+  image: abaplint/abaplint:latest
+  only:
+    - master
+    - branches
+    - manual
+  only:
+    changes:
+      - "src"
+  except:
+    - schedules
+  script:
+  # - git config --global http.sslVerify false
+    - git config http.sslCAInfo /certs/sap.internal.pem
+    - abaplint
+
+do-pull:
+  stage: pull
   # when: manual
   only:
-  - schedules
-  - manual
+    - schedules
+    - manual
   script:
-  - git pull source master
-  - git push origin HEAD:master
+    #   - set -x
+    - git config user.email "github@redwood.com"
+    - git config user.name "github"
+    - git config http.sslverify false
+    - git remote set-url --push origin "${TOKEN_URL_PUSH}"
+    - git remote add source "${URL_SOURCE}"
+    #   - git remote -v
+    - git pull source master
+    - git push origin HEAD:master
+    - git remote rm source
+    - git log -5 --oneline
