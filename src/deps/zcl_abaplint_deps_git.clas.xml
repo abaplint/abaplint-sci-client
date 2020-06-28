@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPLINT_DEPS_GIT</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Dependencies to git</DESCRIPT>
+    <DESCRIPT>abaplint - Dependencies to git</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
