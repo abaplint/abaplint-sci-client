@@ -6,8 +6,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
     METHODS constructor
       IMPORTING iv_max_level TYPE i DEFAULT 20.
     METHODS find_by_item
-      IMPORTING
-        !iv_package     TYPE devclass
       RETURNING
         VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
@@ -96,6 +94,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   METHOD find_by_item.
 
 * todo
+    CLEAR rt_tadir.
 
   ENDMETHOD.
 
