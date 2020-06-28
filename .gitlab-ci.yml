@@ -25,9 +25,9 @@ abaplint:
   stage: test
   image: abaplint/abaplint:latest
   only:
-    - master
-    - branches
+    - /^issue_.*$/
     - manual
+    - web
   only:
     changes:
       - "src"
