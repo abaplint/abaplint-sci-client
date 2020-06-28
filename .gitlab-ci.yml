@@ -6,10 +6,6 @@ stages:
   - pull
   - test
 
-default:
-  tags:
-    - docker
-
 include:
   - project: 'tools/abapgit-extensions'
     ref: master
