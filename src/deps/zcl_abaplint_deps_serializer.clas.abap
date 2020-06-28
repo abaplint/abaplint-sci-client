@@ -4,6 +4,13 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
 
   PUBLIC SECTION.
 
+    METHODS serialize_item
+      IMPORTING
+        !is_item        TYPE zif_abapgit_definitions=>ty_item
+      RETURNING
+        VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt
+      RAISING
+        zcx_abapgit_exception .
     METHODS serialize
       IMPORTING
         !it_tadir       TYPE zif_abapgit_definitions=>ty_tadir_tt
@@ -133,6 +140,20 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     LOOP AT rt_files ASSIGNING FIELD-SYMBOL(<ls_file>).
       <ls_file>-path = '/src/'.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD serialize_item.
+
+    DATA: lt_tadir TYPE zif_abapgit_definitions=>ty_tadir_tt,
+          ls_tadir LIKE LINE OF lt_tadir.
+
+    ls_tadir-object = is_item-obj_type.
+    ls_tadir-obj_name = is_item-obj_name.
+    APPEND ls_tadir TO lt_tadir.
+
+    rt_files = serialize( lt_tadir ).
 
   ENDMETHOD.
 ENDCLASS.
