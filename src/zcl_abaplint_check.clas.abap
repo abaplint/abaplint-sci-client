@@ -165,7 +165,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       CASE object_type.
         WHEN 'FUGR'.
           "Different cases need to be distinguished
-          "1. Function Group Level @TODO
+          "1. Function Group Level
           "2. Function Level (TFDIR-PNAME_MAIN)
           "3. Include Level (TRDIR-SUBC = I)
 
