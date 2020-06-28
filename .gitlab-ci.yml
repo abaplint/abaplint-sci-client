@@ -8,7 +8,7 @@ before_script:
   - set -x
   - git remote set-url --push origin "${TOKEN_URL_PUSH}"
   - git remote add source "${URL_SOURCE}"
-  # - git remote -v
+  - git remote -v
   - git config user.email "github@redwood.com"
   - git config user.name "github"
   - git config http.sslverify false
