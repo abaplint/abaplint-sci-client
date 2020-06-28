@@ -3,7 +3,8 @@ CLASS zcl_abaplint_deps_find DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-
+    METHODS constructor
+      IMPORTING iv_max_level TYPE i DEFAULT 20.
     METHODS find_by_item
       IMPORTING
         !iv_package     TYPE devclass
@@ -28,7 +29,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     TYPES:
       ty_tadir_tt TYPE STANDARD TABLE OF ty_tadir WITH DEFAULT KEY .
 
-    DATA mv_max_level TYPE i VALUE 20 ##NO_TEXT.
+    DATA mv_max_level TYPE i.
 
     METHODS convert_senvi_to_tadir
       IMPORTING
@@ -62,6 +63,11 @@ ENDCLASS.
 
 
 CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
+
+
+  METHOD constructor.
+    mv_max_level = iv_max_level.
+  ENDMETHOD.
 
 
   METHOD convert_senvi_to_tadir.
