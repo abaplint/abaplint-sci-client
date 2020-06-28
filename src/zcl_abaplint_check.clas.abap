@@ -165,7 +165,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       CASE object_type.
         WHEN 'FUGR'.
           "Different cases need to be distinguished
-          "1. Function Group Level  @TODO
+          "1. Function Group Level @TODO
           "2. Function Level (TFDIR-PNAME_MAIN)
           "3. Include Level (TRDIR-SUBC = I)
 
@@ -184,7 +184,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
           REPLACE ALL OCCURRENCES OF '#' IN lv_name WITH '/'.
 
           "3. Include?
-          SELECT SINGLE subc FROM trdir INTO lv_subc WHERE name EQ lv_name.
+          SELECT SINGLE subc FROM trdir INTO lv_subc WHERE name = lv_name.
           IF lv_subc = 'I'.
             lv_sub_obj_type = 'PROG'.
             lv_sub_obj_name = lv_name.
