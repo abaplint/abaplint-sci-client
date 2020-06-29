@@ -172,7 +172,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
           DATA: lv_tabl      TYPE TABLE OF string,
                 lv_subc      TYPE subc,
                 lv_name      TYPE string,
-                lv_target    type string,
+                lv_target    TYPE string,
                 lv_pname     TYPE pname,
                 lv_include   TYPE includenr,
                 lv_namespace TYPE namespace,
