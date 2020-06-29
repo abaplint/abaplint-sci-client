@@ -166,12 +166,13 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         WHEN 'FUGR'.
           "Different cases need to be distinguished
           "1. Function Group Level
-          "2. Function Level (TFDIR-PNAME_MAIN)
+          "2. Function Level (TFDIR exists)
           "3. Include Level (TRDIR-SUBC = I)
 
           DATA: lv_tabl      TYPE TABLE OF string,
                 lv_subc      TYPE subc,
                 lv_name      TYPE string,
+                lv_target    type string,
                 lv_pname     TYPE pname,
                 lv_include   TYPE includenr,
                 lv_namespace TYPE namespace,
@@ -185,7 +186,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
           "3. Include?
           SELECT SINGLE subc FROM trdir INTO lv_subc WHERE name = lv_name.
-          IF lv_subc = 'I'.
+          IF sy-subrc = 0 AND lv_subc = 'I'.
             lv_sub_obj_type = 'PROG'.
             lv_sub_obj_name = lv_name.
           ELSE.
@@ -200,7 +201,11 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
                   group     = lv_area
                 EXCEPTIONS
                   OTHERS    = 6.
-              CONCATENATE lv_namespace 'L' lv_area 'U' lv_include INTO lv_name.
+              CONCATENATE lv_namespace 'L' lv_area 'U' lv_include INTO lv_target.
+              lv_sub_obj_type = 'PROG'.
+              lv_sub_obj_name = lv_target.
+            ELSE.
+              "1. Must be main program
               lv_sub_obj_type = 'PROG'.
               lv_sub_obj_name = lv_name.
             ENDIF.
