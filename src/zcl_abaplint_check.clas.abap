@@ -120,7 +120,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     IF p_code = c_no_config.
       p_text = 'No configuration found when looking at package hierarchy, &1'.
     ELSE.
-      p_text = '&1 (&2)'.
+      p_text = '&1, &2'.
     ENDIF.
 
   ENDMETHOD.
