@@ -34,6 +34,11 @@ CLASS zcl_abaplint_check DEFINITION
     CONSTANTS c_no_config TYPE sci_errc VALUE 'NO_CONFIG' ##NO_TEXT.
     CONSTANTS c_stats TYPE trobjtype VALUE '1STA' ##NO_TEXT.
 
+    METHODS hash
+      IMPORTING
+        !iv_value      TYPE clike
+      RETURNING
+        VALUE(rv_hash) TYPE sci_errc .
     METHODS map_to_internal
       IMPORTING
         !is_issue        TYPE zcl_abaplint_backend=>ty_issue
@@ -115,7 +120,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     IF p_code = c_no_config.
       p_text = 'No configuration found when looking at package hierarchy, &1'.
     ELSE.
-      p_text = '&1'.
+      p_text = '&1, &2'.
     ENDIF.
 
   ENDMETHOD.
@@ -126,6 +131,30 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     CREATE OBJECT p_result TYPE cl_ci_result_program
       EXPORTING
         p_kind = p_kind.
+
+  ENDMETHOD.
+
+
+  METHOD hash.
+
+    DATA: lv_hash TYPE hash160.
+
+    CALL FUNCTION 'CALCULATE_HASH_FOR_CHAR'
+      EXPORTING
+        data           = iv_value
+      IMPORTING
+        hash           = lv_hash
+      EXCEPTIONS
+        unknown_alg    = 1
+        param_error    = 2
+        internal_error = 3
+        OTHERS         = 4.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+* take the first 5 characters of the hash
+    rv_hash = lv_hash(5).
 
   ENDMETHOD.
 
@@ -269,7 +298,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         p_test         = myname
         p_kind         = c_error
         p_param_1      = ls_issue-message
-        p_code         = |{ ls_issue-key }| ).
+        p_param_2      = ls_issue-key
+        p_code         = hash( ls_issue-key ) ).
 
     ENDLOOP.
 
