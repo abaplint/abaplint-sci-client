@@ -3,7 +3,7 @@ CLASS zcl_abaplint_check DEFINITION
   INHERITING FROM cl_ci_test_root
   CREATE PUBLIC .
 
- PUBLIC SECTION.
+  PUBLIC SECTION.
 
     METHODS constructor .
 
