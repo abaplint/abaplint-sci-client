@@ -23,9 +23,27 @@ CLASS zcl_abaplint_check DEFINITION
         REDEFINITION .
   PROTECTED SECTION.
 
+    TYPES:
+      BEGIN OF ty_internal,
+        sub_obj_type TYPE trobjtype,
+        sub_obj_name TYPE sobj_name,
+        line         TYPE token_row,
+        column       TYPE token_col,
+      END OF ty_internal .
+
     CONSTANTS c_no_config TYPE sci_errc VALUE 'NO_CONFIG' ##NO_TEXT.
     CONSTANTS c_stats TYPE trobjtype VALUE '1STA' ##NO_TEXT.
 
+    METHODS hash
+      IMPORTING
+        !iv_value      TYPE clike
+      RETURNING
+        VALUE(rv_hash) TYPE sci_errc .
+    METHODS map_to_internal
+      IMPORTING
+        !is_issue        TYPE zcl_abaplint_backend=>ty_issue
+      RETURNING
+        VALUE(rs_result) TYPE ty_internal .
     METHODS output_issues
       IMPORTING
         !it_issues TYPE zcl_abaplint_backend=>ty_issues .
@@ -102,7 +120,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     IF p_code = c_no_config.
       p_text = 'No configuration found when looking at package hierarchy, &1'.
     ELSE.
-      p_text = '&1'.
+      p_text = '&1, &2'.
     ENDIF.
 
   ENDMETHOD.
@@ -113,6 +131,30 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     CREATE OBJECT p_result TYPE cl_ci_result_program
       EXPORTING
         p_kind = p_kind.
+
+  ENDMETHOD.
+
+
+  METHOD hash.
+
+    DATA: lv_hash TYPE hash160.
+
+    CALL FUNCTION 'CALCULATE_HASH_FOR_CHAR'
+      EXPORTING
+        data           = iv_value
+      IMPORTING
+        hash           = lv_hash
+      EXCEPTIONS
+        unknown_alg    = 1
+        param_error    = 2
+        internal_error = 3
+        OTHERS         = 4.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+* take the first 5 characters of the hash
+    rv_hash = lv_hash(5).
 
   ENDMETHOD.
 
@@ -151,88 +193,97 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD output_issues.
+  METHOD map_to_internal.
 
-    DATA: lv_sub_obj_type TYPE trobjtype,
-          lv_sub_obj_name TYPE sobj_name.
-
-    DATA ls_issue LIKE LINE OF it_issues.
     DATA lo_pih TYPE REF TO cl_oo_source_pos_index_helper.
     DATA li_index_helper TYPE REF TO if_oo_source_pos_index_helper.
 
-    LOOP AT it_issues INTO ls_issue.
+    rs_result-line   = is_issue-start-row.
+    rs_result-column = is_issue-start-col.
 
-      CASE object_type.
-        WHEN 'FUGR'.
-          "Different cases need to be distinguished
-          "1. Function Group Level
-          "2. Function Level (TFDIR exists)
-          "3. Include Level (TRDIR-SUBC = I)
+    CASE object_type.
+      WHEN 'FUGR'.
+        "Different cases need to be distinguished
+        "1. Function Group Level
+        "2. Function Level (TFDIR exists)
+        "3. Include Level (TRDIR-SUBC = I)
 
-          DATA: lv_tabl      TYPE TABLE OF string,
-                lv_subc      TYPE subc,
-                lv_name      TYPE string,
-                lv_target    TYPE string,
-                lv_pname     TYPE pname,
-                lv_include   TYPE includenr,
-                lv_namespace TYPE namespace,
-                lv_area      TYPE rs38l_area.
+        DATA: lv_tabl      TYPE TABLE OF string,
+              lv_subc      TYPE subc,
+              lv_name      TYPE string,
+              lv_target    TYPE string,
+              lv_pname     TYPE pname,
+              lv_include   TYPE includenr,
+              lv_namespace TYPE namespace,
+              lv_area      TYPE rs38l_area.
 
-          "Determine Object name
-          SPLIT ls_issue-filename AT '.' INTO TABLE lv_tabl.
-          READ TABLE lv_tabl INDEX 3 INTO lv_name. "Object Name
-          TRANSLATE lv_name TO UPPER CASE.
-          REPLACE ALL OCCURRENCES OF '#' IN lv_name WITH '/'.
+        "Determine Object name
+        SPLIT is_issue-filename AT '.' INTO TABLE lv_tabl.
+        READ TABLE lv_tabl INDEX 3 INTO lv_name. "Object Name
+        TRANSLATE lv_name TO UPPER CASE.
+        REPLACE ALL OCCURRENCES OF '#' IN lv_name WITH '/'.
 
-          "3. Include?
-          SELECT SINGLE subc FROM trdir INTO lv_subc WHERE name = lv_name.
-          IF sy-subrc = 0 AND lv_subc = 'I'.
-            lv_sub_obj_type = 'PROG'.
-            lv_sub_obj_name = lv_name.
+        "3. Include?
+        SELECT SINGLE subc FROM trdir INTO lv_subc WHERE name = lv_name.
+        IF sy-subrc = 0 AND lv_subc = 'I'.
+          rs_result-sub_obj_type = 'PROG'.
+          rs_result-sub_obj_name = lv_name.
+        ELSE.
+          "2. Function Module?
+          SELECT SINGLE pname include FROM tfdir INTO (lv_pname, lv_include) WHERE funcname = lv_name.
+          IF sy-subrc = 0.
+            CALL FUNCTION 'FUNCTION_INCLUDE_SPLIT'
+              EXPORTING
+                program   = lv_pname
+              IMPORTING
+                namespace = lv_namespace
+                group     = lv_area
+              EXCEPTIONS
+                OTHERS    = 6.
+            CONCATENATE lv_namespace 'L' lv_area 'U' lv_include INTO lv_target.
+            rs_result-sub_obj_type = 'PROG'.
+            rs_result-sub_obj_name = lv_target.
           ELSE.
-            "2. Function Module?
-            SELECT SINGLE pname include FROM tfdir INTO (lv_pname, lv_include) WHERE funcname = lv_name.
-            IF sy-subrc = 0.
-              CALL FUNCTION 'FUNCTION_INCLUDE_SPLIT'
-                EXPORTING
-                  program   = lv_pname
-                IMPORTING
-                  namespace = lv_namespace
-                  group     = lv_area
-                EXCEPTIONS
-                  OTHERS    = 6.
-              CONCATENATE lv_namespace 'L' lv_area 'U' lv_include INTO lv_target.
-              lv_sub_obj_type = 'PROG'.
-              lv_sub_obj_name = lv_target.
-            ELSE.
-              "1. Must be main program
-              lv_sub_obj_type = 'PROG'.
-              lv_sub_obj_name = lv_name.
-            ENDIF.
+            "1. Must be main program
+            rs_result-sub_obj_type = 'PROG'.
+            rs_result-sub_obj_name = lv_name.
           ENDIF.
-        WHEN 'CLAS'.
+        ENDIF.
+      WHEN 'CLAS'.
 * todo, make sure the index exists?
 * todo, what if the issue is in the XML file?
 * todo, handle the 5 different global class includes
-          CREATE OBJECT lo_pih.
-          li_index_helper ?= lo_pih.
+        CREATE OBJECT lo_pih.
+        li_index_helper ?= lo_pih.
 
-          DATA ls_position TYPE if_oo_source_pos_index_helper=>ty_source_pos_index.
-          DATA lv_col TYPE i.
-          lv_col = ls_issue-start-col. " ??? how to avoid ?
-          ls_position = li_index_helper->get_class_include_by_position(
-            class_name = object_name
-            version    = 'A'
-            line       = ls_issue-start-row
-            column     = lv_col ).
+        DATA ls_position TYPE if_oo_source_pos_index_helper=>ty_source_pos_index.
+        DATA lv_col TYPE i.
+        lv_col = is_issue-start-col. " ??? how to avoid ?
+        ls_position = li_index_helper->get_class_include_by_position(
+          class_name = object_name
+          version    = 'A'
+          line       = is_issue-start-row
+          column     = lv_col ).
 
-          lv_sub_obj_type = 'PROG'.
-          lv_sub_obj_name = ls_position-include_name.
-          ls_issue-start-row = ls_position-start_line.
-        WHEN OTHERS.
-          lv_sub_obj_type = object_type.
-          lv_sub_obj_name = object_name.
-      ENDCASE.
+        rs_result-sub_obj_type = 'PROG'.
+        rs_result-sub_obj_name = ls_position-include_name.
+        rs_result-line = ls_position-start_line.
+      WHEN OTHERS.
+        rs_result-sub_obj_type = object_type.
+        rs_result-sub_obj_name = object_name.
+    ENDCASE.
+
+  ENDMETHOD.
+
+
+  METHOD output_issues.
+
+    DATA ls_issue LIKE LINE OF it_issues.
+    DATA ls_result TYPE ty_internal.
+
+    LOOP AT it_issues INTO ls_issue.
+
+      ls_result = map_to_internal( ls_issue ).
 
       TRANSLATE ls_issue-filename TO UPPER CASE.
       IF NOT ls_issue-filename CP |*{ object_name }*|.
@@ -240,14 +291,16 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       ENDIF.
 
       inform(
-        p_sub_obj_type = lv_sub_obj_type
-        p_sub_obj_name = lv_sub_obj_name
-        p_line         = ls_issue-start-row
-        p_column       = ls_issue-start-col
+        p_sub_obj_type = ls_result-sub_obj_type
+        p_sub_obj_name = ls_result-sub_obj_name
+        p_line         = ls_result-line
+        p_column       = ls_result-column
         p_test         = myname
         p_kind         = c_error
         p_param_1      = ls_issue-message
-        p_code         = |{ ls_issue-key }| ).
+        p_param_2      = ls_issue-key
+        p_code         = hash( ls_issue-key ) ).
+
     ENDLOOP.
 
   ENDMETHOD.
