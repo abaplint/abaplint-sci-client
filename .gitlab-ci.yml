@@ -1,0 +1,28 @@
+#
+# CI for repository
+#
+stages:
+  - init
+  - pull
+  - test
+
+default:
+  tags:
+    - docker
+
+include:
+  - project: 'tools/abapgit-extensions'
+    ref: master
+    file: '/ci-include.yml'
+
+init:
+  extends: .info_pipeline
+  stage: init
+
+abaplint:
+  stage: test
+  extends: .abaplint
+
+do-pull:
+  stage: pull
+  extends: .do-pull
