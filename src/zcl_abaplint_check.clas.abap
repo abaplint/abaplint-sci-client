@@ -286,6 +286,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       ls_result = map_to_internal( ls_issue ).
 
       TRANSLATE ls_issue-filename TO UPPER CASE.
+      TRANSLATE ls_issue-filename USING '#/'.
       IF NOT ls_issue-filename CP |*{ object_name }*|.
         ls_issue-message = |{ ls_issue-message }, { ls_issue-filename }|.
       ENDIF.
