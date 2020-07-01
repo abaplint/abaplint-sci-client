@@ -69,9 +69,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
 
   METHOD constructor.
-  
     mv_max_level = iv_max_level.
-    
   ENDMETHOD.
 
 
