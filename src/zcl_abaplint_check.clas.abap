@@ -120,7 +120,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     IF p_code = c_no_config.
       p_text = 'No configuration found when looking at package hierarchy, &1'.
     ELSE.
-      p_text = '&1, &2'.
+      p_text = '&1 (&2)'.
     ENDIF.
 
   ENDMETHOD.
@@ -286,6 +286,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       ls_result = map_to_internal( ls_issue ).
 
       TRANSLATE ls_issue-filename TO UPPER CASE.
+      TRANSLATE ls_issue-filename USING '#/'.
       IF NOT ls_issue-filename CP |*{ object_name }*|.
         ls_issue-message = |{ ls_issue-message }, { ls_issue-filename }|.
       ENDIF.
