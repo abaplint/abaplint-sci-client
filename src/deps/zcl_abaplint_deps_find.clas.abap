@@ -379,7 +379,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     APPEND cl_oo_classname_service=>get_pubsec_name( |{ iv_name }| ) TO lt_includes.
     IF lv_final = abap_false.
-      APPEND cl_oo_classname_service=>get_prosec_name( |{ iv_name }| ) TO lt_includes.
+      APPEND cl_oo_classname_service=>get_prosec_name( CONV #( iv_name ) ) TO lt_includes.
     ENDIF.
 
     SELECT * FROM wbcrossgt INTO CORRESPONDING FIELDS OF TABLE lt_wbcrossgt
