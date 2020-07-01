@@ -7,8 +7,8 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
     METHODS:
       setup,
-      find FOR TESTING.
-ENDCLASS.       "ltcl_Test
+      find FOR TESTING RAISING cx_static_check.
+ENDCLASS.
 
 
 CLASS ltcl_test IMPLEMENTATION.
