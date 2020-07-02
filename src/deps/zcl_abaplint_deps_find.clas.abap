@@ -1,71 +1,95 @@
-CLASS zcl_abaplint_deps_find DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_ABAPLINT_DEPS_FIND definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS constructor
-      IMPORTING
-        !iv_max_level TYPE i DEFAULT 20 .
-    METHODS find_by_item
-      IMPORTING
-        !iv_object_type TYPE trobjtype
-        !iv_object_name TYPE sobj_name
-      RETURNING
-        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
-      RAISING
-        zcx_abapgit_exception .
-    METHODS find_by_package
-      IMPORTING
-        !iv_package     TYPE devclass
-      RETURNING
-        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
-      RAISING
-        zcx_abapgit_exception .
-  PROTECTED SECTION.
+  methods CONSTRUCTOR
+    importing
+      !IV_MAX_LEVEL type I default 20 .
+  methods FIND_BY_ITEM
+    importing
+      !IV_OBJECT_TYPE type TROBJTYPE
+      !IV_OBJECT_NAME type SOBJ_NAME
+    returning
+      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
+    raising
+      ZCX_ABAPGIT_EXCEPTION .
+  methods FIND_BY_PACKAGES
+    importing
+      !IT_PACKAGES type TR_DEVCLASSES
+    returning
+      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
+    raising
+      ZCX_ABAPGIT_EXCEPTION .
+protected section.
 
-    TYPES:
-      BEGIN OF ty_tadir,
+  types:
+    BEGIN OF ty_tadir,
         ref_obj_type TYPE trobjtype,
         ref_obj_name TYPE sobj_name,
       END OF ty_tadir .
-    TYPES:
-      ty_tadir_tt TYPE STANDARD TABLE OF ty_tadir WITH DEFAULT KEY .
+  types:
+    ty_tadir_tt TYPE STANDARD TABLE OF ty_tadir WITH DEFAULT KEY .
 
-    DATA mv_max_level TYPE i .
+  data MV_MAX_LEVEL type I .
 
-    METHODS convert_senvi_to_tadir
-      IMPORTING
-        !it_senvi       TYPE senvi_tab
-      RETURNING
-        VALUE(rt_tadir) TYPE ty_tadir_tt .
-    METHODS find_clas_dependencies
-      IMPORTING
-        !iv_name  TYPE tadir-obj_name
-        !iv_level TYPE i
-      CHANGING
-        !ct_tadir TYPE ty_tadir_tt .
-    METHODS get_dependencies
-      IMPORTING
-        !iv_package     TYPE devclass
-        !is_object      TYPE zif_abapgit_definitions=>ty_tadir
-        !iv_level       TYPE i
-      RETURNING
-        VALUE(rt_total) TYPE ty_tadir_tt .
-    METHODS resolve
-      IMPORTING
-        !it_wbcrossgt TYPE wbcrossgtt
-      CHANGING
-        !ct_tadir     TYPE ty_tadir_tt .
-    METHODS update_index
-      IMPORTING
-        !iv_name TYPE seoclsname .
-  PRIVATE SECTION.
+  methods CONVERT_SENVI_TO_TADIR
+    importing
+      !IT_SENVI type SENVI_TAB
+    returning
+      value(RT_TADIR) type TY_TADIR_TT .
+  methods FIND_CLAS_DEPENDENCIES
+    importing
+      !IV_NAME type TADIR-OBJ_NAME
+      !IV_LEVEL type I
+    changing
+      !CT_TADIR type TY_TADIR_TT .
+  methods GET_DEPENDENCIES
+    importing
+      !IS_OBJECT type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR
+      !IV_LEVEL type I .
+  methods RESOLVE
+    importing
+      !IT_WBCROSSGT type WBCROSSGTT
+    changing
+      !CT_TADIR type TY_TADIR_TT .
+  methods UPDATE_INDEX
+    importing
+      !IV_NAME type SEOCLSNAME .
+private section.
+
+  data MV_PACKAGES type TR_DEVCLASSES .
+  data MV_RESULTS type TY_TADIR_TT .
+
+  methods CLEAR_RESULTS .
+  methods DETERMINE_PACKAGE
+    importing
+      !IV_OBJECT_TYPE type TROBJTYPE
+      !IV_OBJECT_NAME type SOBJ_NAME
+    returning
+      value(RV_PACKAGE) type DEVCLASS .
+  methods PREPARE_SUPPORTED_TYPES
+    returning
+      value(RS_TYPES) type ENVI_TYPES .
+  methods SET_PACKAGE_TREE
+    importing
+      !IT_PACKAGES type TR_DEVCLASSES .
+  methods IS_SAP_OBJECT
+    importing
+      !IS_TADIR type TADIR
+    returning
+      value(RV_BOOL) type FLAG .
 ENDCLASS.
 
 
 
 CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
+
+
+  method CLEAR_RESULTS.
+    refresh mv_results.
+  endmethod.
 
 
   METHOD constructor.
@@ -79,96 +103,170 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_senvi LIKE LINE OF it_senvi.
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
-    LOOP AT it_senvi INTO ls_senvi.
-      IF ls_senvi-type = 'CLAS'
-          OR ls_senvi-type = 'DTEL'
-          OR ls_senvi-type = 'TABL'
-          OR ls_senvi-type = 'TYPE'
-          OR ls_senvi-type = 'INTF'.
-        APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
-        <ls_tadir>-ref_obj_type = ls_senvi-type.
-        <ls_tadir>-ref_obj_name = ls_senvi-object.
-      ELSEIF ls_senvi-type = 'INCL'.
-        APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
-        <ls_tadir>-ref_obj_type = 'PROG'.
-        <ls_tadir>-ref_obj_name = ls_senvi-object.
-      ELSEIF ls_senvi-type = 'STRU'.
-        APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
-        <ls_tadir>-ref_obj_type = 'TABL'.
-        <ls_tadir>-ref_obj_name = ls_senvi-object.
+    DATA: lv_func  TYPE rs38l_fnam,
+          lv_pname TYPE pname.
+
+    LOOP AT it_senvi INTO DATA(ls_senvi).
+      "Translate when required
+      IF ls_senvi-type = 'BADI'. "Ignore
+        CONTINUE.
+
+      ELSEIF ls_senvi-type = 'INCL'. "Include is PROG
+        APPEND VALUE #(
+          ref_obj_type = 'PROG'
+          ref_obj_name = ls_senvi-object ) TO rt_tadir.
+
+      ELSEIF ls_senvi-type = 'STRU'.  "Structure is TABLE
+        APPEND VALUE #(
+          ref_obj_type = 'TABL'
+          ref_obj_name = ls_senvi-object ) TO rt_tadir.
+
+      ELSEIF ls_senvi-type = 'FUNC'. "Convert to function group
+        lv_func = ls_senvi-object.
+        CALL FUNCTION 'FUNCTION_INCLUDE_INFO'
+          IMPORTING
+            pname               = lv_pname
+          CHANGING
+            funcname            = lv_func
+          EXCEPTIONS
+            function_not_exists = 1
+            include_not_exists  = 2
+            group_not_exists    = 3
+            no_selections       = 4
+            no_function_include = 5
+            OTHERS              = 6.
+
+        IF sy-subrc = 0.
+          APPEND VALUE #(
+            ref_obj_type = 'FUGR'
+            ref_obj_name = lv_pname ) TO rt_tadir.
+        ENDIF.
+
+      ELSEIF ls_senvi-type = 'MESS'. "Always keep complete message area
+        APPEND VALUE #(
+          ref_obj_type = 'MSAG'
+          ref_obj_name = ls_senvi-encl_obj ) TO rt_tadir.
+
+      ELSEIF ls_senvi-type = 'DGT'. "Type Pool is always loaded for type to be used
+        APPEND VALUE #(
+          ref_obj_type = 'TYPE'
+          ref_obj_name = ls_senvi-encl_obj ) TO rt_tadir.
+
+      ELSEIF ls_senvi-type = 'OA' OR   "Object Attributes
+             ls_senvi-type = 'OE' OR   "Object ?
+             ls_senvi-type = 'OM' OR   "Object Method
+             ls_senvi-type = 'OT'.     "Object Type
+        APPEND VALUE #(
+          ref_obj_type = 'CLAS'
+          ref_obj_name = ls_senvi-encl_obj ) TO rt_tadir.
+
+*      ELSEIF ls_senvi-encl_obj <> space.
+*        BREAK-POINT. "Not sure what to do yet
+      ELSE.
+        APPEND VALUE #(
+          ref_obj_type = ls_senvi-type
+          ref_obj_name = ls_senvi-object ) TO rt_tadir.
       ENDIF.
     ENDLOOP.
 
   ENDMETHOD.
 
 
+  METHOD determine_package.
+*
+* Translate certain Object Types
+*
+    CLEAR rv_package.
+    DATA(lv_type) = iv_object_type.
+    DATA(lv_name) = iv_object_name.
+    IF iv_object_type = 'FUNC'.
+      SELECT SINGLE pname FROM tfdir INTO lv_name.
+      lv_type = 'FUGR'.
+    ENDIF.
+
+    SELECT SINGLE devclass FROM tadir INTO @rv_package
+       WHERE pgmid = 'R3TR'
+       AND object = @lv_type
+       AND obj_name = @lv_name.
+
+  ENDMETHOD.
+
+
   METHOD find_by_item.
 
-    DATA: lt_total   TYPE ty_tadir_tt,
-          ls_total   LIKE LINE OF lt_total,
-          ls_object  TYPE zif_abapgit_definitions=>ty_tadir,
-          lv_package TYPE tadir-devclass.
+    DATA: ls_object   TYPE zif_abapgit_definitions=>ty_tadir,
+          lt_packages TYPE tr_devclasses.
 
-    FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
+    "Determine Package Tree
+    DATA(lv_package) = determine_package( iv_object_type = iv_object_type
+                                          iv_object_name = iv_object_name ).
 
-    SELECT SINGLE devclass FROM tadir INTO lv_package
-      WHERE object = iv_object_type
-      AND obj_name = iv_object_name.
+    CHECK lv_package IS NOT INITIAL.
+    APPEND lv_package TO lt_packages.
+    set_package_tree( it_packages = lt_packages ).
+    clear_results( ).
 
     ls_object-object = iv_object_type.
     ls_object-obj_name = iv_object_name.
 
-    lt_total = get_dependencies(
-      iv_package = lv_package
+    get_dependencies(
       is_object  = ls_object
       iv_level   = 1 ).
 
-    SORT lt_total BY ref_obj_type ASCENDING ref_obj_name ASCENDING.
-    DELETE ADJACENT DUPLICATES FROM lt_total COMPARING ref_obj_type ref_obj_name.
-
-    LOOP AT lt_total INTO ls_total.
-      APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
-      <ls_tadir>-object   = ls_total-ref_obj_type.
-      <ls_tadir>-obj_name = ls_total-ref_obj_name.
+    LOOP AT mv_results INTO DATA(ls_result).
+      APPEND VALUE #(
+        object   = ls_result-ref_obj_type
+        obj_name = ls_result-ref_obj_name ) TO rt_tadir.
     ENDLOOP.
 
   ENDMETHOD.
 
 
-  METHOD find_by_package.
+  METHOD find_by_packages.
 
-    DATA lt_total TYPE ty_tadir_tt.
-    DATA lt_objects TYPE zif_abapgit_definitions=>ty_tadir_tt.
-    DATA ls_object LIKE LINE OF lt_objects.
+    "Determine Package Tree
+    set_package_tree( it_packages = it_packages ).
+    clear_results( ).
 
-    lt_objects = zcl_abapgit_factory=>get_tadir( )->read( iv_package ).
-    DELETE lt_objects WHERE object = 'DEVC'.
-    DELETE lt_objects WHERE object = 'TRAN'. " todo, hmm?
+    LOOP AT it_packages INTO DATA(lv_package).
+
+      DATA(ls_object) = VALUE zif_abapgit_definitions=>ty_tadir(
+              object   = 'DEVC'
+              obj_name = lv_package ).
+
+      cl_progress_indicator=>progress_indicate(
+        i_text               = |Process package, { ls_object-object } { ls_object-obj_name }|
+        i_processed          = sy-tabix
+        i_total              = lines( it_packages )
+        i_output_immediately = abap_true ).
+
+      get_dependencies(
+        is_object  = ls_object
+        iv_level   = 1 ).
+    ENDLOOP.
+
+*    DATA(lt_objects) = zcl_abapgit_factory=>get_tadir( )->read( iv_package ).
+*    DELETE lt_objects WHERE object = 'DEVC' and devclass = iv_package.
+*    DELETE lt_objects WHERE object = 'TRAN'. " todo, hmm?
 
 * todo, skip generated maintenance view function groups?
 
-    LOOP AT lt_objects INTO ls_object.
-      cl_progress_indicator=>progress_indicate(
-        i_text               = |Finding dependencies, { ls_object-object } { ls_object-obj_name }|
-        i_processed          = sy-tabix
-        i_total              = lines( lt_objects )
-        i_output_immediately = abap_true ).
+*    LOOP AT lt_objects INTO DATA(ls_object).
+*      cl_progress_indicator=>progress_indicate(
+*        i_text               = |Finding dependencies, { ls_object-object } { ls_object-obj_name }|
+*        i_processed          = sy-tabix
+*        i_total              = lines( lt_objects )
+*        i_output_immediately = abap_true ).
+*
+*      get_dependencies(
+*         is_object  = ls_object
+*         iv_level   = 1 ).
+*    ENDLOOP.
 
-      APPEND LINES OF get_dependencies(
-        iv_package = iv_package
-        is_object  = ls_object
-        iv_level   = 1 ) TO lt_total.
-    ENDLOOP.
-
-    SORT lt_total BY ref_obj_type ASCENDING ref_obj_name ASCENDING.
-    DELETE ADJACENT DUPLICATES FROM lt_total COMPARING ref_obj_type ref_obj_name.
-
-    DATA ls_total LIKE LINE OF lt_total.
-    FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
-    LOOP AT lt_total INTO ls_total.
-      APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
-      <ls_tadir>-object   = ls_total-ref_obj_type.
-      <ls_tadir>-obj_name = ls_total-ref_obj_name.
+    LOOP AT mv_results INTO DATA(ls_result).
+      APPEND VALUE #(
+        object   = ls_result-ref_obj_type
+        obj_name = ls_result-ref_obj_name ) TO rt_tadir.
     ENDLOOP.
 
   ENDMETHOD.
@@ -217,7 +315,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         CHANGING
           ct_tadir     = ct_tadir ).
     ELSE.
-      ASSERT 0 = 1.
+      FORMAT INTENSIFIED ON.
+      WRITE: / 'Level limit ', mv_max_level, 'reached for', lv_clsname, '. Not all dependencies collected.'.
+      FORMAT INTENSIFIED OFF.
+*      ASSERT 0 = 1.
     ENDIF.
 
   ENDMETHOD.
@@ -227,88 +328,172 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA: lv_obj_type    TYPE euobj-id,
           lt_tadir       TYPE ty_tadir_tt,
-          lt_environment TYPE senvi_tab.
+          lt_environment TYPE senvi_tab,
+          lv_types       TYPE envi_types,
+          lv_count       TYPE i,
+          lv_index       LIKE sy-tabix,
+          ls_tadir       TYPE LINE OF ty_tadir_tt.
 
+    WRITE: / '<', iv_level, is_object-object, is_object-obj_name.
 
-    IF iv_level > 1 AND is_object-object = 'CLAS'.
-      find_clas_dependencies(
-        EXPORTING
-          iv_name  = is_object-obj_name
-          iv_level = iv_level
-        CHANGING
-          ct_tadir = lt_tadir ).
-    ELSEIF is_object-object = 'TABL'.
-* do not traverse further
-    ELSE.
-      lv_obj_type = is_object-object.
-      CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
-        EXPORTING
-          obj_type       = lv_obj_type
-          object_name    = is_object-obj_name
-        TABLES
-          environment    = lt_environment
-        EXCEPTIONS
-          batch          = 1
-          batchjob_error = 2
-          not_executed   = 3
-          OTHERS         = 4.
-      IF sy-subrc = 3.
-        RETURN.
-      ENDIF.
-      ASSERT sy-subrc = 0.
+* Can not be used due to missing fields
+*    data(ls_tadir_obj) = zcl_abapgit_factory=>get_tadir( )->read_single( iv_object = is_object-object
+*                                                                     iv_obj_name = is_object-obj_name  ).
+    SELECT SINGLE object, obj_name, srcsystem, author, devclass, genflag
+      FROM tadir INTO @DATA(ls_tadir_obj)
+      WHERE pgmid = 'R3TR' AND object = @is_object-object AND obj_name = @is_object-obj_name.
 
-      lt_tadir = convert_senvi_to_tadir( lt_environment ).
+    IF sy-subrc NE 0 "no tadir"
+        OR ls_tadir_obj-genflag IS NOT INITIAL. "Ignore generated objects
+      RETURN.
     ENDIF.
+*
+* Determine direct dependency
+*
+*    IF iv_level > 1 AND is_object-object = 'CLAS'.
+*      find_clas_dependencies(
+*        EXPORTING
+*          iv_name  = is_object-obj_name
+*          iv_level = iv_level
+*        CHANGING
+*          ct_tadir = lt_tadir ).
+*    ELSE.
+    lv_obj_type = is_object-object.
+    lv_types = prepare_supported_types( ).
+
+    CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
+      EXPORTING
+        obj_type          = lv_obj_type
+        object_name       = is_object-obj_name
+        environment_types = lv_types
+        online_force      = 'X'
+      TABLES
+        environment       = lt_environment
+      EXCEPTIONS
+        batch             = 1
+        batchjob_error    = 2
+        not_executed      = 3
+        OTHERS            = 4.
+    IF sy-subrc = 3.
+      RETURN.
+    ENDIF.
+    ASSERT sy-subrc = 0.
+
+    lt_tadir = convert_senvi_to_tadir( lt_environment ).
+*    ENDIF.
 
     SORT lt_tadir BY ref_obj_type ASCENDING ref_obj_name ASCENDING.
     DELETE ADJACENT DUPLICATES FROM lt_tadir COMPARING ref_obj_type ref_obj_name.
 
-    DELETE lt_tadir WHERE ref_obj_type = 'FUGR'.
-    DELETE lt_tadir WHERE ref_obj_type = 'DTEL'.
-    DELETE lt_tadir WHERE ref_obj_type = 'SFSW'.
-    DELETE lt_tadir WHERE ref_obj_type = 'DEVC'.
-    DELETE lt_tadir WHERE ref_obj_type = 'SUSO'.
-    DELETE lt_tadir WHERE ref_obj_type = 'TYPE'.
-    DELETE lt_tadir WHERE ref_obj_type = 'TTYP'.
-    DELETE lt_tadir WHERE ref_obj_type = 'DOMA'.
-    DELETE lt_tadir WHERE ref_obj_type = 'XSLT'.
-    DELETE lt_tadir WHERE ref_obj_type = 'SHLP'.
-    DELETE lt_tadir WHERE ref_obj_type = 'SQLT'.
+    CHECK lines( lt_tadir ) > 0.
 
-    DATA ls_tadir LIKE LINE OF lt_tadir.
-    DATA lv_devclass TYPE devclass.
-    DATA lv_index TYPE i.
+*
+* Remove entries already in collection
+*
+    IF lines( mv_results ) > 0.
+      LOOP AT lt_tadir INTO ls_tadir.
+        lv_index = sy-tabix.
+        READ TABLE mv_results WITH KEY ref_obj_type = ls_tadir-ref_obj_type
+                                       ref_obj_name = ls_tadir-ref_obj_name
+                              TRANSPORTING NO FIELDS.
+        IF sy-subrc = 0.
+          DELETE lt_tadir INDEX lv_index.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
 
+    CHECK lines( lt_tadir ) > 0.
+
+*
+* Remove entries from own package (or sub packages)
+*
     LOOP AT lt_tadir INTO ls_tadir.
+      check ls_tadir-ref_obj_type ne 'DEVC'. "sub packages are not handled otherwise
       lv_index = sy-tabix.
-      SELECT SINGLE devclass FROM tadir INTO lv_devclass
-        WHERE pgmid = 'R3TR'
-        AND object = ls_tadir-ref_obj_type
-        AND obj_name = ls_tadir-ref_obj_name.
-* todo, should check if its a sub-package
-      IF sy-subrc <> 0 OR lv_devclass CP |{ iv_package }*|.
+      DATA(lv_devclass) = determine_package( iv_object_type   = ls_tadir-ref_obj_type
+                                              iv_object_name = ls_tadir-ref_obj_name ).
+      DATA(lv_flag) = 'X'.
+      IF sy-subrc EQ 0.
+        READ TABLE mv_packages FROM lv_devclass TRANSPORTING NO FIELDS.
+        IF sy-subrc NE 0.
+          CLEAR lv_flag.
+        ENDIF.
+      ENDIF.
+      IF lv_flag = 'X'.
         DELETE lt_tadir INDEX lv_index.
-        CONTINUE.
       ENDIF.
     ENDLOOP.
 
-    APPEND LINES OF lt_tadir TO rt_total.
+    "Add to dependency collection
+    APPEND LINES OF lt_tadir TO mv_results.
 
-    DATA ls_object TYPE zif_abapgit_definitions=>ty_tadir.
-    DATA lv_level LIKE iv_level.
+    SORT mv_results BY ref_obj_type ASCENDING ref_obj_name ASCENDING.
+    DELETE ADJACENT DUPLICATES FROM mv_results COMPARING ref_obj_type ref_obj_name.
 
+    DESCRIBE TABLE mv_results LINES sy-index.
+    WRITE: / 'C', iv_level, sy-index.
+
+
+*
+* if sap object, do not go deeper
+*
+    IF ( ls_tadir_obj-author = 'SAP' or ls_tadir_obj-author = 'SAP*' )
+       AND ls_tadir_obj-srcsystem = 'SAP'.
+      RETURN.
+    ENDIF.
+*
+*   Certain types do not have dependent object or are resolved by this call
+*
+    DELETE lt_tadir WHERE ref_obj_type = 'MSAG'. "Message AG
+    DELETE lt_tadir WHERE ref_obj_type = 'DTEL'. "Data Element
+*    DELETE lt_tadir WHERE ref_obj_type = 'DSG'.  "Type
+*
+* Try to find dependend objects
+*
     LOOP AT lt_tadir INTO ls_tadir.
-      ls_object-object   = ls_tadir-ref_obj_type.
-      ls_object-obj_name = ls_tadir-ref_obj_name.
+
+      DATA(ls_object) = VALUE zif_abapgit_definitions=>ty_tadir(
+        object   = ls_tadir-ref_obj_type
+        obj_name = ls_tadir-ref_obj_name ).
 
       lv_level = iv_level + 1.
 
       get_dependencies(
-        iv_package = iv_package
         is_object  = ls_object
         iv_level   = lv_level ).
     ENDLOOP.
 
+  ENDMETHOD.
+
+
+  METHOD is_sap_object.
+    IF is_tadir-author = 'SAP' AND is_tadir-srcsystem = 'SAP'.
+      rv_bool = abap_true.
+    ELSE.
+      CLEAR rv_bool.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD prepare_supported_types.
+    rs_types-prog = 'X'.
+    rs_types-fugr = 'X'.
+    rs_types-msag = 'X'.
+    rs_types-tran = 'X'.
+    rs_types-func = 'X'.
+    rs_types-tabl = 'X'.
+*    rs_types-doma = 'X'.
+    rs_types-dtel = 'X'.
+    rs_types-view = 'X'.
+    rs_types-para = 'X'.
+    rs_types-type = 'X'.
+    rs_types-ttyp = 'X'.
+    rs_types-stru = 'X'.
+*    rs_types-enqu = 'X'.
+    rs_types-clas = 'X'.
+    rs_types-intf = 'X'.
+    rs_types-ttab = 'X'.
+    rs_types-devc = 'X'.
   ENDMETHOD.
 
 
@@ -339,6 +524,18 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         WHEN OTHERS.
           CONTINUE. " todo ?
       ENDCASE.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD set_package_tree.
+
+    REFRESH mv_packages.
+    "Determine sub packages
+    LOOP AT it_packages INTO DATA(lv_package).
+      SELECT devclass FROM tdevc APPENDING TABLE mv_packages WHERE parentcl = lv_package.
+      APPEND lv_package TO mv_packages.
     ENDLOOP.
 
   ENDMETHOD.
