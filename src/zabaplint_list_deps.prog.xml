@@ -18,8 +18,8 @@
     <item>
      <ID>S</ID>
      <KEY>P_DEPTH</KEY>
-     <ENTRY>Depth</ENTRY>
-     <LENGTH>13</LENGTH>
+     <ENTRY>Max Depth for Classes</ENTRY>
+     <LENGTH>29</LENGTH>
     </item>
     <item>
      <ID>S</ID>
