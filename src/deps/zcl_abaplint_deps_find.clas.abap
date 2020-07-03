@@ -519,7 +519,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD set_package_tree.
 
-    REFRESH mv_packages.
+    CLEAR mv_packages[].
     "Determine sub packages
     LOOP AT it_packages INTO DATA(lv_package).
       SELECT devclass FROM tdevc APPENDING TABLE mv_packages WHERE parentcl = lv_package.

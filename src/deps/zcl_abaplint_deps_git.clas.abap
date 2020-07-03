@@ -106,6 +106,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
   METHOD get_local.
 
+<<<<<<< HEAD
     DATA lv_package LIKE LINE OF mv_packages.
     DATA lo_dep_find TYPE REF TO zcl_abaplint_deps_find.
     DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
@@ -120,6 +121,11 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       lt_local = lo_dep_ser->serialize( lt_tadir ).
       APPEND LINES OF lt_local TO rt_local.
     ENDLOOP.
+=======
+    DATA(lt_tadir) = NEW zcl_abaplint_deps_find( )->find_by_packages( mv_packages ).
+    DATA(lt_local) = NEW zcl_abaplint_deps_serializer( )->serialize( lt_tadir ).
+    APPEND LINES OF lt_local TO rt_local.
+>>>>>>> Adjusted depency generator
 
   ENDMETHOD.
 
