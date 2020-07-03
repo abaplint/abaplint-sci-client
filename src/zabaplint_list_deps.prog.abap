@@ -1,7 +1,8 @@
 REPORT zabaplint_list_deps.
 
 PARAMETERS: p_type TYPE tadir-object OBLIGATORY,
-            p_name TYPE tadir-obj_name OBLIGATORY.
+            p_name TYPE tadir-obj_name OBLIGATORY,
+            p_depth TYPE i DEFAULT 1.
 
 *
 * This report depends on the cross reference generated automatically in SAP
@@ -27,7 +28,7 @@ FORM run RAISING cx_static_check.
 
   CREATE OBJECT lo_find
     EXPORTING
-      iv_max_level = 1. "Not used anymore
+      iv_max_level = p_depth.
 
   lt_deps = lo_find->find_by_item(
     iv_object_type = p_type

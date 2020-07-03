@@ -18,12 +18,6 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Table of Development Classes</DESCRIPT>
     </SEOCOMPOTX>
-    <SEOCOMPOTX>
-     <CLSNAME>ZCL_ABAPLINT_DEPS_FIND</CLSNAME>
-     <CMPNAME>PREPARE_SUPPORTED_TYPES</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Preset the object types supported to reduce result</DESCRIPT>
-    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
