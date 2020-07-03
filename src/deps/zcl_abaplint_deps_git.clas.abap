@@ -103,13 +103,9 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
   METHOD get_local.
 
-    DATA: lv_package LIKE LINE OF mv_packages.
-
-    LOOP AT mv_packages INTO lv_package.
-      DATA(lt_tadir) = NEW zcl_abaplint_deps_find( )->find_by_package( lv_package ).
-      DATA(lt_local) = NEW zcl_abaplint_deps_serializer( )->serialize( lt_tadir ).
-      APPEND LINES OF lt_local TO rt_local.
-    ENDLOOP.
+    DATA(lt_tadir) = NEW zcl_abaplint_deps_find( )->find_by_packages( mv_packages ).
+    DATA(lt_local) = NEW zcl_abaplint_deps_serializer( )->serialize( lt_tadir ).
+    APPEND LINES OF lt_local TO rt_local.
 
   ENDMETHOD.
 
