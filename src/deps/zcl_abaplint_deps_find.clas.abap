@@ -90,6 +90,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         APPEND VALUE #(
           ref_obj_type = 'PROG'
           ref_obj_name = ls_senvi-object ) TO rt_tadir.
+      ELSEIF ls_senvi-type = 'STRU'.
+        APPEND VALUE #(
+          ref_obj_type = 'TABL'
+          ref_obj_name = ls_senvi-object ) TO rt_tadir.
       ENDIF.
     ENDLOOP.
 
