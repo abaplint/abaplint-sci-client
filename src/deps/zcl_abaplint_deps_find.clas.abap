@@ -153,76 +153,23 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
 * do not use CL_WB_RIS_ENVIRONMENT, it does not exist in 740sp08
 
-    DATA: ls_senvi   LIKE LINE OF it_senvi,
-          ls_tadir   LIKE LINE OF rt_tadir,
-          lv_clstype TYPE seoclstype.
-
-
-    LOOP AT it_senvi INTO ls_senvi.
-      "Translate when required
-      IF ls_senvi-type = 'BADI'. "Ignore
-        CONTINUE.
-
-      ELSEIF ls_senvi-type = 'INCL'. "Include is PROG
-        CLEAR ls_tadir.
-        ls_tadir-ref_obj_type = 'PROG'.
-        ls_tadir-ref_obj_name = ls_senvi-object.
-        INSERT ls_tadir INTO TABLE rt_tadir.
-
-      ELSEIF ls_senvi-type = 'STRU'.  "Structure is TABLE
-        CLEAR ls_tadir.
-        ls_tadir-ref_obj_type = 'TABL'.
-        ls_tadir-ref_obj_name = ls_senvi-object.
-        INSERT ls_tadir INTO TABLE rt_tadir.
-
-      ELSEIF ls_senvi-type = 'FUNC'. "Convert to function group
-        IF ls_senvi-encl_obj IS NOT INITIAL.
-          CLEAR ls_tadir.
-          ls_tadir-ref_obj_type = 'FUGR'.
-          ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-          INSERT ls_tadir INTO TABLE rt_tadir.
-        ENDIF.
-
-      ELSEIF ls_senvi-type = 'MESS'. "Always keep complete message area
-        IF ls_senvi-encl_obj IS NOT INITIAL.
-          CLEAR ls_tadir.
-          ls_tadir-ref_obj_type = 'MSAG'.
-          ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-          INSERT ls_tadir INTO TABLE rt_tadir.
-        ENDIF.
-
-      ELSEIF ls_senvi-type = 'DGT'. "Type Pool is always loaded for type to be used
-        CLEAR ls_tadir.
-        ls_tadir-ref_obj_type = 'TYPE'.
-        ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-        INSERT ls_tadir INTO TABLE rt_tadir.
-
-      ELSEIF ls_senvi-type = 'OA' OR   "Object Attributes
-             ls_senvi-type = 'OE' OR   "Object Events
-             ls_senvi-type = 'OM' OR   "Object Method
-             ls_senvi-type = 'OT'.     "Object Type
-        IF ls_senvi-encl_obj IS NOT INITIAL.
-          "Determine class or interface
-          SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = ls_senvi-encl_obj.
-
-          IF lv_clstype = seoc_clstype_class.
-            CLEAR ls_tadir.
-            ls_tadir-ref_obj_type = 'CLAS'.
-            ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-            INSERT ls_tadir INTO TABLE rt_tadir.
-          ELSE.
-            CLEAR ls_tadir.
-            ls_tadir-ref_obj_type = 'INTF'.
-            ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-            INSERT ls_tadir INTO TABLE rt_tadir.
-          ENDIF.
-        ENDIF.
-
-      ELSE.
-        CLEAR ls_tadir.
-        ls_tadir-ref_obj_type = ls_senvi-type.
-        ls_tadir-ref_obj_name = ls_senvi-object.
-        INSERT ls_tadir INTO TABLE rt_tadir.
+    LOOP AT it_senvi INTO DATA(ls_senvi).
+      IF ls_senvi-type = 'CLAS'
+          OR ls_senvi-type = 'DTEL'
+          OR ls_senvi-type = 'TABL'
+          OR ls_senvi-type = 'TYPE'
+          OR ls_senvi-type = 'INTF'.
+        APPEND VALUE #(
+          ref_obj_type = ls_senvi-type
+          ref_obj_name = ls_senvi-object ) TO rt_tadir.
+      ELSEIF ls_senvi-type = 'INCL'.
+        APPEND VALUE #(
+          ref_obj_type = 'PROG'
+          ref_obj_name = ls_senvi-object ) TO rt_tadir.
+      ELSEIF ls_senvi-type = 'STRU'.
+        APPEND VALUE #(
+          ref_obj_type = 'TABL'
+          ref_obj_name = ls_senvi-object ) TO rt_tadir.
       ENDIF.
     ENDLOOP.
 
