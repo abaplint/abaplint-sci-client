@@ -1,86 +1,86 @@
-class ZCL_ABAPLINT_DEPS_FIND definition
-  public
-  create public .
+CLASS zcl_abaplint_deps_find DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  methods CONSTRUCTOR
-    importing
-      !IV_MAX_LEVEL type I default 20 .
-  methods FIND_BY_ITEM
-    importing
-      !IV_OBJECT_TYPE type TROBJTYPE
-      !IV_OBJECT_NAME type SOBJ_NAME
-    returning
-      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
-  methods FIND_BY_PACKAGES
-    importing
-      !IT_PACKAGES type TR_DEVCLASSES
-    returning
-      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
-protected section.
+    METHODS constructor
+      IMPORTING
+        !iv_max_level TYPE i DEFAULT 20 .
+    METHODS find_by_item
+      IMPORTING
+        !iv_object_type TYPE trobjtype
+        !iv_object_name TYPE sobj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
+      RAISING
+        zcx_abapgit_exception .
+    METHODS find_by_packages
+      IMPORTING
+        !it_packages    TYPE tr_devclasses
+      RETURNING
+        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
+      RAISING
+        zcx_abapgit_exception .
+PROTECTED SECTION.
 
-  types:
+  TYPES:
     BEGIN OF ty_tadir,
-        ref_obj_type TYPE trobjtype,
-        ref_obj_name TYPE sobj_name,
-      END OF ty_tadir .
-  types:
+      ref_obj_type TYPE trobjtype,
+      ref_obj_name TYPE sobj_name,
+    END OF ty_tadir .
+  TYPES:
     ty_tadir_tt TYPE STANDARD TABLE OF ty_tadir WITH DEFAULT KEY .
 
-  data MV_MAX_LEVEL type I .
+  DATA mv_max_level TYPE i .
 
-  methods CONVERT_SENVI_TO_TADIR
-    importing
-      !IT_SENVI type SENVI_TAB
-    returning
-      value(RT_TADIR) type TY_TADIR_TT .
-  methods FIND_CLAS_DEPENDENCIES
-    importing
-      !IV_NAME type TADIR-OBJ_NAME
-      !IV_LEVEL type I
-    changing
-      !CT_TADIR type TY_TADIR_TT .
-  methods GET_DEPENDENCIES
-    importing
-      !IS_OBJECT type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR
-      !IV_LEVEL type I .
-  methods RESOLVE
-    importing
-      !IT_WBCROSSGT type WBCROSSGTT
-    changing
-      !CT_TADIR type TY_TADIR_TT .
-  methods UPDATE_INDEX
-    importing
-      !IV_NAME type SEOCLSNAME .
-private section.
+  METHODS convert_senvi_to_tadir
+    IMPORTING
+      !it_senvi       TYPE senvi_tab
+    RETURNING
+      VALUE(rt_tadir) TYPE ty_tadir_tt .
+  METHODS find_clas_dependencies
+    IMPORTING
+      !iv_name  TYPE tadir-obj_name
+      !iv_level TYPE i
+    CHANGING
+      !ct_tadir TYPE ty_tadir_tt .
+  METHODS get_dependencies
+    IMPORTING
+      !is_object TYPE zif_abapgit_definitions=>ty_tadir
+      !iv_level  TYPE i .
+  METHODS resolve
+    IMPORTING
+      !it_wbcrossgt TYPE wbcrossgtt
+    CHANGING
+      !ct_tadir     TYPE ty_tadir_tt .
+  METHODS update_index
+    IMPORTING
+      !iv_name TYPE seoclsname .
+PRIVATE SECTION.
 
-  data MV_PACKAGES type TR_DEVCLASSES .
-  data MV_RESULTS type TY_TADIR_TT .
+  DATA mv_packages TYPE tr_devclasses .
+  DATA mv_results TYPE ty_tadir_tt .
 
-  methods CLEAN_OWN_PACKAGES .
-  methods CLEAR_RESULTS .
-  methods DETERMINE_PACKAGE
-    importing
-      !IV_OBJECT_TYPE type TROBJTYPE
-      !IV_OBJECT_NAME type SOBJ_NAME
-    returning
-      value(RV_PACKAGE) type DEVCLASS .
-  methods PREPARE_SUPPORTED_TYPES
-    returning
-      value(RS_TYPES) type ENVI_TYPES .
-  methods SET_PACKAGE_TREE
-    importing
-      !IT_PACKAGES type TR_DEVCLASSES .
-  methods IS_SAP_OBJECT
-    importing
-      !IS_TADIR type TADIR
-    returning
-      value(RV_BOOL) type FLAG .
+  METHODS clean_own_packages .
+  METHODS clear_results .
+  METHODS determine_package
+    IMPORTING
+      !iv_object_type   TYPE trobjtype
+      !iv_object_name   TYPE sobj_name
+    RETURNING
+      VALUE(rv_package) TYPE devclass .
+  METHODS prepare_supported_types
+    RETURNING
+      VALUE(rs_types) TYPE envi_types .
+  METHODS set_package_tree
+    IMPORTING
+      !it_packages TYPE tr_devclasses .
+  METHODS is_sap_object
+    IMPORTING
+      !is_tadir      TYPE tadir
+    RETURNING
+      VALUE(rv_bool) TYPE flag .
 ENDCLASS.
 
 
