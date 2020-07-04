@@ -37,15 +37,20 @@ START-OF-SELECTION.
 
 FORM deps.
 
+  DATA lo_deps TYPE REF TO zcl_abaplint_deps_git.
+  DATA lx_error TYPE REF TO zcx_abapgit_exception.
+
   SELECT devclass FROM tdevc INTO TABLE ltb_devc WHERE devclass IN s_devc.
   TRY.
-      NEW zcl_abaplint_deps_git(
-        iv_git_url     = CONV #( p_git )
-        iv_git_name    = p_cname
-        iv_git_email   = p_cemail
-        iv_git_comment = p_ccomm
-        iv_packages    = ltb_devc )->run( p_test ).
-    CATCH zcx_abapgit_exception INTO DATA(lx_error).
+      CREATE OBJECT lo_deps
+        EXPORTING
+          iv_git_url     = |{ p_git }|
+          iv_git_name    = p_cname
+          iv_git_email   = p_cemail
+          iv_git_comment = p_ccomm
+          iv_packages    = ltb_devc.
+      lo_deps->run( p_test ).
+    CATCH zcx_abapgit_exception INTO lx_error.
       MESSAGE lx_error TYPE 'E'.
   ENDTRY.
 
