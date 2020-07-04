@@ -100,7 +100,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     APPEND lv_tmp TO rt_code.
 
     DATA ls_include LIKE LINE OF lt_includes.
-*    DATA ls_method LIKE LINE OF lt_methods.
 
     LOOP AT lt_includes INTO ls_include.
       READ TABLE lt_methods TRANSPORTING NO FIELDS
