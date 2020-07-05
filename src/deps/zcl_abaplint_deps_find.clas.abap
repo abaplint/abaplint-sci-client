@@ -118,6 +118,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA: lv_func  TYPE rs38l_fnam,
           lv_pname TYPE pname.
+    DATA clstype TYPE seoclstype.
+    DATA cifkey TYPE seoclskey.
 
     LOOP AT it_senvi INTO DATA(ls_senvi).
       "Translate when required
@@ -154,13 +156,37 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           ref_obj_name = ls_senvi-encl_obj ) TO rt_tadir.
 
       ELSEIF ls_senvi-type = 'OA' OR   "Object Attributes
-             ls_senvi-type = 'OE' OR   "Object ?
+             ls_senvi-type = 'OE' OR   "Object Events
              ls_senvi-type = 'OM' OR   "Object Method
              ls_senvi-type = 'OT'.     "Object Type
         IF ls_senvi-encl_obj IS NOT INITIAL.
-          APPEND VALUE #(
+          "Determine class or interface
+          cifkey-clsname = ls_senvi-encl_obj.
+
+          CALL FUNCTION 'SEO_CLIF_GET'
+            EXPORTING
+              cifkey       = cifkey
+              version      = seoc_version_active
+              state        = '1'
+            IMPORTING
+              clstype      = clstype
+            EXCEPTIONS
+              not_existing = 1
+              deleted      = 2
+              model_only   = 3
+              OTHERS       = 4.
+          IF sy-subrc <> 0.
+            RETURN.
+          ENDIF.
+          IF clstype EQ seoc_clstype_class.
+            APPEND VALUE #(
             ref_obj_type = 'CLAS'
             ref_obj_name = ls_senvi-encl_obj ) TO rt_tadir.
+          ELSE.
+            APPEND VALUE #(
+            ref_obj_type = 'INTF'
+            ref_obj_name = ls_senvi-encl_obj ) TO rt_tadir.
+          ENDIF.
         ENDIF.
 
       ELSE.
