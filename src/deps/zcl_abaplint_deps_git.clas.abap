@@ -68,6 +68,8 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
     CREATE OBJECT rs_stage-stage.
 
+    DATA ls_local LIKE LINE OF it_local.
+
     LOOP AT it_local INTO ls_local.
       READ TABLE it_remote WITH KEY
         path = ls_local-path
@@ -82,6 +84,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
+    DATA ls_remote LIKE LINE OF it_remote.
     LOOP AT it_remote INTO ls_remote.
       READ TABLE it_local WITH KEY
         path = ls_remote-path
@@ -111,20 +114,20 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
   METHOD get_local.
 
+    DATA lv_package LIKE LINE OF mv_packages.
     DATA lo_dep_find TYPE REF TO zcl_abaplint_deps_find.
     DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
     DATA lt_tadir TYPE zif_abapgit_definitions=>ty_tadir_tt.
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
 
-    CREATE OBJECT lo_dep_find
-      EXPORTING
-        iv_max_level = mv_depth
-        is_output    = mf_is_output.
+    CREATE OBJECT lo_dep_find.
     CREATE OBJECT lo_dep_ser.
 
-    lt_tadir = lo_dep_find->find_by_packages( mv_packages ).
-    lt_local = lo_dep_ser->serialize( lt_tadir ).
-    APPEND LINES OF lt_local TO rt_local.
+    LOOP AT mv_packages INTO lv_package.
+      lt_tadir = lo_dep_find->find_by_package( lv_package ).
+      lt_local = lo_dep_ser->serialize( lt_tadir ).
+      APPEND LINES OF lt_local TO rt_local.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -132,19 +135,9 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
   METHOD run.
 
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
-    DATA ls_remote TYPE zcl_abapgit_git_porcelain=>ty_pull_result.
-    DATA ls_stage TYPE ty_stage.
-
-    mv_depth = iv_depth.
-    mf_is_output = is_output.
     lt_local = get_local( ).
 
-    cl_progress_indicator=>progress_indicate(
-      i_text               = |GIT, Pulling files from Repository|
-      i_processed          = 1
-      i_total              = 3
-      i_output_immediately = abap_true ).
-
+    DATA ls_remote TYPE zcl_abapgit_git_porcelain=>ty_pull_result.
     ls_remote = zcl_abapgit_git_porcelain=>pull(
       iv_url         = mv_git_url
       iv_branch_name = mv_branch ).
@@ -157,12 +150,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
     DELETE ls_remote-files WHERE path <> '/src/'.
 
-    cl_progress_indicator=>progress_indicate(
-      i_text               = |GIT, Staging files|
-      i_processed          = 2
-      i_total              = 3
-      i_output_immediately = abap_true ).
-
+    DATA ls_stage TYPE ty_stage.
     ls_stage = build_stage(
       it_local  = lt_local
       it_remote = ls_remote-files ).

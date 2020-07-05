@@ -58,6 +58,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     CONCATENATE LINES OF lt_text INTO lv_string SEPARATED BY cl_abap_char_utilities=>newline.
 
+    FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
     LOOP AT cs_files-files ASSIGNING <ls_file> WHERE filename CP '*.clas.abap'.
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
     ENDLOOP.
@@ -67,13 +68,14 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
   METHOD build_code.
 
-    DATA lt_text TYPE abaptxt255_tab.
+    DATA lt_text LIKE rt_code.
     DATA lv_tmp LIKE LINE OF rt_code.
     DATA lo_class TYPE REF TO cl_oo_class.
     DATA lv_final TYPE abap_bool.
     DATA lt_includes TYPE seop_methods_w_include.
     DATA lt_methods TYPE seo_methods.
     DATA lv_include TYPE program.
+
     TRY.
         lo_class ?= cl_oo_class=>get_instance( |{ iv_class }| ).
       CATCH cx_class_not_existent.
@@ -147,11 +149,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   METHOD serialize.
 
     DATA ls_tadir LIKE LINE OF it_tadir.
-    DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
-    DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
-
-    FIELD-SYMBOLS <ls_file> LIKE LINE OF rt_files.
-
     LOOP AT it_tadir INTO ls_tadir.
       IF sy-tabix MOD 10 = 0.
         cl_progress_indicator=>progress_indicate(
@@ -161,9 +158,11 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
           i_output_immediately = abap_true ).
       ENDIF.
 
+      DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
       ls_item-obj_type = ls_tadir-object.
       ls_item-obj_name = ls_tadir-obj_name.
 
+      DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
       ls_files_item = zcl_abapgit_objects=>serialize(
         is_item                       = ls_item
         iv_serialize_master_lang_only = abap_true
@@ -174,6 +173,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       APPEND LINES OF ls_files_item-files TO rt_files.
     ENDLOOP.
 
+    FIELD-SYMBOLS <ls_file> LIKE LINE OF rt_files.
     LOOP AT rt_files ASSIGNING <ls_file>.
       <ls_file>-path = '/src/'.
     ENDLOOP.
