@@ -11,14 +11,6 @@
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>ZCL_ABAPLINT_DEPS_FIND</CLSNAME>
-     <CMPNAME>MV_PACKAGES</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Table of Development Classes</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

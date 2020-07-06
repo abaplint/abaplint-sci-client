@@ -91,7 +91,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       READ TABLE mv_results
         WITH KEY ref_obj_type = 'DEVC' ref_obj_name = lv_package
         TRANSPORTING NO FIELDS.
-      IF sy-subrc EQ 0.
+      IF sy-subrc = 0.
         DELETE mv_results INDEX sy-tabix.
       ENDIF.
     ENDLOOP.
@@ -112,8 +112,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
 * do not use CL_WB_RIS_ENVIRONMENT, it does not exist in 740sp08
 
-    DATA: lv_func  TYPE rs38l_fnam,
-          lv_pname TYPE pname.
     DATA: ls_senvi LIKE LINE OF it_senvi,
           lv_clstype type SEOCLSTYPE.
 
@@ -161,7 +159,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           "Determine class or interface
           SELECT SINGLE clstype FROM seoclass INTO @lv_clstype WHERE clsname = @ls_senvi-encl_obj.
 
-          IF lv_clstype EQ seoc_clstype_class.
+          IF lv_clstype = seoc_clstype_class.
             APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
             <ls_tadir>-ref_obj_type = 'CLAS'.
             <ls_tadir>-ref_obj_name = ls_senvi-encl_obj.
@@ -325,7 +323,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       FORMAT INTENSIFIED ON.
       WRITE: / 'Level limit ', mv_max_level, 'reached for', lv_clsname, '. Not all dependencies collected.'.
       FORMAT INTENSIFIED OFF.
-*      ASSERT 0 = 1.
     ENDIF.
 
   ENDMETHOD.
@@ -350,9 +347,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             genflag   TYPE genflag,
           END OF ls_tadir_obj.
 
-* Can not be used due to missing fields
-*    data(ls_tadir_obj) = zcl_abapgit_factory=>get_tadir( )->read_single( iv_object = is_object-object
-*                                                                     iv_obj_name = is_object-obj_name  ).
     SELECT SINGLE object, obj_name, srcsystem, author, devclass, genflag
       FROM tadir INTO @ls_tadir_obj
       WHERE pgmid = 'R3TR' AND object = @is_object-object AND obj_name = @is_object-obj_name.
@@ -452,7 +446,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
 * if sap object, do not go deeper
 *
-    IF ( ls_tadir_obj-author = 'SAP' OR ls_tadir_obj-author = 'SAP*' )
+    IF ( ls_tadir_obj-author = 'SAP'
+         OR ls_tadir_obj-author = 'SAP*' )
        AND ls_tadir_obj-srcsystem = 'SAP'.
       RETURN.
     ENDIF.
@@ -461,7 +456,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
     DELETE lt_tadir WHERE ref_obj_type = 'MSAG'. "Message AG
     DELETE lt_tadir WHERE ref_obj_type = 'DTEL'. "Data Element
-*    DELETE lt_tadir WHERE ref_obj_type = 'DSG'.  "Type
 *
 * Try to find dependend objects
 *
@@ -488,14 +482,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     rs_types-tran = 'X'.
     rs_types-func = 'X'.
     rs_types-tabl = 'X'.
-*    rs_types-doma = 'X'.
+    rs_types-doma = ' '.
     rs_types-dtel = 'X'.
     rs_types-view = 'X'.
     rs_types-para = 'X'.
     rs_types-type = 'X'.
     rs_types-ttyp = 'X'.
     rs_types-stru = 'X'.
-*    rs_types-enqu = 'X'.
+    rs_types-enqu = ' '.
     rs_types-clas = 'X'.
     rs_types-intf = 'X'.
     rs_types-ttab = 'X'.
