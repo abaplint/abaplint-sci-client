@@ -54,14 +54,20 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
   METHOD build_stage.
 
+    DATA ls_remote LIKE LINE OF it_remote.
+    DATA ls_local LIKE LINE OF it_local.
+
     rs_stage-comment-committer-email = mv_git_email.
     rs_stage-comment-committer-name = mv_git_name.
     rs_stage-comment-comment = mv_git_comment.
 
     CREATE OBJECT rs_stage-stage.
 
+<<<<<<< HEAD
     DATA ls_local LIKE LINE OF it_local.
 
+=======
+>>>>>>> downport 702
     LOOP AT it_local INTO ls_local.
       READ TABLE it_remote WITH KEY
         path = ls_local-path
@@ -76,7 +82,10 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
+<<<<<<< HEAD
     DATA ls_remote LIKE LINE OF it_remote.
+=======
+>>>>>>> downport 702
     LOOP AT it_remote INTO ls_remote.
       READ TABLE it_local WITH KEY
         path = ls_remote-path
@@ -107,7 +116,10 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
   METHOD get_local.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     DATA lv_package LIKE LINE OF mv_packages.
+=======
+>>>>>>> downport 702
     DATA lo_dep_find TYPE REF TO zcl_abaplint_deps_find.
     DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
     DATA lt_tadir TYPE zif_abapgit_definitions=>ty_tadir_tt.
@@ -116,6 +128,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     CREATE OBJECT lo_dep_find.
     CREATE OBJECT lo_dep_ser.
 
+<<<<<<< HEAD
     LOOP AT mv_packages INTO lv_package.
       lt_tadir = lo_dep_find->find_by_package( lv_package ).
       lt_local = lo_dep_ser->serialize( lt_tadir ).
@@ -124,6 +137,10 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 =======
     DATA(lt_tadir) = NEW zcl_abaplint_deps_find( )->find_by_packages( mv_packages ).
     DATA(lt_local) = NEW zcl_abaplint_deps_serializer( )->serialize( lt_tadir ).
+=======
+    lt_tadir = lo_dep_find->find_by_packages( mv_packages ).
+    lt_local = lo_dep_ser->serialize( lt_tadir ).
+>>>>>>> downport 702
     APPEND LINES OF lt_local TO rt_local.
 >>>>>>> Adjusted depency generator
 
@@ -133,9 +150,17 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
   METHOD run.
 
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
+<<<<<<< HEAD
     lt_local = get_local( ).
 
     DATA ls_remote TYPE zcl_abapgit_git_porcelain=>ty_pull_result.
+=======
+    DATA ls_remote TYPE zcl_abapgit_git_porcelain=>ty_pull_result.
+    DATA ls_stage TYPE ty_stage.
+
+    lt_local = get_local( ).
+
+>>>>>>> downport 702
     ls_remote = zcl_abapgit_git_porcelain=>pull(
       iv_url         = mv_git_url
       iv_branch_name = mv_branch ).
@@ -148,7 +173,10 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
     DELETE ls_remote-files WHERE path <> '/src/'.
 
+<<<<<<< HEAD
     DATA ls_stage TYPE ty_stage.
+=======
+>>>>>>> downport 702
     ls_stage = build_stage(
       it_local  = lt_local
       it_remote = ls_remote-files ).
