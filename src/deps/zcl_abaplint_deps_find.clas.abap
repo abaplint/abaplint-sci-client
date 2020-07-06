@@ -111,8 +111,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   METHOD convert_senvi_to_tadir.
 
 * do not use CL_WB_RIS_ENVIRONMENT, it does not exist in 740sp08
-    DATA ls_senvi LIKE LINE OF it_senvi.
-    FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
     DATA: ls_senvi LIKE LINE OF it_senvi,
           lv_clstype type SEOCLSTYPE.
@@ -209,15 +207,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA: ls_object   TYPE zif_abapgit_definitions=>ty_tadir,
           lt_packages TYPE tr_devclasses.
-<<<<<<< HEAD
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
-=======
-
-    FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
-
->>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
     "Determine Package Tree
     DATA(lv_package) = determine_package( iv_object_type = iv_object_type
                                           iv_object_name = iv_object_name ).
@@ -250,7 +242,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   METHOD find_by_packages.
 
     data: lv_package like line of it_packages.
-<<<<<<< HEAD
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
@@ -260,17 +251,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     LOOP AT it_packages INTO lv_package.
 
-=======
-
-    FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
-
-    "Determine Package Tree
-    set_package_tree( it_packages = it_packages ).
-    clear_results( ).
-
-    LOOP AT it_packages INTO lv_package.
-
->>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
       DATA(ls_object) = VALUE zif_abapgit_definitions=>ty_tadir(
               object   = 'DEVC'
               obj_name = lv_package ).
@@ -319,18 +299,18 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       APPEND cl_oo_classname_service=>get_prosec_name( |{ iv_name }| ) TO lt_includes.
     ENDIF.
 
-    SELECT * FROM wbcrossgt INTO CORRESPONDING FIELDS OF TABLE lt_wbcrossgt
-      FOR ALL ENTRIES IN lt_includes
-      WHERE include = lt_includes-table_line
-      AND name <> iv_name.
+    SELECT * FROM wbcrossgt INTO CORRESPONDING FIELDS OF TABLE @lt_wbcrossgt
+      FOR ALL ENTRIES IN @lt_includes
+      WHERE include = @lt_includes-table_line
+      AND name <> @iv_name.
     IF lines( lt_wbcrossgt ) = 0.
 * update so it is correct in the next run
       update_index( lv_clsname ).
 
-      SELECT * FROM wbcrossgt INTO CORRESPONDING FIELDS OF TABLE lt_wbcrossgt
-        FOR ALL ENTRIES IN lt_includes
-        WHERE include = lt_includes-table_line
-        AND name <> iv_name.
+      SELECT * FROM wbcrossgt INTO CORRESPONDING FIELDS OF TABLE @lt_wbcrossgt
+        FOR ALL ENTRIES IN @lt_includes
+        WHERE include = @lt_includes-table_line
+        AND name <> @iv_name.
     ENDIF.
 
     IF iv_level < mv_max_level.
@@ -485,7 +465,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         object   = ls_tadir-ref_obj_type
         obj_name = ls_tadir-ref_obj_name ).
 
-      lv_level = iv_level + 1.
+      DATA(lv_level) = iv_level + 1.
 
       get_dependencies(
         is_object  = ls_object
@@ -521,10 +501,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA ls_wbcrossgt LIKE LINE OF it_wbcrossgt.
     DATA lv_clstype TYPE seoclass-clstype.
-<<<<<<< HEAD
-=======
 
->>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF ct_tadir.
 
     LOOP AT it_wbcrossgt INTO ls_wbcrossgt.
@@ -535,21 +512,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             CASE lv_clstype.
               WHEN '0'.
                 APPEND INITIAL LINE TO ct_tadir ASSIGNING <ls_tadir>.
-<<<<<<< HEAD
-                <ls_tadir>-ref_obj_type = 'CLAS'.
-=======
                 <ls_tadir>-ref_obj_type = 'CLASS'.
->>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
                 <ls_tadir>-ref_obj_name = ls_wbcrossgt-name.
 
               WHEN '1'.
                 APPEND INITIAL LINE TO ct_tadir ASSIGNING <ls_tadir>.
                 <ls_tadir>-ref_obj_type = 'INTF'.
                 <ls_tadir>-ref_obj_name = ls_wbcrossgt-name.
-<<<<<<< HEAD
-=======
 
->>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
               WHEN OTHERS.
                 ASSERT 0 = 1.
             ENDCASE.
