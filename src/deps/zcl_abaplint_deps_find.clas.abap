@@ -209,9 +209,15 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA: ls_object   TYPE zif_abapgit_definitions=>ty_tadir,
           lt_packages TYPE tr_devclasses.
+<<<<<<< HEAD
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
+=======
+
+    FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
+
+>>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
     "Determine Package Tree
     DATA(lv_package) = determine_package( iv_object_type = iv_object_type
                                           iv_object_name = iv_object_name ).
@@ -244,6 +250,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   METHOD find_by_packages.
 
     data: lv_package like line of it_packages.
+<<<<<<< HEAD
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
@@ -253,6 +260,17 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     LOOP AT it_packages INTO lv_package.
 
+=======
+
+    FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
+
+    "Determine Package Tree
+    set_package_tree( it_packages = it_packages ).
+    clear_results( ).
+
+    LOOP AT it_packages INTO lv_package.
+
+>>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
       DATA(ls_object) = VALUE zif_abapgit_definitions=>ty_tadir(
               object   = 'DEVC'
               obj_name = lv_package ).
@@ -503,6 +521,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA ls_wbcrossgt LIKE LINE OF it_wbcrossgt.
     DATA lv_clstype TYPE seoclass-clstype.
+<<<<<<< HEAD
+=======
+
+>>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF ct_tadir.
 
     LOOP AT it_wbcrossgt INTO ls_wbcrossgt.
@@ -513,13 +535,21 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             CASE lv_clstype.
               WHEN '0'.
                 APPEND INITIAL LINE TO ct_tadir ASSIGNING <ls_tadir>.
+<<<<<<< HEAD
                 <ls_tadir>-ref_obj_type = 'CLAS'.
+=======
+                <ls_tadir>-ref_obj_type = 'CLASS'.
+>>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
                 <ls_tadir>-ref_obj_name = ls_wbcrossgt-name.
 
               WHEN '1'.
                 APPEND INITIAL LINE TO ct_tadir ASSIGNING <ls_tadir>.
                 <ls_tadir>-ref_obj_type = 'INTF'.
                 <ls_tadir>-ref_obj_name = ls_wbcrossgt-name.
+<<<<<<< HEAD
+=======
+
+>>>>>>> 261f5bb4a510291e75ed90a268692aec03b07753
               WHEN OTHERS.
                 ASSERT 0 = 1.
             ENDCASE.
