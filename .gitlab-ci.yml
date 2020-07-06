@@ -22,7 +22,7 @@ abaplint:
 
 do-pull:
   stage: pull
-  extends: .do-pull
+  extends: .do-pull-master
 
 do-push:
   stage: push
