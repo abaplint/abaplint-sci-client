@@ -4,6 +4,7 @@
 stages:
   - init
   - pull
+  - push
   - test
 
 include:
@@ -22,3 +23,7 @@ abaplint:
 do-pull:
   stage: pull
   extends: .do-pull
+
+do-push:
+  stage: push
+  extends: .do-push
