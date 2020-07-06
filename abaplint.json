@@ -20,7 +20,12 @@
   "syntax": {
     "version": "v750",
     "errorNamespace": "^(Z|Y)",
-    "globalConstants": [],
+    "globalConstants": 
+    [
+        "seoc_version_active",
+        "seoc_clstype_class"
+    ],
+
     "globalMacros": []
   },
   "rules": {
