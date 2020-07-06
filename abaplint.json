@@ -21,10 +21,10 @@
     "version": "v702",
     "errorNamespace": "^(Z|Y)",
     "globalConstants": 
-    {
-        "seoc_version_active": true,
-        "seoc_clstype_class": true
-    },
+    [
+        "seoc_version_active",
+        "seoc_clstype_class"
+    ],
     "globalMacros": []
   },
   "rules": {
