@@ -26,4 +26,4 @@ do-pull:
 
 do-push:
   stage: push
-  extends: .do-push-master
+  extends: .do-fork-push-master
