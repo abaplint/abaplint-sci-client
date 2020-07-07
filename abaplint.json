@@ -23,7 +23,8 @@
     "globalConstants": 
     [
         "seoc_version_active",
-        "seoc_clstype_class"
+        "seoc_clstype_class",
+        "seoc_clstype_interface"
     ],
     "globalMacros": []
   },
