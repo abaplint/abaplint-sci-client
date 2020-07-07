@@ -6,7 +6,8 @@ CLASS zcl_abaplint_deps_find DEFINITION
 
     METHODS constructor
       IMPORTING
-        !iv_max_level TYPE i DEFAULT 20 .
+        !iv_max_level TYPE i DEFAULT 20
+        !is_output    TYPE flag OPTIONAL .
     METHODS find_by_item
       IMPORTING
         !iv_object_type TYPE trobjtype
@@ -28,6 +29,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
       BEGIN OF ty_tadir,
         ref_obj_type TYPE trobjtype,
         ref_obj_name TYPE sobj_name,
+        devclass     TYPE devclass,
       END OF ty_tadir .
     TYPES:
       ty_tadir_tt TYPE STANDARD TABLE OF ty_tadir WITH DEFAULT KEY .
@@ -61,7 +63,12 @@ CLASS zcl_abaplint_deps_find DEFINITION
 
     DATA mv_packages TYPE tr_devclasses .
     DATA mv_results TYPE ty_tadir_tt .
+    DATA ms_types TYPE envi_types .
+    DATA mf_is_output TYPE flag .
 
+    METHODS add_subpackages
+      IMPORTING
+        !iv_package TYPE devclass .
     METHODS clean_own_packages .
     METHODS clear_results .
     METHODS determine_package
@@ -81,6 +88,21 @@ ENDCLASS.
 
 
 CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
+
+
+  METHOD add_subpackages.
+
+    DATA: lt_packages LIKE mv_packages.
+    DATA: lv_package LIKE LINE OF mv_packages.
+
+    APPEND iv_package TO mv_packages.
+    SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE parentcl = iv_package.
+    APPEND LINES OF lt_packages TO mv_packages.
+    LOOP AT lt_packages INTO lv_package.
+      add_subpackages( lv_package ).
+    ENDLOOP.
+
+  ENDMETHOD.
 
 
   METHOD clean_own_packages.
@@ -105,6 +127,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD constructor.
     mv_max_level = iv_max_level.
+    ms_types = prepare_supported_types( ).
+    IF sy-batch IS NOT INITIAL.
+      mf_is_output = abap_true.
+    ELSE.
+      mf_is_output = is_output.
+    ENDIF.
   ENDMETHOD.
 
 
@@ -184,16 +212,35 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
 * Translate certain Object Types
 *
-    DATA: lv_type TYPE trobjtype,
-          lv_name TYPE sobj_name.
+    DATA: lv_type    TYPE trobjtype,
+          lv_name    TYPE sobj_name,
+          lv_is_fugr TYPE flag,
+          lv_fugr    TYPE rs38l_area.
 
     CLEAR rv_package.
     lv_type = iv_object_type.
     lv_name = iv_object_name.
-    IF iv_object_type = 'FUNC'.
-      SELECT SINGLE pname FROM tfdir INTO lv_name.
-      lv_type = 'FUGR'.
-    ENDIF.
+
+    "Translation of Types / Names
+    CASE iv_object_type.
+      WHEN 'FUNC'.
+        SELECT SINGLE pname FROM tfdir INTO lv_name.
+        lv_type = 'FUGR'.
+      WHEN 'PROG'.
+        CALL FUNCTION 'RS_PROGNAME_SPLIT'
+          EXPORTING
+            progname_with_namespace = lv_name
+          IMPORTING
+            fugr_is_name            = lv_is_fugr
+            fugr_group              = lv_fugr
+          EXCEPTIONS
+            delimiter_error         = 1
+            OTHERS                  = 2.
+        IF sy-subrc = 0 AND lv_is_fugr IS NOT INITIAL.
+          lv_type = 'FUGR'.
+          lv_name = lv_fugr.
+        ENDIF.
+    ENDCASE.
 
     SELECT SINGLE devclass FROM tadir INTO rv_package
        WHERE pgmid = 'R3TR'
@@ -225,6 +272,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     ls_object-object = iv_object_type.
     ls_object-obj_name = iv_object_name.
+    ls_object-devclass = lv_package.
 
     get_dependencies(
       is_object  = ls_object
@@ -236,6 +284,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
       <ls_tadir>-object = ls_result-ref_obj_type.
       <ls_tadir>-obj_name = ls_result-ref_obj_name.
+      <ls_tadir>-devclass = ls_result-devclass.
     ENDLOOP.
 
   ENDMETHOD.
@@ -259,7 +308,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       ls_object-obj_name = lv_package.
 
       cl_progress_indicator=>progress_indicate(
-        i_text               = |Process package, { ls_object-object } { ls_object-obj_name }|
+        i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
         i_processed          = sy-tabix
         i_total              = lines( it_packages )
         i_output_immediately = abap_true ).
@@ -275,6 +324,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
       <ls_tadir>-object = ls_result-ref_obj_type.
       <ls_tadir>-obj_name = ls_result-ref_obj_name.
+      <ls_tadir>-devclass = ls_result-devclass.
     ENDLOOP.
 
   ENDMETHOD.
@@ -322,6 +372,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           it_wbcrossgt = lt_wbcrossgt
         CHANGING
           ct_tadir     = ct_tadir ).
+    ELSEIF mf_is_output IS INITIAL.
+      ASSERT 0 = 1.
     ELSE.
       FORMAT INTENSIFIED ON.
       WRITE: / 'Level limit ', mv_max_level, 'reached for', lv_clsname, '. Not all dependencies collected.'.
@@ -336,7 +388,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA: lv_obj_type    TYPE euobj-id,
           lt_tadir       TYPE ty_tadir_tt,
           lt_environment TYPE senvi_tab,
-          lv_types       TYPE envi_types,
           lv_index       LIKE sy-tabix,
           ls_tadir       TYPE LINE OF ty_tadir_tt,
           lv_flag        TYPE flag,
@@ -372,13 +423,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           ct_tadir = lt_tadir ).
     ELSE.
       lv_obj_type = is_object-object.
-      lv_types = prepare_supported_types( ).
 
       CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
         EXPORTING
           obj_type          = lv_obj_type
           object_name       = is_object-obj_name
-          environment_types = lv_types
+          environment_types = ms_types
           online_force      = 'X'
         TABLES
           environment       = lt_environment
@@ -430,6 +480,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lv_index = sy-tabix.
       lv_devclass = determine_package( iv_object_type   = ls_tadir-ref_obj_type
                                        iv_object_name = ls_tadir-ref_obj_name ).
+
       lv_flag = 'X'.
       IF sy-subrc = 0.
         READ TABLE mv_packages FROM lv_devclass TRANSPORTING NO FIELDS.
@@ -439,6 +490,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       ENDIF.
       IF lv_flag = 'X'.
         DELETE lt_tadir INDEX lv_index.
+      ELSE.
+        ls_tadir-devclass = lv_devclass.
+        MODIFY lt_tadir FROM ls_tadir INDEX lv_index.
       ENDIF.
     ENDLOOP.
 
@@ -468,6 +522,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
       ls_object-object   = ls_tadir-ref_obj_type.
       ls_object-obj_name = ls_tadir-ref_obj_name.
+      ls_object-devclass = ls_tadir-devclass.
 
       lv_level = iv_level + 1.
 
@@ -480,51 +535,100 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
 
   METHOD prepare_supported_types.
-    rs_types-prog = 'X'.
-    rs_types-fugr = 'X'.
-    rs_types-ldba = ' '.
-    rs_types-msag = 'X'.
-    rs_types-tran = 'X'.
-    rs_types-func = 'X'.
-    rs_types-dial = ' '.
-    rs_types-tabl = 'X'.
-    rs_types-shlp = ' '.
+
+    DATA: ls_type TYPE zif_abapgit_definitions=>ty_item.
+
+    CLEAR ms_types.
+
+    ls_type-obj_type = 'PROG'.
+    rs_types-prog = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'FUGR'.
+    rs_types-fugr = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'LDBA'.
+    rs_types-ldba = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'MSAG'.
+    rs_types-msag = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'TRAN'.
+    rs_types-tran = zcl_abapgit_objects=>is_supported( ls_type ).
+    rs_types-func = rs_types-fugr.
+    ls_type-obj_type = 'DIAL'.
+    rs_types-dial = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'TABL'.
+    rs_types-tabl = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'SHLP'.
+    rs_types-shlp = zcl_abapgit_objects=>is_supported( ls_type ).
     rs_types-doma = ' '. "Level not required
-    rs_types-dtel = 'X'.
-    rs_types-view = 'X'.
-    rs_types-mcob = ' '.
-    rs_types-mcid = ' '.
-    rs_types-para = 'X'.
-    rs_types-conv = ' '.
-    rs_types-suso = ' '.
-    rs_types-type = 'X'.
-    rs_types-ttyp = 'X'.
-    rs_types-stru = 'X'.
-    rs_types-enqu = ' '.
-    rs_types-sqlt = ' '.
-    rs_types-clas = 'X'.
-    rs_types-intf = 'X'.
-    rs_types-udmo = ' '.
-    rs_types-ueno = ' '.
-    rs_types-shi3 = ' '.
-    rs_types-cntx = ' '.
-    rs_types-ttab = 'X'.
-    rs_types-iasp = ' '.
-    rs_types-iatu = ' '.
-    rs_types-clif = ' '.
-    rs_types-sobj = ' '.
-    rs_types-wdyn = ' '.
-    rs_types-wdya = ' '.
-    rs_types-xslt = ' '.
-    rs_types-enhs = ' '.
-    rs_types-ensc = ' '.
-    rs_types-enhc = ' '.
-    rs_types-enho = ' '.
-    rs_types-sfbf = ' '.
-    rs_types-sfsw = ' '.
-    rs_types-devc = 'X'.
-    rs_types-sqsc = ' '.
-    rs_types-stob = ' '.
+    ls_type-obj_type = 'DTEL'.
+    rs_types-dtel = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'VIEW'.
+    rs_types-view = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'MCOB'.
+    rs_types-mcob = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'MCID'.
+    rs_types-mcid = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'PARA'.
+    rs_types-para = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'CONV'.
+    rs_types-conv = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'SUSO'.
+    rs_types-suso = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'TYPE'.
+    rs_types-type = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'TTYP'.
+    rs_types-ttyp = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'PROG'.
+    rs_types-prog = zcl_abapgit_objects=>is_supported( ls_type ).
+    rs_types-stru = rs_types-tabl.
+    ls_type-obj_type = 'ENQU'.
+    rs_types-enqu = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'SQLT'.
+    rs_types-sqlt = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'CLAS'.
+    rs_types-clas = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'INTF'.
+    rs_types-intf = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'UDMO'.
+    rs_types-udmo = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'UENO'.
+    rs_types-ueno = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'SHI3'.
+    rs_types-shi3 = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'CNTX'.
+    rs_types-cntx = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'TTAB'.
+    rs_types-ttab = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'IASP'.
+    rs_types-iasp = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'IATU'.
+    rs_types-iatu = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'CLIF'.
+    rs_types-clif = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'SOBJ'.
+    rs_types-sobj = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'WDYN'.
+    rs_types-wdyn = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'WDYA'.
+    rs_types-wdya = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'XSLT'.
+    rs_types-xslt = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'ENHS'.
+    rs_types-enhs = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'ENSC'.
+    rs_types-ensc = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'ENHC'.
+    rs_types-enhc = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'ENHO'.
+    rs_types-enho = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'SFBF'.
+    rs_types-sfbf = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'SFSW'.
+    rs_types-sfsw = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'DEVC'.
+    rs_types-devc = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'SQSC'.
+    rs_types-sqsc = zcl_abapgit_objects=>is_supported( ls_type ).
+    ls_type-obj_type = 'STOB'.
+    rs_types-stob = zcl_abapgit_objects=>is_supported( ls_type ).
   ENDMETHOD.
 
 
@@ -541,12 +645,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = ls_wbcrossgt-name(30).
           IF sy-subrc = 0.
             CASE lv_clstype.
-              WHEN '0'.
+              WHEN seoc_clstype_class.
                 APPEND INITIAL LINE TO ct_tadir ASSIGNING <ls_tadir>.
-                <ls_tadir>-ref_obj_type = 'CLASS'.
+                <ls_tadir>-ref_obj_type = 'CLAS'.
                 <ls_tadir>-ref_obj_name = ls_wbcrossgt-name.
 
-              WHEN '1'.
+              WHEN seoc_clstype_interface.
                 APPEND INITIAL LINE TO ct_tadir ASSIGNING <ls_tadir>.
                 <ls_tadir>-ref_obj_type = 'INTF'.
                 <ls_tadir>-ref_obj_name = ls_wbcrossgt-name.
@@ -570,8 +674,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     CLEAR mv_packages[].
     "Determine sub packages
     LOOP AT it_packages INTO lv_package.
-      SELECT devclass FROM tdevc APPENDING TABLE mv_packages WHERE parentcl = lv_package.
-      APPEND lv_package TO mv_packages.
+      add_subpackages( lv_package ).
     ENDLOOP.
 
   ENDMETHOD.

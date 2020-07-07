@@ -35,10 +35,9 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_DEVC</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>9</LENGTH>
-     <SPLIT>D</SPLIT>
+     <KEY>P_DEPTH</KEY>
+     <ENTRY>Max Depth for Classes</ENTRY>
+     <LENGTH>29</LENGTH>
     </item>
     <item>
      <ID>S</ID>
@@ -48,9 +47,33 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_PASS</KEY>
+     <ENTRY>Git Password</ENTRY>
+     <LENGTH>20</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_TEST</KEY>
      <ENTRY>Test Mode</ENTRY>
      <LENGTH>17</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_URL</KEY>
+     <ENTRY>Git URL</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_USER</KEY>
+     <ENTRY>Git User</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>S_DEVC</KEY>
+     <ENTRY>Packages to process</ENTRY>
+     <LENGTH>27</LENGTH>
     </item>
    </TPOOL>
   </asx:values>

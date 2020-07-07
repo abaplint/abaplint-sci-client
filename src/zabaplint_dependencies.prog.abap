@@ -6,7 +6,9 @@ DATA: ltb_devc TYPE tab_packages.
 
 PARAMETERS: p_git  TYPE text200 OBLIGATORY.
 SELECT-OPTIONS: s_devc FOR tdevc-devclass OBLIGATORY.
-PARAMETERS: p_test   TYPE c AS CHECKBOX.
+
+PARAMETERS: p_depth TYPE i DEFAULT 1,
+            p_test  TYPE c AS CHECKBOX.
 
 SELECTION-SCREEN: SKIP,
                   BEGIN OF BLOCK git WITH FRAME TITLE l_title.
@@ -49,7 +51,9 @@ FORM deps.
           iv_git_email   = p_cemail
           iv_git_comment = p_ccomm
           iv_packages    = ltb_devc.
-      lo_deps->run( p_test ).
+      lo_deps->run( iv_test = p_test
+                    iv_depth = p_depth
+                    is_output = 'X' ).
     CATCH zcx_abapgit_exception INTO lx_error.
       MESSAGE lx_error TYPE 'E'.
   ENDTRY.

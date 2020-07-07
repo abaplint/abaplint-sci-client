@@ -11,6 +11,12 @@
    </PROGDIR>
    <TPOOL>
     <item>
+     <ID>H</ID>
+     <KEY>001</KEY>
+     <ENTRY>Type Name                                     Package</ENTRY>
+     <LENGTH>53</LENGTH>
+    </item>
+    <item>
      <ID>R</ID>
      <ENTRY>abaplint - List dependencies</ENTRY>
      <LENGTH>28</LENGTH>
