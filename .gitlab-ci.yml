@@ -4,11 +4,8 @@
 stages:
   - init
   - pull
+  - push
   - test
-
-default:
-  tags:
-    - docker
 
 include:
   - project: 'tools/abapgit-extensions'
@@ -25,4 +22,8 @@ abaplint:
 
 do-pull:
   stage: pull
-  extends: .do-pull
+  extends: .do-pull-master
+
+do-push:
+  stage: push
+  extends: .do-fork-push-master
