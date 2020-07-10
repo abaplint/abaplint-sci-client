@@ -38,6 +38,11 @@ CLASS zcl_abaplint_backend DEFINITION
         VALUE(rs_message) TYPE ty_message
       RAISING
         zcx_abaplint_error .
+    METHODS default_config
+      RETURNING
+        VALUE(rv_json_string) TYPE string
+      RAISING
+        zcx_abaplint_error .
     METHODS constructor
       IMPORTING
         !is_config TYPE zabaplint_glob_data OPTIONAL .
@@ -73,7 +78,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -177,7 +182,7 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
       |\}|.
 
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_abaplint_json_reader.
+    DATA li_json TYPE REF TO zif_ajson_reader.
 
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
     li_json = lo_agent->request(
@@ -218,6 +223,28 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD default_config.
+
+    DATA lx_error TYPE REF TO zcx_abaplint_error.
+    DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
+    DATA li_json TYPE REF TO zif_ajson_reader.
+    DATA lo_json TYPE REF TO zcl_ajson.
+
+*    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+    lo_agent = zcl_abaplint_backend_api_agent=>create( 'http://localhost:3000' ).
+
+    TRY.
+        li_json = lo_agent->request( '/api/v1/get_default_configuration' ).
+        lo_json ?= li_json. " fishy ...
+        rv_json_string = lo_json->stringify( iv_indent = 2 ).
+      CATCH zcx_abaplint_error INTO lx_error.
+        rv_json_string = 'Error getting default config'.
+        " Is error ??? return structure
+    ENDTRY.
+
+  ENDMETHOD.
+
+
   METHOD escape.
 
     rv_output = iv_input.
@@ -231,7 +258,7 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_abaplint_json_reader.
+    DATA li_json TYPE REF TO zif_ajson_reader.
 
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
 
