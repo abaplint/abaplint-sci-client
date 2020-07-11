@@ -17,7 +17,7 @@ CLASS zcl_abaplint_backend DEFINITION
         start    TYPE ty_position,
       END OF ty_issue .
     TYPES:
-      ty_issues TYPE STANDARD TABLE OF ty_issue WITH KEY table_line.
+      ty_issues TYPE STANDARD TABLE OF ty_issue WITH KEY table_line .
     TYPES:
       BEGIN OF ty_message,
         error   TYPE abap_bool,
@@ -159,19 +159,11 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       iv_object_name = iv_object_name ).
 
     DATA lv_deps TYPE string.
-    DATA lx_error TYPE REF TO zcx_abaplint_error.
     FIELD-SYMBOLS <issue> LIKE LINE OF rt_issues.
 
-    TRY.
-        lv_deps = build_deps(
-          iv_object_type = iv_object_type
-          iv_object_name = iv_object_name ).
-      CATCH zcx_abaplint_error INTO lx_error.
-        APPEND INITIAL LINE TO rt_issues ASSIGNING <issue>.
-        <issue>-message   = lx_error->message.
-        RETURN.
-    ENDTRY.
-
+    lv_deps = build_deps(
+      iv_object_type = iv_object_type
+      iv_object_name = iv_object_name ).
 
     DATA lv_config TYPE string.
     lv_config = base64_encode( zcl_abapgit_convert=>string_to_xstring_utf8( iv_configuration ) ).

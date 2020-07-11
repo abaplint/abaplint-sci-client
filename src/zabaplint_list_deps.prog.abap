@@ -27,6 +27,7 @@ FORM run RAISING cx_static_check.
   DATA ls_deps LIKE LINE OF lt_deps.
   DATA lv_lines(6) TYPE n.
   DATA lx_error TYPE REF TO zcx_abaplint_error.
+  DATA lx_error2 TYPE REF TO zcx_abapgit_exception.
 
   CREATE OBJECT lo_find
     EXPORTING
@@ -38,6 +39,8 @@ FORM run RAISING cx_static_check.
         iv_object_name = p_name ).
     CATCH zcx_abaplint_error INTO lx_error.
       MESSAGE ID '00' TYPE 'E' NUMBER '001' WITH lx_error->message.
+    CATCH zcx_abapgit_exception INTO lx_error2.
+      MESSAGE lx_error2 TYPE 'E'.
   ENDTRY.
 
   FORMAT INTENSIFIED OFF.

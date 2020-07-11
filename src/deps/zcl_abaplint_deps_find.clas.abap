@@ -14,14 +14,16 @@ CLASS zcl_abaplint_deps_find DEFINITION
       RETURNING
         VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error
+        zcx_abapgit_exception .
     METHODS find_by_packages
       IMPORTING
         !it_packages    TYPE tr_devclasses
       RETURNING
         VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error
+        zcx_abapgit_exception .
   PROTECTED SECTION.
 
     TYPES:

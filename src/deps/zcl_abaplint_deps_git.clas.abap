@@ -17,7 +17,8 @@ CLASS zcl_abaplint_deps_git DEFINITION
         !iv_depth  TYPE i
         !is_output TYPE flag
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error
+        zcx_abapgit_exception .
   PROTECTED SECTION.
 
     TYPES:
@@ -45,7 +46,8 @@ CLASS zcl_abaplint_deps_git DEFINITION
       RETURNING
         VALUE(rt_local) TYPE zif_abapgit_definitions=>ty_files_tt
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error
+        zcx_abapgit_exception .
   PRIVATE SECTION.
 
     DATA mv_depth TYPE i .

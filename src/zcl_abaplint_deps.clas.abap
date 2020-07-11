@@ -12,7 +12,8 @@ CLASS zcl_abaplint_deps DEFINITION
       RETURNING
         VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
