@@ -300,11 +300,17 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *   objects used within same package/project scope
 
 * todo
+    WRITE iv_object_type.
+    WRITE iv_object_name.
+    CLEAR rt_tadir.
 
   ENDMETHOD.
 
 
   METHOD find_by_packages.
+
+* given a set of packages, all dependencies are found for these packages
+* only returns dependencies outside of the input package structure
 
     DATA: lv_package LIKE LINE OF it_packages,
           ls_result  LIKE LINE OF mv_results,
@@ -317,7 +323,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     clear_results( ).
 
     LOOP AT it_packages INTO lv_package.
-
       ls_object-object   = 'DEVC'.
       ls_object-obj_name = lv_package.
 
@@ -521,17 +526,17 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
 * if SAP object, do not go deeper
 *
-    IF ( ls_tadir_obj-author = 'SAP'
-        OR ls_tadir_obj-author = 'SAP*' )
-        AND ls_tadir_obj-srcsystem = 'SAP'.
-      RETURN.
-    ENDIF.
+* TODO: when is this valid? add as configuration in constructor?
+*    IF ( ls_tadir_obj-author = 'SAP'
+*        OR ls_tadir_obj-author = 'SAP*' )
+*        AND ls_tadir_obj-srcsystem = 'SAP'.
+*      RETURN.
+*    ENDIF.
 
 *
 *   Certain types do not have dependent object or are resolved by this call
 *
     DELETE lt_tadir WHERE ref_obj_type = 'MSAG'. "Message AG
-    DELETE lt_tadir WHERE ref_obj_type = 'DTEL'. "Data Element
 
 *
 * Try to find dependend objects
@@ -561,28 +566,45 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     rs_types-prog = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'FUGR'.
     rs_types-fugr = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'LDBA'.
-    rs_types-ldba = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'LDBA'.
+*    rs_types-ldba = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'MSAG'.
     rs_types-msag = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'TRAN'.
     rs_types-tran = zcl_abapgit_objects=>is_supported( ls_type ).
+
     rs_types-func = rs_types-fugr.
-    ls_type-obj_type = 'DIAL'.
-    rs_types-dial = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'DIAL'.
+*    rs_types-dial = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'TABL'.
     rs_types-tabl = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'SHLP'.
     rs_types-shlp = zcl_abapgit_objects=>is_supported( ls_type ).
-    rs_types-doma = ' '. "Level not required
+
+    ls_type-obj_type = 'DOMA'.
+    rs_types-doma = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'DTEL'.
     rs_types-dtel = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'VIEW'.
     rs_types-view = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'MCOB'.
-    rs_types-mcob = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'MCID'.
-    rs_types-mcid = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'MCOB'.
+*    rs_types-mcob = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'MCID'.
+*    rs_types-mcid = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'PARA'.
     rs_types-para = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'CONV'.
@@ -598,20 +620,29 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     rs_types-stru = rs_types-tabl.
     ls_type-obj_type = 'ENQU'.
     rs_types-enqu = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'SQLT'.
-    rs_types-sqlt = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'SQLT'.
+*    rs_types-sqlt = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'CLAS'.
     rs_types-clas = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'INTF'.
     rs_types-intf = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'UDMO'.
-    rs_types-udmo = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'UENO'.
-    rs_types-ueno = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'SHI3'.
-    rs_types-shi3 = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'CNTX'.
-    rs_types-cntx = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'UDMO'.
+*    rs_types-udmo = zcl_abapgit_objects=>is_supported( ls_type ).
+* not needed by abaplint yet
+*    ls_type-obj_type = 'UENO'.
+*    rs_types-ueno = zcl_abapgit_objects=>is_supported( ls_type ).
+* not needed by abaplint yet
+*    ls_type-obj_type = 'SHI3'.
+*    rs_types-shi3 = zcl_abapgit_objects=>is_supported( ls_type ).
+* not needed by abaplint yet
+*    ls_type-obj_type = 'CNTX'.
+*    rs_types-cntx = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'TTAB'.
     rs_types-ttab = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'IASP'.
@@ -622,10 +653,15 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     rs_types-clif = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'SOBJ'.
     rs_types-sobj = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'WDYN'.
-    rs_types-wdyn = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'WDYA'.
-    rs_types-wdya = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'WDYN'.
+*    rs_types-wdyn = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'WDYA'.
+*    rs_types-wdya = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'XSLT'.
     rs_types-xslt = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'ENHS'.
@@ -636,16 +672,23 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     rs_types-enhc = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'ENHO'.
     rs_types-enho = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'SFBF'.
-    rs_types-sfbf = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'SFSW'.
-    rs_types-sfsw = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'SFBF'.
+*    rs_types-sfbf = zcl_abapgit_objects=>is_supported( ls_type ).
+* not needed by abaplint yet
+*    ls_type-obj_type = 'SFSW'.
+*    rs_types-sfsw = zcl_abapgit_objects=>is_supported( ls_type ).
+
     ls_type-obj_type = 'DEVC'.
     rs_types-devc = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'SQSC'.
-    rs_types-sqsc = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'STOB'.
-    rs_types-stob = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'SQSC'.
+*    rs_types-sqsc = zcl_abapgit_objects=>is_supported( ls_type ).
+* not needed by abaplint yet
+*    ls_type-obj_type = 'STOB'.
+*    rs_types-stob = zcl_abapgit_objects=>is_supported( ls_type ).
   ENDMETHOD.
 
 
