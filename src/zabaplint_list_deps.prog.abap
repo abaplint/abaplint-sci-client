@@ -11,13 +11,24 @@ REPORT zabaplint_list_deps.
 * OSS # 2752795 - Environment analysis progams and classes - use of BAdI definitions
 * OSS # 2243139 - REPOSITORY_ENVIRONMENT_ALL - too few hits for enhancement implementations
 
-PARAMETERS: p_type  TYPE tadir-object OBLIGATORY,
-            p_name  TYPE tadir-obj_name OBLIGATORY,
-            p_depth TYPE i DEFAULT 1.
+TABLES: tdevc.
 
+SELECTION-SCREEN: BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+PARAMETERS: p_obje RADIOBUTTON GROUP g2.
+PARAMETERS: p_type TYPE tadir-object,
+            p_name TYPE tadir-obj_name.
+
+PARAMETERS: p_devc RADIOBUTTON GROUP g2.
+SELECT-OPTIONS: s_devc FOR tdevc-devclass.
+SELECTION-SCREEN: END OF BLOCK b1.
+
+SELECTION-SCREEN: BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
+PARAMETERS p_depth TYPE i DEFAULT 1.
+SELECTION-SCREEN SKIP.
 PARAMETERS: p_skip RADIOBUTTON GROUP g1,
             p_seri RADIOBUTTON GROUP g1,
             p_down RADIOBUTTON GROUP g1.
+SELECTION-SCREEN: END OF BLOCK b2.
 
 START-OF-SELECTION.
   PERFORM run.
@@ -26,6 +37,7 @@ FORM run RAISING cx_static_check.
 
   DATA lo_find TYPE REF TO zcl_abaplint_deps_find.
   DATA lt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt.
+  DATA lt_packages TYPE tr_devclasses.
   DATA ls_deps LIKE LINE OF lt_deps.
   DATA lv_lines TYPE n LENGTH 6.
 
@@ -34,9 +46,19 @@ FORM run RAISING cx_static_check.
       iv_max_level = p_depth
       is_output    = abap_true.
 
-  lt_deps = lo_find->find_by_item(
-    iv_object_type = p_type
-    iv_object_name = p_name ).
+  CASE abap_true.
+    WHEN p_obje.
+      lt_deps = lo_find->find_by_item(
+        iv_object_type = p_type
+        iv_object_name = p_name ).
+    WHEN p_devc.
+      SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE devclass IN s_devc.
+      IF sy-subrc = 0.
+        lt_deps = lo_find->find_by_packages( lt_packages ).
+      ENDIF.
+    WHEN OTHERS.
+      ASSERT 0 = 1.
+  ENDCASE.
 
   FORMAT INTENSIFIED OFF.
   LOOP AT lt_deps INTO ls_deps.

@@ -479,11 +479,15 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lv_level LIKE iv_level.
 
 
-    SELECT SINGLE object obj_name srcsystem author devclass genflag
-      FROM tadir INTO CORRESPONDING FIELDS OF ls_tadir_obj
-      WHERE pgmid = 'R3TR' AND object = is_object-object AND obj_name = is_object-obj_name.
-    IF sy-subrc <> 0 OR ls_tadir_obj-genflag = abap_true.
-      RETURN.
+    IF is_object-object = 'DEVC' AND is_object-obj_name(1) = '$'.
+* nothing
+    ELSE.
+      SELECT SINGLE object obj_name srcsystem author devclass genflag
+        FROM tadir INTO CORRESPONDING FIELDS OF ls_tadir_obj
+        WHERE pgmid = 'R3TR' AND object = is_object-object AND obj_name = is_object-obj_name.
+      IF sy-subrc <> 0 OR ls_tadir_obj-genflag = abap_true.
+        RETURN.
+      ENDIF.
     ENDIF.
 
 *
