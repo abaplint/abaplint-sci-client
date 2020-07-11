@@ -1,28 +1,36 @@
-CLASS zcl_abaplint_deps_find DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_ABAPLINT_DEPS_FIND definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS constructor
-      IMPORTING
-        !iv_max_level TYPE i DEFAULT 20
-        !is_output    TYPE flag OPTIONAL .
-    METHODS find_by_item
-      IMPORTING
-        !iv_object_type TYPE trobjtype
-        !iv_object_name TYPE sobj_name
-      RETURNING
-        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
-      RAISING
-        zcx_abapgit_exception .
-    METHODS find_by_packages
-      IMPORTING
-        !it_packages    TYPE tr_devclasses
-      RETURNING
-        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
-      RAISING
-        zcx_abapgit_exception .
+  methods CONSTRUCTOR
+    importing
+      !IV_MAX_LEVEL type I default 20
+      !IS_OUTPUT type FLAG optional .
+  methods FIND_BY_ITEM
+    importing
+      !IV_OBJECT_TYPE type TROBJTYPE
+      !IV_OBJECT_NAME type SOBJ_NAME
+    returning
+      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
+    raising
+      ZCX_ABAPGIT_EXCEPTION .
+  methods FIND_BY_ITEM_MINIMAL
+    importing
+      !IV_OBJECT_TYPE type TROBJTYPE
+      !IV_OBJECT_NAME type SOBJ_NAME
+    returning
+      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
+    raising
+      ZCX_ABAPGIT_EXCEPTION .
+  methods FIND_BY_PACKAGES
+    importing
+      !IT_PACKAGES type TR_DEVCLASSES
+    returning
+      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
+    raising
+      ZCX_ABAPGIT_EXCEPTION .
   PROTECTED SECTION.
 
     TYPES:
@@ -252,6 +260,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD find_by_item.
 
+* finds dependencies by item, package tree is ignored
+
     DATA: ls_object   TYPE zif_abapgit_definitions=>ty_tadir,
           lt_packages TYPE tr_devclasses,
           lv_package  TYPE devclass,
@@ -259,14 +269,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
-    "Determine Package Tree
-    lv_package = determine_package( iv_object_type = iv_object_type
-                                    iv_object_name = iv_object_name ).
-
-    IF lv_package IS INITIAL.
-      RETURN.
-    ENDIF.
-    APPEND lv_package TO lt_packages.
     set_package_tree( lt_packages ).
     clear_results( ).
 
@@ -278,14 +280,19 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       is_object = ls_object
       iv_level  = 1 ).
 
-    clean_own_packages( ).
-
     LOOP AT mv_results INTO ls_result.
       APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
       <ls_tadir>-object = ls_result-ref_obj_type.
       <ls_tadir>-obj_name = ls_result-ref_obj_name.
       <ls_tadir>-devclass = ls_result-devclass.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD FIND_BY_ITEM_MINIMAL.
+
+* todo
 
   ENDMETHOD.
 
