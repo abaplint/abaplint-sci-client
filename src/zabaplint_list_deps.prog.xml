@@ -24,8 +24,14 @@
     <item>
      <ID>S</ID>
      <KEY>P_DEPTH</KEY>
-     <ENTRY>Max Depth for Classes</ENTRY>
+     <ENTRY>Max Depth</ENTRY>
      <LENGTH>29</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_DOWN</KEY>
+     <ENTRY>Serialize and download</ENTRY>
+     <LENGTH>30</LENGTH>
     </item>
     <item>
      <ID>S</ID>
@@ -33,6 +39,18 @@
      <ENTRY>.</ENTRY>
      <LENGTH>19</LENGTH>
      <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_SERI</KEY>
+     <ENTRY>Serialize</ENTRY>
+     <LENGTH>17</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_SKIP</KEY>
+     <ENTRY>Skip serialization</ENTRY>
+     <LENGTH>26</LENGTH>
     </item>
     <item>
      <ID>S</ID>
