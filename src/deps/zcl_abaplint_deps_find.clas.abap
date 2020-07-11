@@ -1,36 +1,36 @@
-class ZCL_ABAPLINT_DEPS_FIND definition
-  public
-  create public .
+CLASS zcl_abaplint_deps_find DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  methods CONSTRUCTOR
-    importing
-      !IV_MAX_LEVEL type I default 20
-      !IS_OUTPUT type FLAG optional .
-  methods FIND_BY_ITEM
-    importing
-      !IV_OBJECT_TYPE type TROBJTYPE
-      !IV_OBJECT_NAME type SOBJ_NAME
-    returning
-      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
-  methods FIND_BY_ITEM_MINIMAL
-    importing
-      !IV_OBJECT_TYPE type TROBJTYPE
-      !IV_OBJECT_NAME type SOBJ_NAME
-    returning
-      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
-  methods FIND_BY_PACKAGES
-    importing
-      !IT_PACKAGES type TR_DEVCLASSES
-    returning
-      value(RT_TADIR) type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR_TT
-    raising
-      ZCX_ABAPGIT_EXCEPTION .
+    METHODS constructor
+      IMPORTING
+        !iv_max_level TYPE i DEFAULT 20
+        !is_output    TYPE flag OPTIONAL .
+    METHODS find_by_item
+      IMPORTING
+        !iv_object_type TYPE trobjtype
+        !iv_object_name TYPE sobj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
+      RAISING
+        zcx_abapgit_exception .
+    METHODS find_by_item_minimal
+      IMPORTING
+        !iv_object_type TYPE trobjtype
+        !iv_object_name TYPE sobj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
+      RAISING
+        zcx_abapgit_exception .
+    METHODS find_by_packages
+      IMPORTING
+        !it_packages    TYPE tr_devclasses
+      RETURNING
+        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
 
     TYPES:
@@ -290,7 +290,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD FIND_BY_ITEM_MINIMAL.
+  METHOD find_by_item_minimal.
+
+* find minimal dependencies required by abaplint to perform syntax check
+
+* Candidates:
+*   super classes, required for abaplint syntax check
+*   interfaces that are implemented, required for abaplint syntax check
+*   objects used within same package/project scope
 
 * todo
 
