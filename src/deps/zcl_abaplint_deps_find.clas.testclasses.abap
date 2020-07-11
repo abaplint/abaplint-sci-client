@@ -1,0 +1,22 @@
+
+CLASS ltcl_test DEFINITION FOR TESTING
+  DURATION SHORT
+  RISK LEVEL HARMLESS FINAL.
+
+  PRIVATE SECTION.
+    DATA:
+      mo_cut TYPE REF TO zcl_abaplint_deps_find.
+
+    METHODS: find_by_item FOR TESTING.
+ENDCLASS.
+
+
+CLASS ltcl_test IMPLEMENTATION.
+
+  METHOD find_by_item.
+
+* todo
+
+  ENDMETHOD.
+
+ENDCLASS.

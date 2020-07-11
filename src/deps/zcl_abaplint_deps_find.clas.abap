@@ -299,7 +299,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
     "Determine Package Tree
-    set_package_tree( it_packages = it_packages ).
+    set_package_tree( it_packages ).
     clear_results( ).
 
     LOOP AT it_packages INTO lv_package.
@@ -480,7 +480,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         CONTINUE.
       ENDIF.
       lv_index = sy-tabix.
-      lv_devclass = determine_package( iv_object_type   = ls_tadir-ref_obj_type
+      lv_devclass = determine_package( iv_object_type = ls_tadir-ref_obj_type
                                        iv_object_name = ls_tadir-ref_obj_name ).
 
       lv_flag = 'X'.
