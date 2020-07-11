@@ -25,12 +25,12 @@ FORM run RAISING cx_static_check.
   DATA lo_find TYPE REF TO zcl_abaplint_deps_find.
   DATA lt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt.
   DATA ls_deps LIKE LINE OF lt_deps.
-  DATA lv_lines(6) TYPE n.
+  DATA lv_lines TYPE n LENGTH 6.
 
   CREATE OBJECT lo_find
     EXPORTING
       iv_max_level = p_depth
-      is_output = 'X'.
+      is_output    = abap_true.
 
   lt_deps = lo_find->find_by_item(
     iv_object_type = p_type

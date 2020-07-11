@@ -267,7 +267,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       RETURN.
     ENDIF.
     APPEND lv_package TO lt_packages.
-    set_package_tree( it_packages = lt_packages ).
+    set_package_tree( lt_packages ).
     clear_results( ).
 
     ls_object-object = iv_object_type.
@@ -275,8 +275,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     ls_object-devclass = lv_package.
 
     get_dependencies(
-      is_object  = ls_object
-      iv_level   = 1 ).
+      is_object = ls_object
+      iv_level  = 1 ).
 
     clean_own_packages( ).
 
@@ -403,14 +403,15 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_object TYPE zif_abapgit_definitions=>ty_tadir.
     DATA lv_level LIKE iv_level.
 
+
     SELECT SINGLE object obj_name srcsystem author devclass genflag
       FROM tadir INTO CORRESPONDING FIELDS OF ls_tadir_obj
       WHERE pgmid = 'R3TR' AND object = is_object-object AND obj_name = is_object-obj_name.
-
     IF sy-subrc <> 0 "no tadir"
         OR ls_tadir_obj-genflag IS NOT INITIAL. "Ignore generated objects
       RETURN.
     ENDIF.
+
 *
 * Determine direct dependency
 *
@@ -470,6 +471,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     IF lines( lt_tadir ) = 0.
       RETURN.
     ENDIF.
+
 *
 * Remove entries from own package (or sub packages)
 *
@@ -503,23 +505,24 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DELETE ADJACENT DUPLICATES FROM mv_results COMPARING ref_obj_type ref_obj_name.
 
 *
-* if sap object, do not go deeper
+* if SAP object, do not go deeper
 *
     IF ( ls_tadir_obj-author = 'SAP'
         OR ls_tadir_obj-author = 'SAP*' )
         AND ls_tadir_obj-srcsystem = 'SAP'.
       RETURN.
     ENDIF.
+
 *
 *   Certain types do not have dependent object or are resolved by this call
 *
     DELETE lt_tadir WHERE ref_obj_type = 'MSAG'. "Message AG
     DELETE lt_tadir WHERE ref_obj_type = 'DTEL'. "Data Element
+
 *
 * Try to find dependend objects
 *
     LOOP AT lt_tadir INTO ls_tadir.
-
       ls_object-object   = ls_tadir-ref_obj_type.
       ls_object-obj_name = ls_tadir-ref_obj_name.
       ls_object-devclass = ls_tadir-devclass.
