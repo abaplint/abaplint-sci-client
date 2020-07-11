@@ -17,7 +17,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
         !iv_depth  TYPE i
         !is_output TYPE flag
       RAISING
-        zcx_abapgit_exception .
+        zcx_abaplint_error .
   PROTECTED SECTION.
 
     TYPES:
@@ -45,7 +45,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
       RETURNING
         VALUE(rt_local) TYPE zif_abapgit_definitions=>ty_files_tt
       RAISING
-        zcx_abapgit_exception .
+        zcx_abaplint_error .
   PRIVATE SECTION.
 
     DATA mv_depth TYPE i .
@@ -118,8 +118,8 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
     CREATE OBJECT lo_dep_find
       EXPORTING
-        iv_max_level = mv_depth
-        is_output    = mf_is_output.
+        iv_max_level = mv_depth.
+
     CREATE OBJECT lo_dep_ser.
 
     lt_tadir = lo_dep_find->find_by_packages( mv_packages ).

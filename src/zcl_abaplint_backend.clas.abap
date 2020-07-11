@@ -60,20 +60,21 @@ CLASS zcl_abaplint_backend DEFINITION
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
       RETURNING
-        VALUE(rv_files) TYPE string .
+        VALUE(rv_files) TYPE string
+      RAISING
+        zcx_abaplint_error .
     METHODS build_files
       IMPORTING
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
       RETURNING
         VALUE(rv_files) TYPE string .
-
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -158,9 +159,19 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
       iv_object_name = iv_object_name ).
 
     DATA lv_deps TYPE string.
-    lv_deps = build_deps(
-      iv_object_type = iv_object_type
-      iv_object_name = iv_object_name ).
+    DATA lx_error TYPE REF TO zcx_abaplint_error.
+    FIELD-SYMBOLS <issue> LIKE LINE OF rt_issues.
+
+    TRY.
+        lv_deps = build_deps(
+          iv_object_type = iv_object_type
+          iv_object_name = iv_object_name ).
+      CATCH zcx_abaplint_error INTO lx_error.
+        APPEND INITIAL LINE TO rt_issues ASSIGNING <issue>.
+        <issue>-message   = lx_error->message.
+        RETURN.
+    ENDTRY.
+
 
     DATA lv_config TYPE string.
     lv_config = base64_encode( zcl_abapgit_convert=>string_to_xstring_utf8( iv_configuration ) ).
@@ -188,7 +199,6 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
     DATA lt_issues TYPE string_table.
     DATA lv_issue LIKE LINE OF lt_issues.
     DATA lv_prefix TYPE string.
-    FIELD-SYMBOLS <issue> LIKE LINE OF rt_issues.
 
     lt_issues = li_json->members( '/issues' ).
 
