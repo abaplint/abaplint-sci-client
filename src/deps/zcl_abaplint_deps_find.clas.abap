@@ -55,6 +55,12 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !iv_level TYPE i
       CHANGING
         !ct_tadir TYPE ty_tadir_tt .
+    METHODS find_dtel_dependencies
+      IMPORTING
+        !iv_name  TYPE tadir-obj_name
+        !iv_level TYPE i
+      CHANGING
+        !ct_tadir TYPE ty_tadir_tt .
     METHODS get_dependencies
       IMPORTING
         !is_object TYPE zif_abapgit_definitions=>ty_tadir
@@ -402,6 +408,23 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD find_dtel_dependencies.
+
+    DATA: lv_domname TYPE dd04l-domname,
+          ls_tadir   LIKE LINE OF ct_tadir.
+
+    SELECT SINGLE domname FROM dd04l
+      INTO lv_domname
+      WHERE rollname = iv_name AND as4local = 'A' AND as4vers = 0.
+    IF sy-subrc = 0 AND NOT lv_domname IS INITIAL.
+      ls_tadir-ref_obj_type = 'DOMA'.
+      ls_tadir-ref_obj_name = lv_domname.
+      INSERT ls_tadir INTO TABLE ct_tadir.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD get_dependencies.
 
     DATA: lv_obj_type    TYPE euobj-id,
@@ -436,6 +459,13 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
     IF is_object-object = 'CLAS'.
       find_clas_dependencies(
+        EXPORTING
+          iv_name  = is_object-obj_name
+          iv_level = iv_level
+        CHANGING
+          ct_tadir = lt_tadir ).
+    ELSEIF is_object-object = 'DTEL'.
+      find_dtel_dependencies(
         EXPORTING
           iv_name  = is_object-obj_name
           iv_level = iv_level
@@ -527,11 +557,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 * if SAP object, do not go deeper
 *
 * TODO: when is this valid? add as configuration in constructor?
-*    IF ( ls_tadir_obj-author = 'SAP'
+*    iff( ls_tadir_obj-author = 'SAP'
 *        OR ls_tadir_obj-author = 'SAP*' )
-*        AND ls_tadir_obj-srcsystem = 'SAP'.
-*      RETURN.
-*    ENDIF.
+*        AND ls_tadir_obj-srcsystem = 'SAP'
+
 
 *
 *   Certain types do not have dependent object or are resolved by this call
@@ -588,8 +617,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     ls_type-obj_type = 'SHLP'.
     rs_types-shlp = zcl_abapgit_objects=>is_supported( ls_type ).
 
-    ls_type-obj_type = 'DOMA'.
-    rs_types-doma = zcl_abapgit_objects=>is_supported( ls_type ).
+* handled manually in the code
+    rs_types-doma = abap_false.
 
     ls_type-obj_type = 'DTEL'.
     rs_types-dtel = zcl_abapgit_objects=>is_supported( ls_type ).
