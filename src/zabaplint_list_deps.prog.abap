@@ -67,6 +67,7 @@ FORM serialize USING pt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt RAISING z
   lt_local = lo_dep_ser->serialize( pt_deps ).
 
   IF p_down = abap_true.
+    WRITE p_seri.
     MESSAGE 'download, todo' TYPE 'W'.
   ENDIF.
 
