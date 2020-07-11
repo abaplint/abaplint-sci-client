@@ -153,11 +153,13 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     FIELD-SYMBOLS <ls_file> LIKE LINE OF rt_files.
 
     LOOP AT it_tadir INTO ls_tadir.
-      cl_progress_indicator=>progress_indicate(
-        i_text               = |Serializing, { ls_tadir-object } { ls_tadir-obj_name }|
-        i_processed          = sy-tabix
-        i_total              = lines( it_tadir )
-        i_output_immediately = abap_true ).
+      IF sy-tabix MOD 10 = 0.
+        cl_progress_indicator=>progress_indicate(
+          i_text               = |Serializing, { ls_tadir-object } { ls_tadir-obj_name }|
+          i_processed          = sy-tabix
+          i_total              = lines( it_tadir )
+          i_output_immediately = abap_true ).
+      ENDIF.
 
       ls_item-obj_type = ls_tadir-object.
       ls_item-obj_name = ls_tadir-obj_name.
