@@ -1,10 +1,4 @@
 REPORT zabaplint_list_deps.
-
-PARAMETERS: p_type  TYPE tadir-object OBLIGATORY,
-            p_name  TYPE tadir-obj_name OBLIGATORY,
-            p_depth TYPE i DEFAULT 1.
-
-*
 * This report depends on the cross reference generated automatically in SAP
 *
 * In case it you think there is an issue, run these reports in background:
@@ -16,8 +10,16 @@ PARAMETERS: p_type  TYPE tadir-object OBLIGATORY,
 *
 * OSS # 2752795 - Environment analysis progams and classes - use of BAdI definitions
 * OSS # 2243139 - REPOSITORY_ENVIRONMENT_ALL - too few hits for enhancement implementations
-START-OF-SELECTION.
 
+PARAMETERS: p_type  TYPE tadir-object OBLIGATORY,
+            p_name  TYPE tadir-obj_name OBLIGATORY,
+            p_depth TYPE i DEFAULT 1.
+
+PARAMETERS: p_skip RADIOBUTTON GROUP g1,
+            p_seri RADIOBUTTON GROUP g1,
+            p_down RADIOBUTTON GROUP g1.
+
+START-OF-SELECTION.
   PERFORM run.
 
 FORM run RAISING cx_static_check.
@@ -41,10 +43,31 @@ FORM run RAISING cx_static_check.
     WRITE: / ls_deps-object, ls_deps-obj_name, ls_deps-devclass.
   ENDLOOP.
 
+  PERFORM serialize USING lt_deps.
+
   ULINE.
   lv_lines = lines( lt_deps ).
   FORMAT INTENSIFIED ON.
   WRITE: / 'Found', lv_lines, 'dependencies for', p_type, p_name.
   FORMAT INTENSIFIED OFF.
   ULINE.
+
+ENDFORM.
+
+FORM serialize USING pt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt RAISING zcx_abapgit_exception.
+
+  DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
+  DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
+
+  IF p_skip = abap_true.
+    RETURN.
+  ENDIF.
+
+  CREATE OBJECT lo_dep_ser.
+  lt_local = lo_dep_ser->serialize( pt_deps ).
+
+  IF p_down = abap_true.
+    MESSAGE 'download, todo' TYPE 'W'.
+  ENDIF.
+
 ENDFORM.

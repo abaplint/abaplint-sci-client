@@ -163,8 +163,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       ls_item-obj_name = ls_tadir-obj_name.
 
       ls_files_item = zcl_abapgit_objects=>serialize(
-        is_item     = ls_item
-        iv_language = sy-langu ).
+        is_item                       = ls_item
+        iv_serialize_master_lang_only = abap_true
+        iv_language                   = sy-langu ).
 
       build_clas( CHANGING cs_files = ls_files_item ).
 
