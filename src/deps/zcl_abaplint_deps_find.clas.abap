@@ -58,7 +58,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
     METHODS find_dtel_dependencies
       IMPORTING
         !iv_name  TYPE tadir-obj_name
-        !iv_level TYPE i
       CHANGING
         !ct_tadir TYPE ty_tadir_tt .
     METHODS get_dependencies
@@ -410,12 +409,16 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD find_dtel_dependencies.
 
+* find just the domain for the data element if exists, ignores value tables and more
+
     DATA: lv_domname TYPE dd04l-domname,
           ls_tadir   LIKE LINE OF ct_tadir.
 
     SELECT SINGLE domname FROM dd04l
       INTO lv_domname
-      WHERE rollname = iv_name AND as4local = 'A' AND as4vers = 0.
+      WHERE rollname = iv_name
+      AND as4local = 'A'
+      AND as4vers = 0.
     IF sy-subrc = 0 AND NOT lv_domname IS INITIAL.
       ls_tadir-ref_obj_type = 'DOMA'.
       ls_tadir-ref_obj_name = lv_domname.
@@ -468,7 +471,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       find_dtel_dependencies(
         EXPORTING
           iv_name  = is_object-obj_name
-          iv_level = iv_level
         CHANGING
           ct_tadir = lt_tadir ).
     ELSE.
@@ -566,6 +568,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *   Certain types do not have dependent object or are resolved by this call
 *
     DELETE lt_tadir WHERE ref_obj_type = 'MSAG'. "Message AG
+    DELETE lt_tadir WHERE ref_obj_type = 'DOMA'.
 
 *
 * Try to find dependend objects

@@ -35,6 +35,11 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
     READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'SXMIMSGRAW' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
 
+    cl_abap_unit_assert=>assert_number_between(
+      lower  = 20
+      upper  = 50
+      number = lines( lt_results ) ).
+
   ENDMETHOD.
 
 ENDCLASS.
