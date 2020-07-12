@@ -578,27 +578,27 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 * if SAP object, do not go deeper
 *
 * TODO: when is this valid? add as configuration in constructor?
-    check not ( ( ls_tadir_obj-author = 'SAP'
+    IF NOT ( ( ls_tadir_obj-author = 'SAP'
         OR ls_tadir_obj-author = 'SAP*' )
         AND ls_tadir_obj-srcsystem = 'SAP' ).
 
 *
 * Try to find dependend objects
 *
-    LOOP AT lt_tadir INTO ls_tadir
-        WHERE ref_obj_type <> 'MSAG'
-        AND ref_obj_type <> 'DOMA'.
-      ls_object-object   = ls_tadir-ref_obj_type.
-      ls_object-obj_name = ls_tadir-ref_obj_name.
-      ls_object-devclass = ls_tadir-devclass.
+      LOOP AT lt_tadir INTO ls_tadir
+          WHERE ref_obj_type <> 'MSAG'
+          AND ref_obj_type <> 'DOMA'.
+        ls_object-object   = ls_tadir-ref_obj_type.
+        ls_object-obj_name = ls_tadir-ref_obj_name.
+        ls_object-devclass = ls_tadir-devclass.
 
-      lv_level = iv_level + 1.
+        lv_level = iv_level + 1.
 
-      get_dependencies(
-        is_object  = ls_object
-        iv_level   = lv_level ).
-    ENDLOOP.
-
+        get_dependencies(
+          is_object  = ls_object
+          iv_level   = lv_level ).
+      ENDLOOP.
+    ENDIF.
   ENDMETHOD.
 
 
