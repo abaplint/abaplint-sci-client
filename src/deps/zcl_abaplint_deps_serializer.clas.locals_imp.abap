@@ -9,4 +9,20 @@ ENDCLASS.
 
 CLASS lcl_longtexts IMPLEMENTATION.
 
+  METHOD zif_abapgit_longtexts~changed_by.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_longtexts~serialize.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_longtexts~deserialize.
+    RETURN.
+  ENDMETHOD.
+
+  METHOD zif_abapgit_longtexts~delete.
+    RETURN.
+  ENDMETHOD.
+
 ENDCLASS.
