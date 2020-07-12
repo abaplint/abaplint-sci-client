@@ -89,8 +89,37 @@ FORM serialize USING pt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt RAISING z
   lt_local = lo_dep_ser->serialize( pt_deps ).
 
   IF p_down = abap_true.
-    WRITE p_seri.
-    MESSAGE 'download, todo' TYPE 'W'.
+    PERFORM download USING lt_local.
   ENDIF.
+
+ENDFORM.
+
+FORM download USING pt_local TYPE zif_abapgit_definitions=>ty_files_tt RAISING zcx_abapgit_exception.
+
+  DATA: lo_zip      TYPE REF TO cl_abap_zip,
+        lv_xstr     TYPE xstring,
+        lv_path     TYPE string,
+        lv_filename TYPE string.
+
+  FIELD-SYMBOLS: <ls_file> LIKE LINE OF pt_local.
+
+
+  lv_path = zcl_abapgit_ui_factory=>get_frontend_services( )->show_file_save_dialog(
+    iv_title            = 'Save'
+    iv_extension        = 'zip'
+    iv_default_filename = 'dependencies.zip' ).
+
+  CREATE OBJECT lo_zip.
+  LOOP AT pt_local ASSIGNING <ls_file>.
+    CONCATENATE <ls_file>-path+1 <ls_file>-filename INTO lv_filename.
+    lo_zip->add( name    = lv_filename
+                 content = <ls_file>-data ).
+  ENDLOOP.
+
+  lv_xstr = lo_zip->save( ).
+
+  zcl_abapgit_ui_factory=>get_frontend_services( )->file_download(
+    iv_path = lv_path
+    iv_xstr = lv_xstr ).
 
 ENDFORM.
