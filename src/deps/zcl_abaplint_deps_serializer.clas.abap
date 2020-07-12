@@ -161,6 +161,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 * special case, does not exist, built-in?
         CONTINUE.
       ENDIF.
+      ASSERT NOT ls_tadir-devclass IS INITIAL.
 
       IF sy-tabix MOD 10 = 0.
         cl_progress_indicator=>progress_indicate(
@@ -181,7 +182,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       build_clas( CHANGING cs_files = ls_files_item ).
 
       LOOP AT ls_files_item-files ASSIGNING <ls_file>.
-        ASSERT NOT ls_tadir-devclass IS INITIAL.
         <ls_file>-path = |/src/{ to_lower( ls_tadir-devclass ) }/|.
         APPEND <ls_file> TO rt_files.
       ENDLOOP.
