@@ -180,11 +180,11 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
       build_clas( CHANGING cs_files = ls_files_item ).
 
-      APPEND LINES OF ls_files_item-files TO rt_files.
-    ENDLOOP.
-
-    LOOP AT rt_files ASSIGNING <ls_file>.
-      <ls_file>-path = '/src/'.
+      LOOP AT ls_files_item-files ASSIGNING <ls_file>.
+        ASSERT NOT ls_tadir-devclass IS INITIAL.
+        <ls_file>-path = |/src/{ to_lower( ls_tadir-devclass ) }/|.
+        APPEND <ls_file> TO rt_files.
+      ENDLOOP.
     ENDLOOP.
 
   ENDMETHOD.
