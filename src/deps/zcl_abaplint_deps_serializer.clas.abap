@@ -23,6 +23,9 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
     METHODS build_clas
       CHANGING
         !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+    METHODS build_fugr
+      CHANGING
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
     METHODS build_code
       IMPORTING
         !iv_class      TYPE clike
@@ -42,9 +45,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
 
-    IF cs_files-item-obj_type <> 'CLAS'.
-      RETURN.
-    ENDIF.
 
     DELETE cs_files-files WHERE filename CP '*.clas.locals_def.abap'.
     DELETE cs_files-files WHERE filename CP '*.clas.locals_imp.abap'.
@@ -73,6 +73,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lt_includes TYPE seop_methods_w_include.
     DATA lt_methods TYPE seo_methods.
     DATA lv_include TYPE program.
+
     TRY.
         lo_class ?= cl_oo_class=>get_instance( |{ iv_class }| ).
       CATCH cx_class_not_existent.
@@ -143,6 +144,47 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD build_fugr.
+* In function groups, the actual function module code is not required
+* so it is replaced with the empty FUNCTION.
+
+    DATA lv_string TYPE string.
+    DATA lt_functab TYPE STANDARD TABLE OF rs38l_incl.
+    DATA lv_area TYPE rs38l-area.
+    DATA lv_filename TYPE string.
+    DATA ls_functab LIKE LINE OF lt_functab.
+
+    FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
+
+
+    lv_area = cs_files-item-obj_name.
+
+    CALL FUNCTION 'RS_FUNCTION_POOL_CONTENTS'
+      EXPORTING
+        function_pool           = lv_area
+      TABLES
+        functab                 = lt_functab
+      EXCEPTIONS
+        function_pool_not_found = 1
+        OTHERS                  = 2.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    LOOP AT lt_functab INTO ls_functab.
+      lv_filename = |{ to_lower( cs_files-item-obj_name ) }.fugr.{ to_lower( ls_functab-funcname ) }.abap|.
+      READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
+
+      lv_string = |FUNCTION { to_lower( ls_functab-funcname ) }.\n  RETURN.\nENDFUNCTION.|.
+      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
   METHOD serialize.
 
     DATA ls_tadir LIKE LINE OF it_tadir.
@@ -165,7 +207,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
         CONTINUE.
       ENDIF.
 
-      IF sy-tabix MOD 10 = 0.
+      IF sy-tabix MOD 20 = 0.
         cl_progress_indicator=>progress_indicate(
           i_text               = |Serializing, { ls_tadir-object } { ls_tadir-obj_name }|
           i_processed          = sy-tabix
@@ -181,7 +223,13 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
         iv_serialize_master_lang_only = abap_true
         iv_language                   = sy-langu ).
 
-      build_clas( CHANGING cs_files = ls_files_item ).
+      CASE ls_tadir-object.
+        WHEN 'CLAS'.
+          build_clas( CHANGING cs_files = ls_files_item ).
+        WHEN 'FUGR'.
+          build_fugr( CHANGING cs_files = ls_files_item ).
+        WHEN OTHERS.
+      ENDCASE.
 
       LOOP AT ls_files_item-files ASSIGNING <ls_file>.
         <ls_file>-path = |/src/{ to_lower( ls_tadir-devclass ) }/|.
