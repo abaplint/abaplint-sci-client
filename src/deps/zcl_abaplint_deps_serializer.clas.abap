@@ -46,7 +46,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-* todo, this is everything?
     DELETE cs_files-files WHERE filename CP '*.clas.locals_def.abap'.
     DELETE cs_files-files WHERE filename CP '*.clas.locals_imp.abap'.
     DELETE cs_files-files WHERE filename CP '*.clas.macros.abap'.
@@ -151,6 +150,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF rt_files.
+
+
+    zcl_abapgit_injector=>set_longtexts( NEW lcl_longtexts( ) ).
 
     LOOP AT it_tadir INTO ls_tadir.
       IF ls_tadir-object = 'DOMA' AND ls_tadir-obj_name = 'DATA'.
