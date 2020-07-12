@@ -160,8 +160,10 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       IF ls_tadir-object = 'DOMA' AND ls_tadir-obj_name = 'DATA'.
 * special case, does not exist, built-in?
         CONTINUE.
+      ELSEIF ls_tadir-devclass IS INITIAL.
+* assumption: does not exist in TADIR
+        CONTINUE.
       ENDIF.
-      ASSERT NOT ls_tadir-devclass IS INITIAL.
 
       IF sy-tabix MOD 10 = 0.
         cl_progress_indicator=>progress_indicate(
