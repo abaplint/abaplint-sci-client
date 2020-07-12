@@ -53,8 +53,7 @@ FORM deps.
           iv_git_comment = p_ccomm
           iv_packages    = ltb_devc.
       lo_deps->run( iv_test = p_test
-                    iv_depth = p_depth
-                    is_output = 'X' ).
+                    iv_depth = p_depth ).
     CATCH zcx_abapgit_exception INTO lx_error.
       MESSAGE lx_error TYPE 'E'.
     CATCH zcx_abaplint_error INTO lx_error2.

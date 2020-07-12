@@ -114,7 +114,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     APPEND iv_package TO mv_packages.
     SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE parentcl = iv_package.
-    APPEND LINES OF lt_packages TO mv_packages.
     LOOP AT lt_packages INTO lv_package.
       add_subpackages( lv_package ).
     ENDLOOP.
@@ -579,10 +578,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 * if SAP object, do not go deeper
 *
 * TODO: when is this valid? add as configuration in constructor?
-*    iff( ls_tadir_obj-author = 'SAP'
-*        OR ls_tadir_obj-author = 'SAP*' )
-*        AND ls_tadir_obj-srcsystem = 'SAP'
-
+    check not ( ( ls_tadir_obj-author = 'SAP'
+        OR ls_tadir_obj-author = 'SAP*' )
+        AND ls_tadir_obj-srcsystem = 'SAP' ).
 
 *
 * Try to find dependend objects
