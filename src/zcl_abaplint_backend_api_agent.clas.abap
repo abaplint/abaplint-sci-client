@@ -100,10 +100,10 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
 
     DATA li_reader TYPE REF TO zif_ajson_reader.
     DATA lo_ajson_err TYPE REF TO zcx_ajson_error.
-    TRY .
-      li_reader = zcl_ajson=>parse( lv_response ).
-    CATCH zcx_ajson_error INTO lo_ajson_err.
-      raise exception type zcx_abaplint_error exporting message = lo_ajson_err->get_text( ).
+    TRY.
+        li_reader = zcl_ajson=>parse( lv_response ).
+      CATCH zcx_ajson_error INTO lo_ajson_err.
+        RAISE EXCEPTION TYPE zcx_abaplint_error EXPORTING message = lo_ajson_err->get_text( ).
     ENDTRY.
 
     IF li_reader->exists( '/success' ) = abap_false.
