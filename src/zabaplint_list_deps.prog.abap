@@ -40,25 +40,32 @@ FORM run RAISING cx_static_check.
   DATA lt_packages TYPE tr_devclasses.
   DATA ls_deps LIKE LINE OF lt_deps.
   DATA lv_lines TYPE n LENGTH 6.
+  DATA lx_error TYPE REF TO zcx_abaplint_error.
+  DATA lx_error2 TYPE REF TO zcx_abapgit_exception.
 
   CREATE OBJECT lo_find
     EXPORTING
-      iv_max_level = p_depth
-      is_output    = abap_true.
+      iv_max_level = p_depth.
 
-  CASE abap_true.
-    WHEN p_obje.
-      lt_deps = lo_find->find_by_item(
-        iv_object_type = p_type
-        iv_object_name = p_name ).
-    WHEN p_devc.
-      SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE devclass IN s_devc.
-      IF sy-subrc = 0.
-        lt_deps = lo_find->find_by_packages( lt_packages ).
-      ENDIF.
-    WHEN OTHERS.
-      ASSERT 0 = 1.
-  ENDCASE.
+  TRY.
+      CASE abap_true.
+        WHEN p_obje.
+          lt_deps = lo_find->find_by_item(
+            iv_object_type = p_type
+            iv_object_name = p_name ).
+        WHEN p_devc.
+          SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE devclass IN s_devc.
+          IF sy-subrc = 0.
+            lt_deps = lo_find->find_by_packages( lt_packages ).
+          ENDIF.
+        WHEN OTHERS.
+          ASSERT 0 = 1.
+      ENDCASE.
+    CATCH zcx_abaplint_error INTO lx_error.
+      MESSAGE ID '00' TYPE 'E' NUMBER '001' WITH lx_error->message.
+    CATCH zcx_abapgit_exception INTO lx_error2.
+      MESSAGE lx_error2 TYPE 'E'.
+  ENDTRY.
 
   FORMAT INTENSIFIED OFF.
   LOOP AT lt_deps INTO ls_deps.

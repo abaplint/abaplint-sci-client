@@ -12,7 +12,8 @@ CLASS zcl_abaplint_deps DEFINITION
       RETURNING
         VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception
+        zcx_abaplint_error .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -42,11 +43,7 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
       ls_files_item-item-obj_type = ls_dep-object.
       ls_files_item-item-obj_name = ls_dep-obj_name.
 
-      TRY.
-          ls_files_item-files = lo_serializer->serialize_item( ls_files_item-item ).
-        CATCH zcx_abapgit_exception.
-          ASSERT 0 = 1.
-      ENDTRY.
+      ls_files_item-files = lo_serializer->serialize_item( ls_files_item-item ).
 
       APPEND LINES OF ls_files_item-files TO rt_files.
     ENDLOOP.

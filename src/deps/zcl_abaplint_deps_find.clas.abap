@@ -6,8 +6,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
 
     METHODS constructor
       IMPORTING
-        !iv_max_level TYPE i DEFAULT 20
-        !is_output    TYPE flag OPTIONAL .
+        !iv_max_level TYPE i DEFAULT 20 .
     METHODS find_by_item
       IMPORTING
         !iv_object_type TYPE trobjtype
@@ -15,7 +14,8 @@ CLASS zcl_abaplint_deps_find DEFINITION
       RETURNING
         VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception
+        zcx_abaplint_error .
     METHODS find_by_item_minimal
       IMPORTING
         !iv_object_type TYPE trobjtype
@@ -30,7 +30,8 @@ CLASS zcl_abaplint_deps_find DEFINITION
       RETURNING
         VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
-        zcx_abapgit_exception .
+        zcx_abapgit_exception
+        zcx_abaplint_error .
   PROTECTED SECTION.
 
     TYPES:
@@ -40,7 +41,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
         devclass     TYPE devclass,
       END OF ty_tadir .
     TYPES:
-      ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name.
+      ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
 
     DATA mv_max_level TYPE i .
 
@@ -54,7 +55,9 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !iv_name  TYPE tadir-obj_name
         !iv_level TYPE i
       CHANGING
-        !ct_tadir TYPE ty_tadir_tt .
+        !ct_tadir TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
     METHODS find_dtel_dependencies
       IMPORTING
         !iv_name  TYPE tadir-obj_name
@@ -63,7 +66,9 @@ CLASS zcl_abaplint_deps_find DEFINITION
     METHODS get_dependencies
       IMPORTING
         !is_object TYPE zif_abapgit_definitions=>ty_tadir
-        !iv_level  TYPE i .
+        !iv_level  TYPE i
+      RAISING
+        zcx_abaplint_error .
     METHODS resolve
       IMPORTING
         !it_wbcrossgt TYPE wbcrossgtt
@@ -77,7 +82,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
     DATA mv_packages TYPE tr_devclasses .
     DATA mv_results TYPE ty_tadir_tt .
     DATA ms_types TYPE envi_types .
-    DATA mf_is_output TYPE flag .
 
     METHODS add_subpackages
       IMPORTING
@@ -141,11 +145,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   METHOD constructor.
     mv_max_level = iv_max_level.
     ms_types = prepare_supported_types( ).
-    IF sy-batch IS NOT INITIAL.
-      mf_is_output = abap_true.
-    ELSE.
-      mf_is_output = is_output.
-    ENDIF.
   ENDMETHOD.
 
 
@@ -404,12 +403,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           it_wbcrossgt = lt_wbcrossgt
         CHANGING
           ct_tadir     = ct_tadir ).
-    ELSEIF mf_is_output IS INITIAL.
-      ASSERT 0 = 1.
     ELSE.
-      FORMAT INTENSIFIED ON.
-      WRITE: / 'Level limit ', mv_max_level, 'reached for', lv_clsname, '. Not all dependencies collected.'.
-      FORMAT INTENSIFIED OFF.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |Max depth { mv_max_level } reached for class { lv_clsname }. Exiting dependency walk|.
     ENDIF.
 
   ENDMETHOD.

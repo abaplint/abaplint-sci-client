@@ -60,20 +60,21 @@ CLASS zcl_abaplint_backend DEFINITION
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
       RETURNING
-        VALUE(rv_files) TYPE string .
+        VALUE(rv_files) TYPE string
+      RAISING
+        zcx_abaplint_error .
     METHODS build_files
       IMPORTING
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
       RETURNING
         VALUE(rv_files) TYPE string .
-
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
   METHOD base64_encode.

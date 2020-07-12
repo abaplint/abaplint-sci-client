@@ -41,6 +41,7 @@ FORM deps.
 
   DATA lo_deps TYPE REF TO zcl_abaplint_deps_git.
   DATA lx_error TYPE REF TO zcx_abapgit_exception.
+  DATA lx_error2 TYPE REF TO zcx_abaplint_error.
 
   SELECT devclass FROM tdevc INTO TABLE ltb_devc WHERE devclass IN s_devc.
   TRY.
@@ -56,6 +57,8 @@ FORM deps.
                     is_output = 'X' ).
     CATCH zcx_abapgit_exception INTO lx_error.
       MESSAGE lx_error TYPE 'E'.
+    CATCH zcx_abaplint_error INTO lx_error2.
+      MESSAGE ID '00' TYPE 'E' NUMBER '001' WITH lx_error2->message.
   ENDTRY.
 
 ENDFORM.
