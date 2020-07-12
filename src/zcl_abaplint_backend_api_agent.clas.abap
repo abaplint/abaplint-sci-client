@@ -18,7 +18,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
         !iv_method     TYPE string DEFAULT if_http_request=>co_request_method_get
         !iv_payload    TYPE string OPTIONAL
       RETURNING
-        VALUE(ro_json) TYPE REF TO zif_abaplint_json_reader
+        VALUE(ro_json) TYPE REF TO zif_ajson_reader
       RAISING
         zcx_abaplint_error .
   PROTECTED SECTION.
@@ -34,7 +34,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
       IMPORTING
         ii_response    TYPE REF TO if_http_response
       RETURNING
-        VALUE(ro_json) TYPE REF TO zif_abaplint_json_reader
+        VALUE(ro_json) TYPE REF TO zif_ajson_reader
       RAISING
         zcx_abaplint_error .
     METHODS send_receive
@@ -98,8 +98,13 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
           message = |API request failed [{ lv_scode }]|.
     ENDIF.
 
-    DATA li_reader TYPE REF TO zif_abaplint_json_reader.
-    li_reader = zcl_abaplint_json_reader=>parse( lv_response ).
+    DATA li_reader TYPE REF TO zif_ajson_reader.
+    DATA lo_ajson_err TYPE REF TO zcx_ajson_error.
+    TRY .
+      li_reader = zcl_ajson=>parse( lv_response ).
+    CATCH zcx_ajson_error INTO lo_ajson_err.
+      raise exception type zcx_abaplint_error exporting message = lo_ajson_err->get_text( ).
+    ENDTRY.
 
     IF li_reader->exists( '/success' ) = abap_false.
       RAISE EXCEPTION TYPE zcx_abaplint_error
@@ -119,7 +124,7 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
           message = |API request failed [{ lv_scode }], but API response is OK (?)|.
     ENDIF.
 
-    ro_json = li_reader->sub_section( '/payload' ).
+    ro_json = li_reader->slice( '/payload' ).
 
   ENDMETHOD.
 
