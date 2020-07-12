@@ -15,8 +15,8 @@ FORM run RAISING zcx_abapgit_exception zcx_abaplint_error cx_salv_msg.
 * this will be required in the future to perform full checks
   DATA lt_supported TYPE zcl_abapgit_objects=>ty_types_tt.
   APPEND 'CLAS' TO lt_supported.
-  APPEND 'PROG' TO lt_supported.
   APPEND 'FUGR' TO lt_supported.
+  APPEND 'PROG' TO lt_supported.
 
   DATA lv_config TYPE string.
   lv_config = zcl_abaplint_configuration=>find_from_package( p_devc ).
