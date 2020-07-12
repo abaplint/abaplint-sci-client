@@ -85,8 +85,10 @@ FORM serialize USING pt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt RAISING z
     RETURN.
   ENDIF.
 
-  CREATE OBJECT lo_dep_ser.
-  lt_local = lo_dep_ser->serialize( pt_deps ).
+  IF p_down = abap_true OR p_seri = abap_true.
+    CREATE OBJECT lo_dep_ser.
+    lt_local = lo_dep_ser->serialize( pt_deps ).
+  ENDIF.
 
   IF p_down = abap_true.
     PERFORM download USING lt_local.
