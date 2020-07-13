@@ -13,9 +13,8 @@ CLASS zcl_abaplint_deps_git DEFINITION
         !iv_git_comment TYPE string .
     METHODS run
       IMPORTING
-        !iv_test   TYPE abap_bool DEFAULT abap_false
-        !iv_depth  TYPE i
-        !is_output TYPE flag
+        !iv_test  TYPE abap_bool DEFAULT abap_false
+        !iv_depth TYPE i
       RAISING
         zcx_abapgit_exception
         zcx_abaplint_error .
@@ -51,7 +50,6 @@ CLASS zcl_abaplint_deps_git DEFINITION
   PRIVATE SECTION.
 
     DATA mv_depth TYPE i .
-    DATA mf_is_output TYPE flag .
 ENDCLASS.
 
 
@@ -137,7 +135,6 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     DATA ls_stage TYPE ty_stage.
 
     mv_depth = iv_depth.
-    mf_is_output = is_output.
     lt_local = get_local( ).
 
     cl_progress_indicator=>progress_indicate(
@@ -156,7 +153,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       TRANSPORTING NO FIELDS.
     ASSERT sy-subrc <> 0.
 
-    DELETE ls_remote-files WHERE path <> '/src/'.
+    DELETE ls_remote-files WHERE path NP '/src/*'.
 
     cl_progress_indicator=>progress_indicate(
       i_text               = |GIT, Staging files|
