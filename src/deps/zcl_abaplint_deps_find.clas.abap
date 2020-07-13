@@ -165,7 +165,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           ls_object      TYPE zif_abapgit_definitions=>ty_tadir.
 
     LOOP AT it_senvi INTO ls_senvi.
-
       lv_object = ls_senvi-type.
       lv_object_name = ls_senvi-object.
 
@@ -179,8 +178,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             iv_encl_object = ls_senvi-encl_obj ).
       ENDCASE.
 
-      IF ls_object-object IS NOT INITIAL
-        AND ls_object-obj_name IS NOT INITIAL. "successfull translation
+      IF ls_object-object IS NOT INITIAL AND ls_object-obj_name IS NOT INITIAL. "successfull translation
         CLEAR ls_tadir.
         ls_tadir-ref_obj_type = ls_object-object.
         ls_tadir-ref_obj_name = ls_object-obj_name.
