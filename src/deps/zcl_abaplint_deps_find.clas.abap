@@ -100,6 +100,13 @@ CLASS zcl_abaplint_deps_find DEFINITION
     METHODS set_package_tree
       IMPORTING
         !it_packages TYPE tr_devclasses .
+    METHODS convert_type_to_r3tr
+      IMPORTING
+        !iv_object_type  TYPE trobjtype
+        !iv_object_name  TYPE sobj_name
+        !iv_encl_object  TYPE sobj_name
+      RETURNING
+        VALUE(rs_object) TYPE zif_abapgit_definitions=>ty_tadir .
 ENDCLASS.
 
 
@@ -151,78 +158,129 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
 * do not use CL_WB_RIS_ENVIRONMENT, it does not exist in 740sp08
 
-    DATA: ls_senvi   LIKE LINE OF it_senvi,
-          ls_tadir   LIKE LINE OF rt_tadir,
-          lv_clstype TYPE seoclstype.
-
+    DATA: ls_senvi       LIKE LINE OF it_senvi,
+          ls_tadir       LIKE LINE OF rt_tadir,
+          lv_object      TYPE trobjtype,
+          lv_object_name TYPE sobj_name,
+          ls_object      TYPE zif_abapgit_definitions=>ty_tadir.
 
     LOOP AT it_senvi INTO ls_senvi.
-      "Translate when required
-      IF ls_senvi-type = 'BADI'. "Ignore
-        CONTINUE.
 
-      ELSEIF ls_senvi-type = 'INCL'. "Include is PROG
-        CLEAR ls_tadir.
-        ls_tadir-ref_obj_type = 'PROG'.
-        ls_tadir-ref_obj_name = ls_senvi-object.
-        INSERT ls_tadir INTO TABLE rt_tadir.
+      lv_object = ls_senvi-type.
+      lv_object_name = ls_senvi-object.
 
-      ELSEIF ls_senvi-type = 'STRU'.  "Structure is TABLE
-        CLEAR ls_tadir.
-        ls_tadir-ref_obj_type = 'TABL'.
-        ls_tadir-ref_obj_name = ls_senvi-object.
-        INSERT ls_tadir INTO TABLE rt_tadir.
+      CASE lv_object.
+        WHEN 'DOMA'. "Ignore
+          CONTINUE.
+        WHEN OTHERS.
+          ls_object = convert_type_to_r3tr(
+            iv_object_type = lv_object
+            iv_object_name = lv_object_name
+            iv_encl_object = ls_senvi-encl_obj ).
+      ENDCASE.
+      IF ls_object-object IS INITIAL.
+        ASSERT 0 = 1. "Object type translaction failed
+      ENDIF.
 
-      ELSEIF ls_senvi-type = 'FUNC'. "Convert to function group
-        IF ls_senvi-encl_obj IS NOT INITIAL.
-          CLEAR ls_tadir.
-          ls_tadir-ref_obj_type = 'FUGR'.
-          ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-          INSERT ls_tadir INTO TABLE rt_tadir.
-        ENDIF.
+      CLEAR ls_tadir.
+      ls_tadir-ref_obj_type = ls_object-object.
+      ls_tadir-ref_obj_name = ls_object-obj_name.
+      INSERT ls_tadir INTO TABLE rt_tadir.
+    ENDLOOP.
 
-      ELSEIF ls_senvi-type = 'MESS'. "Always keep complete message area
-        IF ls_senvi-encl_obj IS NOT INITIAL.
-          CLEAR ls_tadir.
-          ls_tadir-ref_obj_type = 'MSAG'.
-          ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-          INSERT ls_tadir INTO TABLE rt_tadir.
-        ENDIF.
+  ENDMETHOD.
 
-      ELSEIF ls_senvi-type = 'DGT'. "Type Pool is always loaded for type to be used
-        CLEAR ls_tadir.
-        ls_tadir-ref_obj_type = 'TYPE'.
-        ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-        INSERT ls_tadir INTO TABLE rt_tadir.
 
-      ELSEIF ls_senvi-type = 'OA' OR   "Object Attributes
-             ls_senvi-type = 'OE' OR   "Object Events
-             ls_senvi-type = 'OM' OR   "Object Method
-             ls_senvi-type = 'OT'.     "Object Type
-        IF ls_senvi-encl_obj IS NOT INITIAL.
-          "Determine class or interface
-          SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = ls_senvi-encl_obj.
+  METHOD convert_type_to_r3tr.
 
-          IF lv_clstype = seoc_clstype_class.
-            CLEAR ls_tadir.
-            ls_tadir-ref_obj_type = 'CLAS'.
-            ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-            INSERT ls_tadir INTO TABLE rt_tadir.
+    DATA ls_ko TYPE ko100.
+    DATA lv_object TYPE trobjtype.
+    DATA lv_object_name TYPE sobj_name.
+    DATA ls_e071 TYPE e071.
+    DATA ls_tadir TYPE tadir.
+    DATA lv_clstype TYPE seoclstype.
+
+    CLEAR rs_object.
+    lv_object = iv_object_type.
+    lv_object_name = iv_object_name.
+
+    CASE lv_object.
+      WHEN 'INCL'.
+        lv_object = 'PROG'.
+      WHEN 'STRU'.
+        lv_object = 'TABL'.
+      WHEN 'MESS'.
+        lv_object = 'MSAG'.
+        lv_object_name = iv_encl_object.
+      WHEN OTHERS.
+
+* 1. Determine if R3TR already
+        CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
+          EXPORTING
+            iv_object      = lv_object
+          IMPORTING
+            es_type        = ls_ko
+          EXCEPTIONS
+            illegal_object = 1
+            OTHERS         = 2.
+
+        IF sy-subrc = 1.
+* 2. Map WB type to TADIR
+          CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
+            EXPORTING
+              wb_objtype        = lv_object(3)
+            IMPORTING
+              transport_objtype = lv_object
+            EXCEPTIONS
+              no_mapping_found  = 1
+              no_unique_mapping = 2
+              OTHERS            = 3.
+          IF sy-subrc = 0.
+            lv_object_name = iv_encl_object.
+            "Class vs. interface is not differenciated
+            IF lv_object = 'CLAS'.
+              SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
+              IF lv_clstype = seoc_clstype_interface.
+                lv_object = 'INTF'.
+              ENDIF.
+            ENDIF.
+            "Retry type check
+            CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
+              EXPORTING
+                iv_object      = lv_object
+              IMPORTING
+                es_type        = ls_ko
+              EXCEPTIONS
+                illegal_object = 1
+                OTHERS         = 2.
           ELSE.
-            CLEAR ls_tadir.
-            ls_tadir-ref_obj_type = 'INTF'.
-            ls_tadir-ref_obj_name = ls_senvi-encl_obj.
-            INSERT ls_tadir INTO TABLE rt_tadir.
+            ASSERT 0 = 1. "Unknown Type
           ENDIF.
         ENDIF.
+        ASSERT sy-subrc = 0. "Something missing in translation
 
-      ELSE.
-        CLEAR ls_tadir.
-        ls_tadir-ref_obj_type = ls_senvi-type.
-        ls_tadir-ref_obj_name = ls_senvi-object.
-        INSERT ls_tadir INTO TABLE rt_tadir.
-      ENDIF.
-    ENDLOOP.
+* 3. Translate type
+        IF ls_ko-pgmid <> 'R3TR'.
+          ls_e071-pgmid = ls_ko-pgmid.
+          ls_e071-object = ls_ko-object.
+          ls_e071-obj_name = lv_object_name.
+          CALL FUNCTION 'TR_CHECK_TYPE'
+            EXPORTING
+              wi_e071              = ls_e071
+              iv_translate_objname = 'X'
+            IMPORTING
+              we_tadir             = ls_tadir.
+          ASSERT sy-subrc = 0. "Type must exist
+          lv_object = ls_tadir-object.
+          lv_object_name = ls_tadir-obj_name.
+        ELSE.
+        ENDIF.
+    ENDCASE.
+    IF lv_object IS INITIAL OR lv_object_name IS INITIAL.
+      ASSERT 0 = 1. "Mapping is wrong
+    ENDIF.
+    rs_object-object = lv_object.
+    rs_object-obj_name = lv_object_name.
 
   ENDMETHOD.
 
@@ -231,10 +289,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
 * Translate certain Object Types
 *
-    DATA: lv_type    TYPE trobjtype,
-          lv_name    TYPE sobj_name,
-          lv_is_fugr TYPE flag,
-          lv_fugr    TYPE rs38l_area.
+    DATA: lv_type      TYPE trobjtype,
+          lv_name      TYPE sobj_name,
+          lv_is_fugr   TYPE flag,
+          lv_namespace TYPE namespace,
+          lv_fugr      TYPE rs38l_area.
 
     CLEAR rv_package.
     lv_type = iv_object_type.
@@ -250,6 +309,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           EXPORTING
             progname_with_namespace = lv_name
           IMPORTING
+            namespace               = lv_namespace
             fugr_is_name            = lv_is_fugr
             fugr_group              = lv_fugr
           EXCEPTIONS
@@ -257,7 +317,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             OTHERS                  = 2.
         IF sy-subrc = 0 AND lv_is_fugr IS NOT INITIAL.
           lv_type = 'FUGR'.
-          lv_name = lv_fugr.
+          IF lv_namespace IS NOT INITIAL.
+            CONCATENATE lv_namespace lv_fugr INTO lv_name.
+          ELSE.
+            lv_name = lv_fugr.
+          ENDIF.
         ENDIF.
     ENDCASE.
 
