@@ -191,6 +191,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
     DATA lo_longtexts TYPE REF TO lcl_longtexts.
     DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
+    DATA ls_path TYPE string.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF rt_files.
 
@@ -232,7 +233,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       ENDCASE.
 
       LOOP AT ls_files_item-files ASSIGNING <ls_file>.
-        <ls_file>-path = |/src/{ to_lower( ls_tadir-devclass ) }/|.
+        ls_path = ls_tadir-devclass.
+        REPLACE ALL OCCURRENCES OF '/' IN ls_path WITH '#' IN CHARACTER MODE.
+        <ls_file>-path = |/src/{ to_lower( ls_path ) }/|.
         APPEND <ls_file> TO rt_files.
       ENDLOOP.
     ENDLOOP.
