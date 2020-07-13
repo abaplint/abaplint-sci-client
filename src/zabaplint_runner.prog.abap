@@ -74,7 +74,7 @@ FORM run RAISING zcx_abapgit_exception zcx_abaplint_error cx_salv_msg.
         APPEND LINES OF lt_issues TO lt_total.
       CATCH zcx_abaplint_error INTO lx_error.
         APPEND INITIAL LINE TO lt_total ASSIGNING <issue>.
-        <issue>-message  = lx_error->get_text( ).
+        <issue>-message  = lx_error->message.
         <issue>-key      = 'EXCEPTION'.
         <issue>-filename = |{ ls_object-object } { ls_object-obj_name }|.
     ENDTRY.
