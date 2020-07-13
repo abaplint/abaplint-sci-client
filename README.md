@@ -1,4 +1,4 @@
-# abaplint SCI server
+# abaplint SCI client
 
 ## Purpose
 
