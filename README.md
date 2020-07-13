@@ -1,4 +1,4 @@
-# abaplint abap backend
+# abaplint SCI server
 
 ## Purpose
 
@@ -6,7 +6,7 @@ This is a toolset to run abaplint checks within an SCI run.
 
 ![sci](docs/img/sci-sample.png)
 
-It consist of 2 parts: (1) the abap backend (this repo), which integrates with SCI and posts the code to the server part (2) which runs the abaplint (with nodejs).
+It consist of 2 parts: (1) the abap client (this repo), which integrates with SCI and posts the code to the server part (2) which runs the abaplint (with nodejs).
 
 ![landscape](docs/img/landscape.png)
 
@@ -19,9 +19,10 @@ Dependencies from `abaplint.json` are ignored when running via SCI, instead the 
 * Prerequisites: 
     * abapGit dev version must be installed (with all the separate classes, not a simple file version)
     * ABAP731 required, potentially works with 702. Though downported json xml parser should be available.
+    * Install [ajson](https://github.com/sbcgua/ajson) package using abapGit (dependency)
 * Install on ABAP backend (this repo) using abapGit
 * Activate check in SCI -> Management of -> Tests
-* Adjust check variants, maintain connection to [abaplint-cloud-foundry](https://github.com/abaplint/abaplint-cloud-foundry)
+* Adjust check variants, maintain connection to [abaplint-sci-server](https://github.com/abaplint/abaplint-sci-server)
 * abaplint settings are defined per target package
 
 ![setup1](docs/img/setup1.png)
