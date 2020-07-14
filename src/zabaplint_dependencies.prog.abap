@@ -7,7 +7,7 @@ DATA: ltb_devc TYPE tab_packages.
 PARAMETERS: p_git  TYPE text200 OBLIGATORY.
 SELECT-OPTIONS: s_devc FOR tdevc-devclass OBLIGATORY.
 
-PARAMETERS: p_depth TYPE i DEFAULT 1,
+PARAMETERS: p_depth TYPE i DEFAULT 10,
             p_test  TYPE c AS CHECKBOX.
 
 SELECTION-SCREEN: SKIP,

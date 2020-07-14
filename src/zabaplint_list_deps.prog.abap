@@ -23,7 +23,7 @@ SELECT-OPTIONS: s_devc FOR tdevc-devclass.
 SELECTION-SCREEN: END OF BLOCK b1.
 
 SELECTION-SCREEN: BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
-PARAMETERS p_depth TYPE i DEFAULT 1.
+PARAMETERS p_depth TYPE i DEFAULT 10.
 SELECTION-SCREEN SKIP.
 PARAMETERS: p_skip RADIOBUTTON GROUP g1,
             p_seri RADIOBUTTON GROUP g1,
@@ -87,6 +87,7 @@ FORM serialize USING pt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt RAISING z
 
   DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
   DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
+  DATA lx_error2 TYPE REF TO zcx_abapgit_exception.
 
   IF p_skip = abap_true.
     RETURN.
@@ -94,7 +95,11 @@ FORM serialize USING pt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt RAISING z
 
   IF p_down = abap_true OR p_seri = abap_true.
     CREATE OBJECT lo_dep_ser.
-    lt_local = lo_dep_ser->serialize( pt_deps ).
+    TRY.
+        lt_local = lo_dep_ser->serialize( pt_deps ).
+      CATCH zcx_abapgit_exception INTO lx_error2.
+        MESSAGE lx_error2 TYPE 'E'.
+    ENDTRY.
   ENDIF.
 
   IF p_down = abap_true.

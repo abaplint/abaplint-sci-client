@@ -18,7 +18,7 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZABAPLINT</ARBGB>
      <MSGNR>001</MSGNR>
-     <TEXT>Package does not exist</TEXT>
+     <TEXT>Package &amp;1 does not exist</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -31,6 +31,18 @@
      <ARBGB>ZABAPLINT</ARBGB>
      <MSGNR>003</MSGNR>
      <TEXT>No configuration found for &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPLINT</ARBGB>
+     <MSGNR>004</MSGNR>
+     <TEXT>Object type &amp;1 is not supported and will be skipped (&amp;2)</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPLINT</ARBGB>
+     <MSGNR>005</MSGNR>
+     <TEXT>Object &amp;2 (&amp;1) does not have a TADIR entry is flaged for deletion</TEXT>
     </T100>
    </T100>
   </asx:values>
