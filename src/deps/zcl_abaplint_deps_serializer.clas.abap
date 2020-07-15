@@ -20,13 +20,21 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
         zcx_abapgit_exception .
   PROTECTED SECTION.
 
+    METHODS strip_xml
+      IMPORTING
+        !iv_string       TYPE string
+      RETURNING
+        VALUE(rv_string) TYPE string .
     METHODS build_clas
+      CHANGING
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+    METHODS build_prog
       CHANGING
         !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
     METHODS build_fugr
       CHANGING
         !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
-    METHODS build_code
+    METHODS build_clas_code
       IMPORTING
         !iv_class      TYPE clike
       RETURNING
@@ -53,7 +61,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DELETE cs_files-files WHERE filename CP '*.clas.testclasses.abap'.
 
     DATA lt_text TYPE abaptxt255_tab.
-    lt_text = build_code( cs_files-item-obj_name ).
+    lt_text = build_clas_code( cs_files-item-obj_name ).
 
     CONCATENATE LINES OF lt_text INTO lv_string SEPARATED BY cl_abap_char_utilities=>newline.
 
@@ -64,7 +72,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD build_code.
+  METHOD build_clas_code.
 
     DATA lt_text TYPE abaptxt255_tab.
     DATA lv_tmp LIKE LINE OF rt_code.
@@ -165,7 +173,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lv_filename TYPE string.
     DATA lv_start TYPE i.
     DATA lv_end TYPE i.
-    DATA lt_strings TYPE STANDARD TABLE OF string.
     DATA ls_functab LIKE LINE OF lt_functab.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
@@ -199,22 +206,26 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     lv_filename = |{ to_lower( cs_files-item-obj_name ) }.fugr.xml|.
     READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
     IF sy-subrc = 0.
-      lv_string = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
-      SPLIT lv_string AT |\n| INTO TABLE lt_strings.
+      lv_string = strip_xml( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
+      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+    ENDIF.
 
-      READ TABLE lt_strings WITH KEY table_line = |   <DYNPROS>| TRANSPORTING NO FIELDS.
-      IF sy-subrc = 0.
-        lv_start = sy-tabix.
-      ENDIF.
-      READ TABLE lt_strings WITH KEY table_line = |   </DYNPROS>| TRANSPORTING NO FIELDS.
-      IF sy-subrc = 0.
-        lv_end = sy-tabix.
-      ENDIF.
-      IF lv_start > 0 AND lv_end > 0.
-        DELETE lt_strings FROM lv_start TO lv_end.
-      ENDIF.
+  ENDMETHOD.
 
-      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( concat_lines_of( table = lt_strings sep = |\n| ) ).
+
+  METHOD build_prog.
+
+    DATA lv_filename TYPE string.
+    DATA lv_string TYPE string.
+
+    FIELD-SYMBOLS: <ls_file> LIKE LINE OF cs_files-files.
+
+
+    lv_filename = |{ to_lower( cs_files-item-obj_name ) }.prog.xml|.
+    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+    IF sy-subrc = 0.
+      lv_string = strip_xml( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
+      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
     ENDIF.
 
   ENDMETHOD.
@@ -264,6 +275,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
           build_clas( CHANGING cs_files = ls_files_item ).
         WHEN 'FUGR'.
           build_fugr( CHANGING cs_files = ls_files_item ).
+        WHEN 'PROG'.
+          build_prog( CHANGING cs_files = ls_files_item ).
         WHEN OTHERS.
       ENDCASE.
 
@@ -290,6 +303,35 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     APPEND ls_tadir TO lt_tadir.
 
     rt_files = serialize( lt_tadir ).
+
+  ENDMETHOD.
+
+
+  METHOD strip_xml.
+
+    DATA lt_strings TYPE STANDARD TABLE OF string.
+    DATA lt_result TYPE STANDARD TABLE OF string.
+    DATA lv_skip TYPE abap_bool.
+    DATA lv_string TYPE string.
+
+
+    SPLIT iv_string AT |\n| INTO TABLE lt_strings.
+
+    LOOP AT lt_strings INTO lv_string.
+      IF lv_string = |   <DYNPROS>| OR lv_string = |   <CUA>|.
+        lv_skip = abap_true.
+      ENDIF.
+
+      IF lv_skip = abap_false.
+        APPEND lv_string TO lt_result.
+      ENDIF.
+
+      IF lv_string = |   </DYNPROS>| OR lv_string = |   </CUA>|.
+        lv_skip = abap_false.
+      ENDIF.
+    ENDLOOP.
+
+    rv_string = concat_lines_of( table = lt_result sep = |\n| ).
 
   ENDMETHOD.
 ENDCLASS.
