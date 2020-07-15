@@ -152,6 +152,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lt_functab TYPE STANDARD TABLE OF rs38l_incl.
     DATA lv_area TYPE rs38l-area.
     DATA lv_filename TYPE string.
+    DATA lv_start TYPE i.
+    DATA lv_end TYPE i.
+    DATA lt_strings TYPE STANDARD TABLE OF string.
     DATA ls_functab LIKE LINE OF lt_functab.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
@@ -181,6 +184,27 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       lv_string = |FUNCTION { to_lower( ls_functab-funcname ) }.\n  RETURN.\nENDFUNCTION.|.
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
     ENDLOOP.
+
+    lv_filename = |{ to_lower( cs_files-item-obj_name ) }.fugr.xml|.
+    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+    IF sy-subrc = 0.
+      lv_string = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
+      SPLIT lv_string AT |\n| INTO TABLE lt_strings.
+
+      READ TABLE lt_strings WITH KEY table_line = |   <DYNPROS>| TRANSPORTING NO FIELDS.
+      IF sy-subrc = 0.
+        lv_start = sy-tabix.
+      ENDIF.
+      READ TABLE lt_strings WITH KEY table_line = |   </DYNPROS>| TRANSPORTING NO FIELDS.
+      IF sy-subrc = 0.
+        lv_end = sy-tabix.
+      ENDIF.
+      IF lv_start > 0 AND lv_end > 0.
+        DELETE lt_strings FROM lv_start TO lv_end.
+      ENDIF.
+
+      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( concat_lines_of( table = lt_strings sep = |\n| ) ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -250,6 +274,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     ls_tadir-object = is_item-obj_type.
     ls_tadir-obj_name = is_item-obj_name.
+    SELECT SINGLE devclass FROM tadir INTO ls_tadir-devclass
+      WHERE object = ls_tadir-object AND obj_name = ls_tadir-obj_name.
     APPEND ls_tadir TO lt_tadir.
 
     rt_files = serialize( lt_tadir ).
