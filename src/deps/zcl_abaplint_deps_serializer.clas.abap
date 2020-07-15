@@ -97,7 +97,12 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     IF lv_final = abap_false.
       lv_include = cl_oo_classname_service=>get_prosec_name( |{ iv_class }| ).
       READ REPORT lv_include INTO lt_text.
-      APPEND LINES OF lt_text TO rt_code.
+      LOOP AT lt_text INTO lv_text.
+        IF lv_text(1) = '*'.
+          CONTINUE.
+        ENDIF.
+        APPEND lv_text TO rt_code.
+      ENDLOOP.
     ENDIF.
 
     APPEND 'ENDCLASS.' TO rt_code.
