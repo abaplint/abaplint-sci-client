@@ -72,6 +72,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lv_final TYPE abap_bool.
     DATA lt_includes TYPE seop_methods_w_include.
     DATA lt_methods TYPE seo_methods.
+    DATA lv_text LIKE LINE OF lt_text.
     DATA lv_include TYPE program.
 
     TRY.
@@ -86,7 +87,12 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     lv_include = cl_oo_classname_service=>get_pubsec_name( |{ iv_class }| ).
     READ REPORT lv_include INTO lt_text.
-    APPEND LINES OF lt_text TO rt_code.
+    LOOP AT lt_text INTO lv_text.
+      IF lv_text(1) = '*'.
+        CONTINUE.
+      ENDIF.
+      APPEND lv_text TO rt_code.
+    ENDLOOP.
 
     IF lv_final = abap_false.
       lv_include = cl_oo_classname_service=>get_prosec_name( |{ iv_class }| ).
