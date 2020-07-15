@@ -171,8 +171,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lt_functab TYPE STANDARD TABLE OF rs38l_incl.
     DATA lv_area TYPE rs38l-area.
     DATA lv_filename TYPE string.
-    DATA lv_start TYPE i.
-    DATA lv_end TYPE i.
     DATA ls_functab LIKE LINE OF lt_functab.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
@@ -221,7 +219,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_file> LIKE LINE OF cs_files-files.
 
 
-    lv_filename = |{ to_lower( cs_files-item-obj_name ) }.prog.xml|.
+    lv_filename = |{ to_lower( translate( val = cs_files-item-obj_name from = '/' to = '#' ) ) }.prog.xml|.
     READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
     IF sy-subrc = 0.
       lv_string = strip_xml( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
