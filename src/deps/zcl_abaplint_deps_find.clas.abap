@@ -162,30 +162,30 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           ls_tadir       LIKE LINE OF rt_tadir,
           lv_object      TYPE trobjtype,
           lv_object_name TYPE sobj_name,
-          ls_object      TYPE zif_abapgit_definitions=>ty_tadir.
+          ls_object      TYPE zif_abapgit_definitions=>ty_tadir,
+          lv_obj         TYPE zif_abapgit_definitions=>ty_item.
 
     LOOP AT it_senvi INTO ls_senvi.
-
       lv_object = ls_senvi-type.
       lv_object_name = ls_senvi-object.
 
-      CASE lv_object.
-        WHEN 'DOMA'. "Ignore
-          CONTINUE.
-        WHEN OTHERS.
-          ls_object = convert_type_to_r3tr(
-            iv_object_type = lv_object
-            iv_object_name = lv_object_name
-            iv_encl_object = ls_senvi-encl_obj ).
-      ENDCASE.
-      IF ls_object-object IS INITIAL.
-        ASSERT 0 = 1. "Object type translaction failed
-      ENDIF.
+      ls_object = convert_type_to_r3tr(
+        iv_object_type = lv_object
+        iv_object_name = lv_object_name
+        iv_encl_object = ls_senvi-encl_obj ).
 
-      CLEAR ls_tadir.
-      ls_tadir-ref_obj_type = ls_object-object.
-      ls_tadir-ref_obj_name = ls_object-obj_name.
-      INSERT ls_tadir INTO TABLE rt_tadir.
+      "successfull translation and suppoeted type
+      IF ls_object-object IS NOT INITIAL AND ls_object-obj_name IS NOT INITIAL.
+        lv_obj = ls_object-object.
+        IF zcl_abapgit_objects=>is_supported( lv_obj ) = abap_true.
+          CLEAR ls_tadir.
+          ls_tadir-ref_obj_type = ls_object-object.
+          ls_tadir-ref_obj_name = ls_object-obj_name.
+          INSERT ls_tadir INTO TABLE rt_tadir.
+        ELSE.
+          MESSAGE s004(zabaplint) WITH ls_object-object ls_object-obj_name.
+        ENDIF.
+      ENDIF.
     ENDLOOP.
 
   ENDMETHOD.
@@ -239,9 +239,18 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             lv_object_name = iv_encl_object.
             "Class vs. interface is not differenciated
             IF lv_object = 'CLAS'.
+              "Decide if interface / class
               SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
-              IF lv_clstype = seoc_clstype_interface.
-                lv_object = 'INTF'.
+              IF sy-subrc = 0.
+                IF lv_clstype = seoc_clstype_interface.
+                  lv_object = 'INTF'.
+                ENDIF.
+              ELSE.
+                "Decide if Enhancement Spot
+                SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
+                IF sy-subrc = 0.
+                  lv_object = 'ENHS'.
+                ENDIF.
               ENDIF.
             ENDIF.
             "Retry type check
@@ -259,29 +268,26 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         ENDIF.
         ASSERT sy-subrc = 0. "Something missing in translation
 
-* 3. Translate type
-        IF ls_ko-pgmid <> 'R3TR'.
-          ls_e071-pgmid = ls_ko-pgmid.
-          ls_e071-object = ls_ko-object.
-          ls_e071-obj_name = lv_object_name.
-          CALL FUNCTION 'TR_CHECK_TYPE'
-            EXPORTING
-              wi_e071              = ls_e071
-              iv_translate_objname = 'X'
-            IMPORTING
-              we_tadir             = ls_tadir.
-          ASSERT sy-subrc = 0. "Type must exist
-          lv_object = ls_tadir-object.
-          lv_object_name = ls_tadir-obj_name.
-        ELSE.
+        "3. Translate TADIR entry
+        ls_e071-pgmid = ls_ko-pgmid.
+        ls_e071-object = ls_ko-object.
+        ls_e071-obj_name = lv_object_name.
+        CALL FUNCTION 'TR_CHECK_TYPE'
+          EXPORTING
+            wi_e071              = ls_e071
+            iv_translate_objname = 'X'
+          IMPORTING
+            we_tadir             = ls_tadir.
+        ASSERT sy-subrc = 0. "Type must exist
+        lv_object = ls_tadir-object.
+        lv_object_name = ls_tadir-obj_name.
+
+        "Object name empty -> does not exist
+        IF lv_object_name IS NOT INITIAL.
+          rs_object-object = lv_object.
+          rs_object-obj_name = lv_object_name.
         ENDIF.
     ENDCASE.
-    IF lv_object IS INITIAL OR lv_object_name IS INITIAL.
-      ASSERT 0 = 1. "Mapping is wrong
-    ENDIF.
-    rs_object-object = lv_object.
-    rs_object-obj_name = lv_object_name.
-
   ENDMETHOD.
 
 
@@ -330,6 +336,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
        AND object = lv_type
        AND obj_name = lv_name.
 
+    IF sy-subrc <> 0 OR rv_package IS INITIAL.
+      rv_package = '$NONE'.
+    ENDIF.
   ENDMETHOD.
 
 
@@ -344,12 +353,16 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
-    set_package_tree( lt_packages ).
-    clear_results( ).
-
     ls_object-object = iv_object_type.
     ls_object-obj_name = iv_object_name.
     ls_object-devclass = lv_package.
+
+    IF ls_object-object = 'DEVC'.
+      APPEND ls_object-object TO lt_packages.
+    ENDIF.
+
+    set_package_tree( lt_packages ).
+    clear_results( ).
 
     get_dependencies(
       is_object = ls_object
@@ -526,7 +539,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           lv_index       LIKE sy-tabix,
           ls_tadir       TYPE LINE OF ty_tadir_tt,
           lv_flag        TYPE flag,
-          lv_devclass    TYPE devclass.
+          lv_devclass    TYPE devclass,
+          lv_delflag     TYPE objdelflag.
     DATA: BEGIN OF ls_tadir_obj,
             object    TYPE trobjtype,
             obj_name  TYPE sobj_name,
@@ -635,6 +649,18 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
+    "Remove entries without TADIR or with delete flag set
+    LOOP AT lt_tadir INTO ls_tadir.
+      SELECT SINGLE delflag FROM tadir INTO lv_delflag
+        WHERE pgmid = 'R3TR'
+        AND object = ls_tadir-ref_obj_type
+        AND obj_name = ls_tadir-ref_obj_name.
+      IF sy-subrc <> 0 OR lv_delflag IS NOT INITIAL.
+        MESSAGE s005(zabaplint) WITH ls_tadir-ref_obj_type ls_tadir-ref_obj_name.
+        DELETE lt_tadir.
+      ENDIF.
+    ENDLOOP.
+
     "Add to dependency collection
     INSERT LINES OF lt_tadir INTO TABLE mv_results.
 
@@ -643,9 +669,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
 * TODO: when is this valid? add as configuration in constructor?
     IF NOT ( ( ls_tadir_obj-author = 'SAP'
-        OR ls_tadir_obj-author = 'SAP*' )
-        AND ls_tadir_obj-srcsystem = 'SAP' ).
-
+           OR ls_tadir_obj-author = 'SAP*' )
+           AND ls_tadir_obj-srcsystem = 'SAP' ).
 *
 * Try to find dependend objects
 *
@@ -814,7 +839,16 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         WHEN 'TY'.
           SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = ls_wbcrossgt-name(30).
           IF sy-subrc <> 0.
-            CONTINUE.
+            "Decide if Enhancement Spot
+            SELECT COUNT( * ) FROM badi_spot WHERE badi_name = ls_wbcrossgt-name.
+            IF sy-subrc = 0.
+              CLEAR ls_tadir.
+              ls_tadir-ref_obj_type = 'ENHS'.
+              ls_tadir-ref_obj_name = ls_wbcrossgt-name.
+              INSERT ls_tadir INTO TABLE ct_tadir.
+            ELSE.
+              CONTINUE.
+            ENDIF.
           ENDIF.
 
           CASE lv_clstype.
