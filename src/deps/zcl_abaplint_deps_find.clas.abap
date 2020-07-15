@@ -746,15 +746,20 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     rs_types-conv = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'SUSO'.
     rs_types-suso = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'TYPE'.
-    rs_types-type = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* TYPE are not handled properly in abaplint right now, so skip
+*    ls_type-obj_type = 'TYPE'
+*    rs_types-type = zcl_abapgit_objects=>is_supported( ls_type )
+
     ls_type-obj_type = 'TTYP'.
     rs_types-ttyp = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'PROG'.
     rs_types-prog = zcl_abapgit_objects=>is_supported( ls_type ).
     rs_types-stru = rs_types-tabl.
-    ls_type-obj_type = 'ENQU'.
-    rs_types-enqu = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'ENQU'
+*    rs_types-enqu = zcl_abapgit_objects=>is_supported( ls_type )
 
 * not needed by abaplint yet
 *    ls_type-obj_type = 'SQLT'
