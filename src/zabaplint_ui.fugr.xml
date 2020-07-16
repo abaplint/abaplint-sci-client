@@ -411,13 +411,13 @@
       <FUN_TEXT>Save</FUN_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
-      <CODE>UPDATE_BCK</CODE>
+      <CODE>UPDATE_DEF</CODE>
       <TEXTNO>001</TEXTNO>
       <TEXT_TYPE>S</TEXT_TYPE>
       <TEXT_NAME>ICON_REFRESH</TEXT_NAME>
       <ICON_ID>@42@</ICON_ID>
-      <FUN_TEXT>Update from Backend</FUN_TEXT>
-      <ICON_TEXT>Update from Backend</ICON_TEXT>
+      <FUN_TEXT>Update with Default</FUN_TEXT>
+      <ICON_TEXT>Update with Default</ICON_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>UPDATE_GIT</CODE>
@@ -472,6 +472,11 @@
       <NO>07</NO>
       <PFNO>18</PFNO>
      </RSMPE_BUT>
+     <RSMPE_BUT>
+      <PFK_CODE>000001</PFK_CODE>
+      <CODE>0001</CODE>
+      <NO>08</NO>
+     </RSMPE_BUT>
     </BUT>
     <PFK>
      <RSMPE_PFK>
@@ -519,7 +524,7 @@
      <RSMPE_PFK>
       <CODE>000001</CODE>
       <PFNO>19</PFNO>
-      <FUNCODE>UPDATE_BCK</FUNCODE>
+      <FUNCODE>UPDATE_DEF</FUNCODE>
       <FUNNO>001</FUNNO>
      </RSMPE_PFK>
      <RSMPE_PFK>
@@ -568,7 +573,7 @@
      </RSMPE_STAF>
      <RSMPE_STAF>
       <STATUS>STATUS_2000</STATUS>
-      <FUNCTION>UPDATE_BCK</FUNCTION>
+      <FUNCTION>UPDATE_DEF</FUNCTION>
      </RSMPE_STAF>
      <RSMPE_STAF>
       <STATUS>STATUS_2000</STATUS>

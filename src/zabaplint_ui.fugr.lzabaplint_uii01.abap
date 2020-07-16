@@ -22,8 +22,8 @@ MODULE user_command_2000 INPUT.
       PERFORM call_3000.
     WHEN 'UPDATE_GIT'.
       PERFORM update_git.
-    WHEN 'UPDATE_BCK'.
-      PERFORM update_backend.
+    WHEN 'UPDATE_DEF'.
+      PERFORM update_with_default_conf.
     WHEN 'BACK'.
       LEAVE TO SCREEN 0.
   ENDCASE.

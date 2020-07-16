@@ -3,8 +3,8 @@ FUNCTION-POOL zabaplint_ui.
 TABLES: zabaplint_glob_data.
 
 TYPES: BEGIN OF ty_node.
-    INCLUDE STRUCTURE treev_node.
-TYPES: text TYPE text50,
+         INCLUDE STRUCTURE treev_node.
+         TYPES: text TYPE text50,
        END OF ty_node.
 
 TYPES: ty_nodes TYPE STANDARD TABLE OF ty_node WITH DEFAULT KEY.

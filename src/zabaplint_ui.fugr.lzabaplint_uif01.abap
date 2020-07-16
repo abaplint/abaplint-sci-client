@@ -476,7 +476,7 @@ FORM update_git.
 
 ENDFORM.
 
-FORM update_backend.
+FORM update_with_default_conf.
 
   DATA lv_devclass TYPE devclass.
   lv_devclass = lcl_editor=>get_devclass( ).
