@@ -476,6 +476,27 @@ FORM update_git.
 
 ENDFORM.
 
+FORM update_backend.
+
+  DATA lv_devclass TYPE devclass.
+  lv_devclass = lcl_editor=>get_devclass( ).
+  IF lv_devclass IS INITIAL.
+    RETURN.
+  ENDIF.
+
+  DATA lo_backend TYPE REF TO zcl_abaplint_backend.
+  DATA lv_json TYPE string.
+  CREATE OBJECT lo_backend.
+
+  lv_json = lo_backend->get_default_config( ).
+  IF NOT lv_json IS INITIAL.
+    lcl_editor=>update( lv_json ).
+  ELSE.
+    MESSAGE e002(zabaplint).
+  ENDIF.
+
+ENDFORM.
+
 *&---------------------------------------------------------------------*
 *& Form STATUS_2000
 *&---------------------------------------------------------------------*
@@ -494,6 +515,7 @@ FORM status_2000.
     APPEND 'ADD_RAW' TO lt_exclude.
     APPEND 'ADD_GIT' TO lt_exclude.
     APPEND 'UPDATE_GIT' TO lt_exclude.
+    APPEND 'UPDATE_BCK' TO lt_exclude.
     APPEND 'DELETE' TO lt_exclude.
   ENDIF.
 
