@@ -32,12 +32,17 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rt_issues)  TYPE ty_issues
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error.
     METHODS ping
       RETURNING
         VALUE(rs_message) TYPE ty_message
       RAISING
         zcx_abaplint_error .
+    METHODS get_default_config
+      RETURNING
+        VALUE(rv_json) TYPE string
+      RAISING
+        zcx_abaplint_error.
     METHODS constructor
       IMPORTING
         !is_config TYPE zabaplint_glob_data OPTIONAL .
@@ -62,19 +67,26 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rv_files) TYPE string
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error.
     METHODS build_files
       IMPORTING
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
       RETURNING
         VALUE(rv_files) TYPE string .
+
   PRIVATE SECTION.
+    CONSTANTS:
+      BEGIN OF c_uri,
+        ping               TYPE string VALUE '/api/v1/ping',
+        check_file         TYPE string VALUE '/api/v1/check_file',
+        get_default_config TYPE string VALUE '/api/v1/default_config',
+      END OF c_uri.
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
+CLASS zcl_abaplint_backend IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -183,7 +195,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
     li_json = lo_agent->request(
       iv_method = if_http_request=>co_request_method_post
-      iv_uri    = '/api/v1/check_file'
+      iv_uri    = c_uri-check_file
       iv_payload = lv_cdata ).
 
     DATA lt_issues TYPE string_table.
@@ -237,7 +249,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
 
     TRY.
-        li_json = lo_agent->request( '/api/v1/ping' ).
+        li_json = lo_agent->request( c_uri-ping ).
         rs_message-message = li_json->value_string( '' ).
         rs_message-error   = abap_false.
       CATCH zcx_abaplint_error INTO lx_error.
@@ -246,4 +258,35 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     ENDTRY.
 
   ENDMETHOD.
+
+
+  METHOD get_default_config.
+
+    DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
+    DATA li_json TYPE REF TO zif_ajson_reader.
+    DATA lo_json TYPE REF TO zcl_ajson.
+    DATA lx_error TYPE REF TO zcx_ajson_error.
+
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+
+    li_json = lo_agent->request( c_uri-get_default_config ).
+    li_json = li_json->slice( '/config' ).
+    lo_json ?= li_json.
+    TRY.
+        rv_json = lo_json->stringify( iv_indent = 2 ).
+      CATCH zcx_ajson_error INTO lx_error.
+        RAISE EXCEPTION TYPE zcx_abaplint_error
+          EXPORTING
+            message = lx_error->message.
+    ENDTRY.
+
+    IF rv_json IS INITIAL.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = 'Fetched Config is empty!'.
+    ENDIF.
+
+
+  ENDMETHOD.
+
 ENDCLASS.
