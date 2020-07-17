@@ -486,14 +486,15 @@ FORM update_with_default_conf.
 
   DATA lo_backend TYPE REF TO zcl_abaplint_backend.
   DATA lv_json TYPE string.
+  DATA lx_error TYPE REF TO zcx_abaplint_error.
   CREATE OBJECT lo_backend.
 
-  lv_json = lo_backend->get_default_config( ).
-  IF NOT lv_json IS INITIAL.
-    lcl_editor=>update( lv_json ).
-  ELSE.
-    MESSAGE e002(zabaplint).
-  ENDIF.
+  TRY.
+      lv_json = lo_backend->get_default_config( ).
+      lcl_editor=>update( lv_json ).
+    CATCH zcx_abaplint_error INTO lx_error.
+      MESSAGE lx_error->message TYPE 'E'.
+  ENDTRY.
 
 ENDFORM.
 
