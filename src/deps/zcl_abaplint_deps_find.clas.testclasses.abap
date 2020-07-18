@@ -78,6 +78,14 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
     READ TABLE lt_results WITH KEY object = 'FUGR' obj_name = 'SDIF' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
 
+* for the function group SDIF, only minimal dependencies are needed, ie only types of the function modules
+    READ TABLE lt_results WITH KEY object = 'PROG' obj_name = 'RADBTMAC' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( exp = 4 ).
+
+* data element DDOBJNAME is used in the parameters for function module DDIF_DD_CHECK from SDIF
+    READ TABLE lt_results WITH KEY object = 'DTEL' obj_name = 'DDOBJNAME' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( ).
+
   ENDMETHOD.
 
 ENDCLASS.

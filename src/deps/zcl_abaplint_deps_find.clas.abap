@@ -638,6 +638,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       ASSERT sy-subrc = 0.
 
       lt_tadir = convert_senvi_to_tadir( lt_environment ).
+
+      IF lv_obj_type = 'FUGR' AND iv_minimal = abap_true.
+        DELETE lt_tadir WHERE ref_obj_type = 'PROG'.
+        DELETE lt_tadir WHERE ref_obj_type = 'FUGR'.
+      ENDIF.
     ENDIF.
 
 *
