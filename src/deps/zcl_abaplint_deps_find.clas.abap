@@ -48,7 +48,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     TYPES:
       ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
 
-    DATA ms_options TYPE ty_options.
+    DATA ms_options TYPE ty_options .
 
     METHODS convert_senvi_to_tadir
       IMPORTING
@@ -63,11 +63,18 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !ct_tadir TYPE ty_tadir_tt
       RAISING
         zcx_abaplint_error .
+    METHODS find_tabl_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
     METHODS find_dtel_dependencies
       IMPORTING
-        !iv_name  TYPE tadir-obj_name
-      CHANGING
-        !ct_tadir TYPE ty_tadir_tt .
+        !iv_name        TYPE tadir-obj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE ty_tadir_tt .
     METHODS get_dependencies
       IMPORTING
         !is_object TYPE zif_abapgit_definitions=>ty_tadir
@@ -506,7 +513,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA ls_x030l TYPE x030l.
     DATA lv_tabname TYPE dd02l-tabname.
-    DATA ls_tadir LIKE LINE OF ct_tadir.
+    DATA ls_tadir LIKE LINE OF rt_tadir.
 
     lv_tabname = iv_name.
 
@@ -523,8 +530,47 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     IF sy-subrc = 0 AND NOT ls_x030l-refname IS INITIAL.
       ls_tadir-ref_obj_type = 'DOMA'.
       ls_tadir-ref_obj_name = ls_x030l-refname.
-      INSERT ls_tadir INTO TABLE ct_tadir.
+      INSERT ls_tadir INTO TABLE rt_tadir.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD find_tabl_dependencies.
+
+    DATA lv_tabname TYPE  dd02l-tabname.
+    DATA ls_tadir LIKE LINE OF rt_tadir.
+    DATA lt_x031l TYPE STANDARD TABLE OF x031l.
+
+    FIELD-SYMBOLS: <ls_x031l> LIKE LINE OF lt_x031l.
+
+    lv_tabname = iv_name.
+
+    CALL FUNCTION 'DD_GET_NAMETAB'
+      EXPORTING
+        tabname   = lv_tabname
+        get_all   = abap_true
+      TABLES
+        x031l_tab = lt_x031l
+      EXCEPTIONS
+        not_found = 1
+        no_fields = 2
+        OTHERS    = 3.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    LOOP AT lt_x031l ASSIGNING <ls_x031l>.
+      IF <ls_x031l>-fieldname(8) = '.INCLUDE' AND NOT <ls_x031l>-rollname IS INITIAL.
+        ls_tadir-ref_obj_type = 'TABL'.
+        ls_tadir-ref_obj_name = <ls_x031l>-rollname.
+        INSERT ls_tadir INTO TABLE rt_tadir.
+      ELSEIF NOT <ls_x031l>-rollname IS INITIAL.
+        ls_tadir-ref_obj_type = 'DTEL'.
+        ls_tadir-ref_obj_name = <ls_x031l>-rollname.
+        INSERT ls_tadir INTO TABLE rt_tadir.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -572,12 +618,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           iv_level = iv_level
         CHANGING
           ct_tadir = lt_tadir ).
+    ELSEIF is_object-object = 'TABL'.
+      lt_tadir = find_tabl_dependencies( is_object-obj_name ).
     ELSEIF is_object-object = 'DTEL'.
-      find_dtel_dependencies(
-        EXPORTING
-          iv_name  = is_object-obj_name
-        CHANGING
-          ct_tadir = lt_tadir ).
+      lt_tadir = find_dtel_dependencies( is_object-obj_name ).
     ELSE.
       lv_obj_type = is_object-object.
 
