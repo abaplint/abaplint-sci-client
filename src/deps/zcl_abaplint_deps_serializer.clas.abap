@@ -171,11 +171,15 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lv_string TYPE string.
     DATA lt_functab TYPE STANDARD TABLE OF rs38l_incl.
     DATA lv_area TYPE rs38l-area.
+    DATA lt_files LIKE cs_files-files.
     DATA lv_filename TYPE string.
     DATA ls_functab LIKE LINE OF lt_functab.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
 
+
+    lt_files = cs_files-files.
+    CLEAR cs_files-files.
 
     lv_area = cs_files-item-obj_name.
 
@@ -193,20 +197,24 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     LOOP AT lt_functab INTO ls_functab.
       lv_filename = |{ to_lower( cs_files-item-obj_name ) }.fugr.{ to_lower( ls_functab-funcname ) }.abap|.
-      READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+      READ TABLE lt_files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
       IF sy-subrc <> 0.
         CONTINUE.
       ENDIF.
 
       lv_string = |FUNCTION { to_lower( ls_functab-funcname ) }.\n  RETURN.\nENDFUNCTION.|.
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+
+      APPEND <ls_file> TO cs_files-files.
     ENDLOOP.
 
     lv_filename = |{ to_lower( cs_files-item-obj_name ) }.fugr.xml|.
-    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+    READ TABLE lt_files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
     IF sy-subrc = 0.
       lv_string = strip_xml( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+
+      APPEND <ls_file> TO cs_files-files.
     ENDIF.
 
   ENDMETHOD.
@@ -317,7 +325,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     SPLIT iv_string AT |\n| INTO TABLE lt_strings.
 
     LOOP AT lt_strings INTO lv_string.
-      IF lv_string = |   <DYNPROS>| OR lv_string = |   <CUA>|.
+      IF lv_string = |   <DYNPROS>|
+          OR lv_string = |   <CUA>|
+          OR lv_string = |   <INCLUDES>|.
         lv_skip = abap_true.
       ENDIF.
 
@@ -325,7 +335,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
         APPEND lv_string TO lt_result.
       ENDIF.
 
-      IF lv_string = |   </DYNPROS>| OR lv_string = |   </CUA>|.
+      IF lv_string = |   </DYNPROS>|
+          OR lv_string = |   </CUA>|
+          OR lv_string = |   </INCLUDES>|.
         lv_skip = abap_false.
       ENDIF.
     ENDLOOP.
