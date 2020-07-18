@@ -42,10 +42,14 @@ FORM run RAISING cx_static_check.
   DATA lv_lines TYPE n LENGTH 6.
   DATA lx_error TYPE REF TO zcx_abaplint_error.
   DATA lx_error2 TYPE REF TO zcx_abapgit_exception.
+  DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
+
+
+  ls_options-max_level = p_depth.
 
   CREATE OBJECT lo_find
     EXPORTING
-      iv_max_level = p_depth.
+      is_options = ls_options.
 
   TRY.
       CASE abap_true.

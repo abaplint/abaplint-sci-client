@@ -335,6 +335,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
             iv_object_name   = object_name ).
 
           output_issues( lt_issues ).
+        CATCH zcx_abapgit_exception.
+          ASSERT 0 = 1. " todo
         CATCH zcx_abaplint_error INTO lx_error.
           inform(
             p_test    = myname

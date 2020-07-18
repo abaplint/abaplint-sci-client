@@ -6,6 +6,7 @@ CLASS ltcl_find_by_item DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLES
 
     METHODS:
       setup,
+      usr02 FOR TESTING RAISING cx_static_check,
       txmilograw FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
@@ -14,7 +15,14 @@ ENDCLASS.
 CLASS ltcl_find_by_item IMPLEMENTATION.
 
   METHOD setup.
-    CREATE OBJECT mo_cut.
+    DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
+
+    ls_options-continue_into_sap = abap_true.
+
+    CREATE OBJECT mo_cut
+      EXPORTING
+        is_options = ls_options.
+
   ENDMETHOD.
 
   METHOD txmilograw.
@@ -40,6 +48,20 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
       lower  = 20
       upper  = 50
       number = lines( lt_results ) ).
+
+  ENDMETHOD.
+
+  METHOD usr02.
+
+    DATA: lt_results TYPE zif_abapgit_definitions=>ty_tadir_tt.
+
+    lt_results = mo_cut->find_by_item(
+      iv_object_type = 'TABL'
+      iv_object_name = 'USR02' ).
+
+* the check tables should not be found by the dependency analysis, they are not relevant to abaplint
+    READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'SEC_POLICY_CUST' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( exp = 4 ).
 
   ENDMETHOD.
 

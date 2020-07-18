@@ -115,10 +115,13 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
     DATA lt_tadir TYPE zif_abapgit_definitions=>ty_tadir_tt.
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
+
+    ls_options-max_level = mv_depth.
 
     CREATE OBJECT lo_dep_find
       EXPORTING
-        iv_max_level = mv_depth.
+        is_options = ls_options.
     CREATE OBJECT lo_dep_ser.
 
     lt_tadir = lo_dep_find->find_by_packages( mv_packages ).

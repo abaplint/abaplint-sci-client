@@ -17,7 +17,7 @@ CLASS zcl_abaplint_backend DEFINITION
         start    TYPE ty_position,
       END OF ty_issue .
     TYPES:
-      ty_issues TYPE STANDARD TABLE OF ty_issue WITH KEY table_line.
+      ty_issues TYPE STANDARD TABLE OF ty_issue WITH KEY table_line .
     TYPES:
       BEGIN OF ty_message,
         error   TYPE abap_bool,
@@ -32,7 +32,8 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rt_issues)  TYPE ty_issues
       RAISING
-        zcx_abaplint_error.
+        zcx_abaplint_error
+        zcx_abapgit_exception .
     METHODS ping
       RETURNING
         VALUE(rs_message) TYPE ty_message
@@ -42,7 +43,7 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rv_json) TYPE string
       RAISING
-        zcx_abaplint_error.
+        zcx_abaplint_error .
     METHODS constructor
       IMPORTING
         !is_config TYPE zabaplint_glob_data OPTIONAL .
@@ -67,14 +68,14 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rv_files) TYPE string
       RAISING
-        zcx_abaplint_error.
+        zcx_abaplint_error
+        zcx_abapgit_exception .
     METHODS build_files
       IMPORTING
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
       RETURNING
         VALUE(rv_files) TYPE string .
-
   PRIVATE SECTION.
     CONSTANTS:
       BEGIN OF c_uri,
@@ -86,7 +87,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -240,26 +241,6 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ping.
-
-    DATA lx_error TYPE REF TO zcx_abaplint_error.
-    DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_ajson_reader.
-
-    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
-
-    TRY.
-        li_json = lo_agent->request( c_uri-ping ).
-        rs_message-message = li_json->value_string( '' ).
-        rs_message-error   = abap_false.
-      CATCH zcx_abaplint_error INTO lx_error.
-        rs_message-message = lx_error->message.
-        rs_message-error   = abap_true.
-    ENDTRY.
-
-  ENDMETHOD.
-
-
   METHOD get_default_config.
 
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
@@ -289,4 +270,23 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+  METHOD ping.
+
+    DATA lx_error TYPE REF TO zcx_abaplint_error.
+    DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
+    DATA li_json TYPE REF TO zif_ajson_reader.
+
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+
+    TRY.
+        li_json = lo_agent->request( c_uri-ping ).
+        rs_message-message = li_json->value_string( '' ).
+        rs_message-error   = abap_false.
+      CATCH zcx_abaplint_error INTO lx_error.
+        rs_message-message = lx_error->message.
+        rs_message-error   = abap_true.
+    ENDTRY.
+
+  ENDMETHOD.
 ENDCLASS.
