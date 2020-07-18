@@ -6,8 +6,9 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
 
     METHODS:
       setup,
-      clas_cl_ci_tests FOR TESTING RAISING cx_static_check,
-      fugr_zabaplint_ui FOR TESTING RAISING cx_static_check.
+      cl_ci_tests FOR TESTING RAISING cx_static_check,
+      cx_iac_helper_check_7bit_acsii FOR TESTING RAISING cx_static_check,
+      zabaplint_ui FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
 
@@ -18,7 +19,7 @@ CLASS ltcl_test IMPLEMENTATION.
     CREATE OBJECT mo_cut.
   ENDMETHOD.
 
-  METHOD fugr_zabaplint_ui.
+  METHOD zabaplint_ui.
 
     DATA: ls_item TYPE zif_abapgit_definitions=>ty_item.
 
@@ -29,7 +30,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD clas_cl_ci_tests.
+  METHOD cl_ci_tests.
 
     DATA: ls_item TYPE zif_abapgit_definitions=>ty_item.
 
@@ -37,6 +38,24 @@ CLASS ltcl_test IMPLEMENTATION.
     ls_item-obj_name = 'CL_CI_TESTS'.
 
     mo_cut->serialize_item( ls_item ).
+
+  ENDMETHOD.
+
+  METHOD cx_iac_helper_check_7bit_acsii.
+
+    DATA: ls_item TYPE zif_abapgit_definitions=>ty_item.
+    DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA ls_file LIKE LINE OF lt_files.
+
+
+    ls_item-obj_type = 'CLAS'.
+    ls_item-obj_name = 'CX_IAC_HELPER_CHECK_7BIT_ACSII'.
+
+    lt_files = mo_cut->serialize_item( ls_item ).
+
+    LOOP AT lt_files INTO ls_file.
+      cl_abap_unit_assert=>assert_not_initial( ls_file-data ).
+    ENDLOOP.
 
   ENDMETHOD.
 

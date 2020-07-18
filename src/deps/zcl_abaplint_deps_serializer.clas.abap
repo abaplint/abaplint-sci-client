@@ -62,12 +62,13 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     DATA lt_text TYPE abaptxt255_tab.
     lt_text = build_clas_code( cs_files-item-obj_name ).
+    IF lines( lt_text ) > 0.
+      CONCATENATE LINES OF lt_text INTO lv_string SEPARATED BY cl_abap_char_utilities=>newline.
 
-    CONCATENATE LINES OF lt_text INTO lv_string SEPARATED BY cl_abap_char_utilities=>newline.
-
-    LOOP AT cs_files-files ASSIGNING <ls_file> WHERE filename CP '*.clas.abap'.
-      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
-    ENDLOOP.
+      LOOP AT cs_files-files ASSIGNING <ls_file> WHERE filename CP '*.clas.abap'.
+        <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+      ENDLOOP.
+    ENDIF.
 
   ENDMETHOD.
 
