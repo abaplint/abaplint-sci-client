@@ -425,15 +425,13 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     LOOP AT it_packages INTO lv_package.
 
-      lt_tadir = zcl_abapgit_factory=>get_tadir( )->read(
-        iv_package            = lv_package
-        iv_ignore_subpackages = abap_true ).
+      lt_tadir = zcl_abapgit_factory=>get_tadir( )->read( lv_package ).
 
       LOOP AT lt_tadir INTO ls_tadir WHERE object <> 'DEVC'.
         ls_object-object   = ls_tadir-object.
         ls_object-obj_name = ls_tadir-obj_name.
 
-        IF sy-tabix MOD 100 = 0.
+        IF sy-tabix MOD 10 = 0.
           cl_progress_indicator=>progress_indicate(
             i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
             i_processed          = sy-tabix
