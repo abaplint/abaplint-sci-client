@@ -88,6 +88,10 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
     READ TABLE lt_results WITH KEY object = 'DTEL' obj_name = 'DDOBJNAME' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
 
+* TABL DCOBJIF only used in the code for SDIF function group, so it should not be a dependency
+    READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'DCOBJIF' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( exp = 4 ).
+
   ENDMETHOD.
 
   METHOD dd01v.

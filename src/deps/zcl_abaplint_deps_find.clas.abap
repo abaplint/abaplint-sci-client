@@ -50,10 +50,10 @@ CLASS zcl_abaplint_deps_find DEFINITION
         VALUE(rt_tadir) TYPE ty_tadir_tt .
     METHODS find_clas_dependencies
       IMPORTING
-        !iv_name  TYPE tadir-obj_name
-        !iv_level TYPE i
+        !iv_name        TYPE tadir-obj_name
+        !iv_level       TYPE i
       CHANGING
-        !ct_tadir TYPE ty_tadir_tt
+        VALUE(ct_tadir) TYPE ty_tadir_tt
       RAISING
         zcx_abaplint_error .
     METHODS find_tabl_dependencies
@@ -216,70 +216,81 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     lv_object_name = iv_object_name.
 
     CASE lv_object.
-      WHEN 'INCL'.
+      WHEN 'INCL' OR 'PROG'.
         rs_object-object = 'PROG'.
         rs_object-obj_name = lv_object_name.
-      WHEN 'STRU'.
+      WHEN 'PARA'.
+        rs_object-object = 'PARA'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'SUSO'.
+        rs_object-object = 'SUSO'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'STRU' OR 'TABL'.
         rs_object-object = 'TABL'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'CLAS'.
+        rs_object-object = 'CLAS'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'INTF'.
+        rs_object-object = 'INTF'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'DTEL'.
+        rs_object-object = 'DTEL'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'TTYP'.
+        rs_object-object = 'TTYP'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'XSLT'.
+        rs_object-object = 'XSLT'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'VIEW'.
+        rs_object-object = 'VIEW'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'TRAN'.
+        rs_object-object = 'TRAN'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'MSAG'.
+        rs_object-object = 'MSAG'.
         rs_object-obj_name = lv_object_name.
       WHEN 'MESS'.
         rs_object-object = 'MSAG'.
         rs_object-obj_name = iv_encl_object.
+      WHEN 'FUNC'.
+        rs_object-object = 'FUGR'.
+        rs_object-obj_name = iv_encl_object.
       WHEN OTHERS.
 
-* 1. Determine if R3TR already
-        CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
-          EXPORTING
-            iv_object      = lv_object
-          IMPORTING
-            es_type        = ls_ko
-          EXCEPTIONS
-            illegal_object = 1
-            OTHERS         = 2.
 
-        IF sy-subrc = 1.
 * 2. Map WB type to TADIR
-          CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
-            EXPORTING
-              wb_objtype        = lv_object(3)
-            IMPORTING
-              transport_objtype = lv_object
-            EXCEPTIONS
-              no_mapping_found  = 1
-              no_unique_mapping = 2
-              OTHERS            = 3.
+        CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
+          EXPORTING
+            wb_objtype        = lv_object(3)
+          IMPORTING
+            transport_objtype = lv_object
+          EXCEPTIONS
+            no_mapping_found  = 1
+            no_unique_mapping = 2
+            OTHERS            = 3.
+        ASSERT sy-subrc = 0.
+        ASSERT lv_object = 'CLAS'. " testing
+
+        lv_object_name = iv_encl_object.
+        "Class vs. interface is not differenciated
+        IF lv_object = 'CLAS'.
+          "Decide if interface / class
+          SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
           IF sy-subrc = 0.
-            lv_object_name = iv_encl_object.
-            "Class vs. interface is not differenciated
-            IF lv_object = 'CLAS'.
-              "Decide if interface / class
-              SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
-              IF sy-subrc = 0.
-                IF lv_clstype = seoc_clstype_interface.
-                  lv_object = 'INTF'.
-                ENDIF.
-              ELSE.
-                "Decide if Enhancement Spot
-                SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
-                IF sy-subrc = 0.
-                  lv_object = 'ENHS'.
-                ENDIF.
-              ENDIF.
+            IF lv_clstype = seoc_clstype_interface.
+              lv_object = 'INTF'.
             ENDIF.
-            "Retry type check
-            CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
-              EXPORTING
-                iv_object      = lv_object
-              IMPORTING
-                es_type        = ls_ko
-              EXCEPTIONS
-                illegal_object = 1
-                OTHERS         = 2.
           ELSE.
-            ASSERT 0 = 1. "Unknown Type
+            "Decide if Enhancement Spot
+            SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
+            IF sy-subrc = 0.
+              lv_object = 'ENHS'.
+            ENDIF.
           ENDIF.
         ENDIF.
-        ASSERT sy-subrc = 0. "Something missing in translation
 
         "3. Translate TADIR entry
         ls_e071-pgmid = ls_ko-pgmid.
@@ -413,26 +424,27 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     clear_results( ).
 
     LOOP AT it_packages INTO lv_package.
+      APPEND LINES OF zcl_abapgit_factory=>get_tadir( )->read( lv_package ) TO lt_tadir.
+    ENDLOOP.
+    SORT lt_tadir BY object obj_name.
+    DELETE ADJACENT DUPLICATES FROM lt_tadir COMPARING object obj_name.
 
-      lt_tadir = zcl_abapgit_factory=>get_tadir( )->read(
-        iv_package            = lv_package
-        iv_ignore_subpackages = abap_true ).
+    LOOP AT lt_tadir INTO ls_tadir WHERE object <> 'DEVC'.
+      ls_object-object   = ls_tadir-object.
+      ls_object-obj_name = ls_tadir-obj_name.
 
-      LOOP AT lt_tadir INTO ls_tadir WHERE object <> 'DEVC'.
-        ls_object-object   = ls_tadir-object.
-        ls_object-obj_name = ls_tadir-obj_name.
-
+      IF sy-tabix MOD 10 = 0.
         cl_progress_indicator=>progress_indicate(
           i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
           i_processed          = sy-tabix
-          i_total              = lines( it_packages )
+          i_total              = lines( lt_tadir )
           i_output_immediately = abap_true ).
+      ENDIF.
 
-        get_dependencies(
-          is_object  = ls_object
-          iv_minimal = abap_false
-          iv_level   = 1 ).
-      ENDLOOP.
+      get_dependencies(
+        is_object  = ls_object
+        iv_minimal = abap_false
+        iv_level   = 1 ).
     ENDLOOP.
 
     clean_own_packages( ).
@@ -453,16 +465,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lt_wbcrossgt TYPE wbcrossgtt.
     DATA lv_clsname TYPE seoclsname.
     DATA lv_final TYPE abap_bool.
-    DATA lo_oo_class TYPE REF TO cl_oo_class.
 
     lv_clsname = |{ iv_name }|.
 
-    TRY.
-        lo_oo_class ?= cl_oo_class=>get_instance( lv_clsname ).
-        lv_final = lo_oo_class->is_final( ).
-      CATCH cx_class_not_existent.
-        RETURN.
-    ENDTRY.
+    SELECT SINGLE clsfinal FROM seoclassdf INTO lv_final WHERE clsname = lv_clsname AND version = '1'.
+    IF sy-subrc <> 0.
+* class does not exist
+      RETURN.
+    ENDIF.
 
     APPEND cl_oo_classname_service=>get_pubsec_name( |{ iv_name }| ) TO lt_includes.
     IF lv_final = abap_false.
