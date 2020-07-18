@@ -24,6 +24,7 @@ SELECTION-SCREEN: END OF BLOCK b1.
 
 SELECTION-SCREEN: BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
 PARAMETERS p_depth TYPE i DEFAULT 10.
+PARAMETERS p_sap TYPE c AS CHECKBOX.
 SELECTION-SCREEN SKIP.
 PARAMETERS: p_skip RADIOBUTTON GROUP g1,
             p_seri RADIOBUTTON GROUP g1,
@@ -46,6 +47,7 @@ FORM run RAISING cx_static_check.
 
 
   ls_options-max_level = p_depth.
+  ls_options-continue_into_sap = p_sap.
 
   CREATE OBJECT lo_find
     EXPORTING

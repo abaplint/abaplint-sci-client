@@ -66,6 +66,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_SAP</KEY>
+     <ENTRY>Continue into SAP objects</ENTRY>
+     <LENGTH>33</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_SERI</KEY>
      <ENTRY>Serialize</ENTRY>
      <LENGTH>17</LENGTH>
@@ -87,7 +93,7 @@
      <ID>S</ID>
      <KEY>S_DEVC</KEY>
      <ENTRY>.</ENTRY>
-     <LENGTH>9</LENGTH>
+     <LENGTH>15</LENGTH>
      <SPLIT>D</SPLIT>
     </item>
    </TPOOL>
