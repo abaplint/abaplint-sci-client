@@ -641,7 +641,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
       IF lv_obj_type = 'FUGR' AND iv_minimal = abap_true.
         DELETE lt_tadir WHERE ref_obj_type = 'PROG'.
+        DELETE lt_tadir WHERE ref_obj_type = 'TRAN'.
+        DELETE lt_tadir WHERE ref_obj_type = 'MSAG'.
         DELETE lt_tadir WHERE ref_obj_type = 'FUGR'.
+* function module parameter types cannot reference types in OO?
+        DELETE lt_tadir WHERE ref_obj_type = 'CLAS'.
+        DELETE lt_tadir WHERE ref_obj_type = 'INTF'.
       ENDIF.
     ENDIF.
 

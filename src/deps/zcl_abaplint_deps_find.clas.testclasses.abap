@@ -9,6 +9,7 @@ CLASS ltcl_find_by_item DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLES
       usr02 FOR TESTING RAISING cx_static_check,
       dd01v FOR TESTING RAISING cx_static_check,
       zcl_abapgit_object_dtel FOR TESTING RAISING cx_static_check,
+      zcl_abapgit_object_cus0 FOR TESTING RAISING cx_static_check,
       txmilograw FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
@@ -99,6 +100,20 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'DD01L' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
+
+  ENDMETHOD.
+
+  METHOD zcl_abapgit_object_cus0.
+
+    DATA: lt_results TYPE zif_abapgit_definitions=>ty_tadir_tt.
+
+    lt_results = mo_cut->find_by_item(
+      iv_object_type = 'CLAS'
+      iv_object_name = 'ZCL_ABAPGIT_OBJECT_CUS0' ).
+
+* no direct transactions used
+    READ TABLE lt_results WITH KEY object = 'TRAN' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( exp = 4 ).
 
   ENDMETHOD.
 
