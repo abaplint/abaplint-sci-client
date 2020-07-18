@@ -234,6 +234,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       WHEN 'INTF'.
         rs_object-object = 'INTF'.
         rs_object-obj_name = lv_object_name.
+      WHEN 'ENHS'.
+        rs_object-object = 'ENHS'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'ENHO'.
+        rs_object-object = 'ENHO'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'SQLT'.
+        "Not Supported
       WHEN 'DTEL'.
         rs_object-object = 'DTEL'.
         rs_object-obj_name = lv_object_name.
@@ -259,7 +267,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         rs_object-object = 'FUGR'.
         rs_object-obj_name = iv_encl_object.
       WHEN OTHERS.
-
 
 * 2. Map WB type to TADIR
         CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
