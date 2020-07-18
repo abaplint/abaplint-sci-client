@@ -538,7 +538,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD find_tabl_dependencies.
 
-    DATA lv_tabname TYPE  dd02l-tabname.
+    DATA lv_tabname TYPE dd02l-tabname.
     DATA ls_tadir LIKE LINE OF rt_tadir.
     DATA lt_x031l TYPE STANDARD TABLE OF x031l.
 
