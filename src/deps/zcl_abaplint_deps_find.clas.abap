@@ -492,20 +492,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
 * find just the domain for the data element if exists, ignores value tables and more
 
-*    DATA: lv_domname TYPE dd04l-domname
-*          ls_tadir   LIKE LINE OF ct_tadir
-*
-*    SELECT SINGLE domname FROM dd04l
-*      INTO lv_domname
-*      WHERE rollname = iv_name
-*      AND as4local = 'A'
-*      AND as4vers = 0
-*    IF sy-subrc = 0 AND NOT lv_domname IS INITIAL
-*      ls_tadir-ref_obj_type = 'DOMA'
-*      ls_tadir-ref_obj_name = lv_domname
-*      INSERT ls_tadir INTO TABLE ct_tadir
-*    ENDIF
-
     DATA ls_x030l TYPE x030l.
     DATA lv_tabname TYPE dd02l-tabname.
     DATA ls_tadir LIKE LINE OF ct_tadir.
@@ -838,6 +824,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_wbcrossgt LIKE LINE OF it_wbcrossgt.
     DATA ls_tadir LIKE LINE OF ct_tadir.
     DATA lv_clstype TYPE seoclass-clstype.
+    DATA lv_name TYPE badi_spot.
 
     LOOP AT it_wbcrossgt INTO ls_wbcrossgt.
       CASE ls_wbcrossgt-otype.
@@ -845,7 +832,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = ls_wbcrossgt-name(30).
           IF sy-subrc <> 0.
             "Decide if Enhancement Spot
-            SELECT COUNT( * ) FROM badi_spot WHERE badi_name = ls_wbcrossgt-name.
+            SELECT SINGLE badi_name FROM badi_spot INTO lv_name WHERE badi_name = ls_wbcrossgt-name.
             IF sy-subrc = 0.
               CLEAR ls_tadir.
               ls_tadir-ref_obj_type = 'ENHS'.
