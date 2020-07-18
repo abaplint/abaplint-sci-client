@@ -719,8 +719,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     ls_type-obj_type = 'TABL'.
     rs_types-tabl = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'SHLP'.
-    rs_types-shlp = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'SHLP'
+*    rs_types-shlp = zcl_abapgit_objects=>is_supported( ls_type )
 
 * handled manually in the code
     rs_types-doma = abap_false.
