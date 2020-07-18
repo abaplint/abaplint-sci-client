@@ -464,16 +464,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lt_wbcrossgt TYPE wbcrossgtt.
     DATA lv_clsname TYPE seoclsname.
     DATA lv_final TYPE abap_bool.
-    DATA lo_oo_class TYPE REF TO cl_oo_class.
 
     lv_clsname = |{ iv_name }|.
 
-    TRY.
-        lo_oo_class ?= cl_oo_class=>get_instance( lv_clsname ).
-        lv_final = lo_oo_class->is_final( ).
-      CATCH cx_class_not_existent.
-        RETURN.
-    ENDTRY.
+    SELECT SINGLE clsfinal FROM seoclassdf INTO lv_final WHERE clsname = lv_clsname AND version = '1'.
+    IF sy-subrc <> 0.
+* class does not exist
+      RETURN.
+    ENDIF.
 
     APPEND cl_oo_classname_service=>get_pubsec_name( |{ iv_name }| ) TO lt_includes.
     IF lv_final = abap_false.
