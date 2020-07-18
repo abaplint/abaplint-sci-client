@@ -421,6 +421,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA: lv_package LIKE LINE OF it_packages,
           ls_result  LIKE LINE OF mt_results,
+          lt_tadir   TYPE zif_abapgit_definitions=>ty_tadir_tt,
+          ls_tadir   LIKE LINE OF lt_tadir,
           ls_object  TYPE zif_abapgit_definitions=>ty_tadir.
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
@@ -430,18 +432,25 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     clear_results( ).
 
     LOOP AT it_packages INTO lv_package.
-      ls_object-object   = 'DEVC'.
-      ls_object-obj_name = lv_package.
 
-      cl_progress_indicator=>progress_indicate(
-        i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
-        i_processed          = sy-tabix
-        i_total              = lines( it_packages )
-        i_output_immediately = abap_true ).
+      lt_tadir = zcl_abapgit_factory=>get_tadir( )->read(
+        iv_package            = lv_package
+        iv_ignore_subpackages = abap_true ).
 
-      get_dependencies(
-        is_object  = ls_object
-        iv_level   = 1 ).
+      LOOP AT lt_tadir INTO ls_tadir WHERE object <> 'DEVC'.
+        ls_object-object   = ls_tadir-object.
+        ls_object-obj_name = ls_tadir-obj_name.
+
+        cl_progress_indicator=>progress_indicate(
+          i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
+          i_processed          = sy-tabix
+          i_total              = lines( it_packages )
+          i_output_immediately = abap_true ).
+
+        get_dependencies(
+          is_object  = ls_object
+          iv_level   = 1 ).
+      ENDLOOP.
     ENDLOOP.
 
     clean_own_packages( ).
@@ -624,6 +633,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lt_tadir = find_dtel_dependencies( is_object-obj_name ).
     ELSE.
       lv_obj_type = is_object-object.
+
+* never call with package as input, its out of our control
+      ASSERT lv_obj_type <> 'DEVC'.
 
       CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
         EXPORTING
