@@ -5,7 +5,8 @@ CLASS zcl_abaplint_deps_find DEFINITION
   PUBLIC SECTION.
 
     TYPES: BEGIN OF ty_options,
-             max_level TYPE i,
+             max_level         TYPE i,
+             continue_into_sap TYPE abap_bool,
            END OF ty_options.
 
     METHODS constructor
@@ -663,7 +664,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 * if SAP object, do not go deeper
 *
 * TODO: when is this valid? add as configuration in constructor?
-    IF NOT ( ( ls_tadir_obj-author = 'SAP'
+    IF ms_options-continue_into_sap = abap_true OR
+      NOT ( ( ls_tadir_obj-author = 'SAP'
            OR ls_tadir_obj-author = 'SAP*' )
            AND ls_tadir_obj-srcsystem = 'SAP' ).
 *
