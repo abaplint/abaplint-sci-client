@@ -7,6 +7,7 @@ CLASS ltcl_find_by_item DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLES
     METHODS:
       setup,
       usr02 FOR TESTING RAISING cx_static_check,
+      dd01v FOR TESTING RAISING cx_static_check,
       zcl_abapgit_object_dtel FOR TESTING RAISING cx_static_check,
       txmilograw FOR TESTING RAISING cx_static_check.
 
@@ -84,6 +85,19 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
 * data element DDOBJNAME is used in the parameters for function module DDIF_DD_CHECK from SDIF
     READ TABLE lt_results WITH KEY object = 'DTEL' obj_name = 'DDOBJNAME' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( ).
+
+  ENDMETHOD.
+
+  METHOD dd01v.
+
+    DATA: lt_results TYPE zif_abapgit_definitions=>ty_tadir_tt.
+
+    lt_results = mo_cut->find_by_item(
+      iv_object_type = 'VIEW'
+      iv_object_name = 'DD01V' ).
+
+    READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'DD01L' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
 
   ENDMETHOD.
