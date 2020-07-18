@@ -433,11 +433,13 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         ls_object-object   = ls_tadir-object.
         ls_object-obj_name = ls_tadir-obj_name.
 
-        cl_progress_indicator=>progress_indicate(
-          i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
-          i_processed          = sy-tabix
-          i_total              = lines( it_packages )
-          i_output_immediately = abap_true ).
+        IF sy-tabix MOD 100 = 0.
+          cl_progress_indicator=>progress_indicate(
+            i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
+            i_processed          = sy-tabix
+            i_total              = lines( it_packages )
+            i_output_immediately = abap_true ).
+        ENDIF.
 
         get_dependencies(
           is_object  = ls_object
