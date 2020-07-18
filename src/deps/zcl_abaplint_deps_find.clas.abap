@@ -424,26 +424,27 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     clear_results( ).
 
     LOOP AT it_packages INTO lv_package.
+      APPEND LINES OF zcl_abapgit_factory=>get_tadir( )->read( lv_package ) TO lt_tadir.
+    ENDLOOP.
+    SORT lt_tadir BY object obj_name.
+    DELETE ADJACENT DUPLICATES FROM lt_tadir COMPARING object obj_name.
 
-      lt_tadir = zcl_abapgit_factory=>get_tadir( )->read( lv_package ).
+    LOOP AT lt_tadir INTO ls_tadir WHERE object <> 'DEVC'.
+      ls_object-object   = ls_tadir-object.
+      ls_object-obj_name = ls_tadir-obj_name.
 
-      LOOP AT lt_tadir INTO ls_tadir WHERE object <> 'DEVC'.
-        ls_object-object   = ls_tadir-object.
-        ls_object-obj_name = ls_tadir-obj_name.
+      IF sy-tabix MOD 10 = 0.
+        cl_progress_indicator=>progress_indicate(
+          i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
+          i_processed          = sy-tabix
+          i_total              = lines( lt_tadir )
+          i_output_immediately = abap_true ).
+      ENDIF.
 
-        IF sy-tabix MOD 10 = 0.
-          cl_progress_indicator=>progress_indicate(
-            i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
-            i_processed          = sy-tabix
-            i_total              = lines( it_packages )
-            i_output_immediately = abap_true ).
-        ENDIF.
-
-        get_dependencies(
-          is_object  = ls_object
-          iv_minimal = abap_false
-          iv_level   = 1 ).
-      ENDLOOP.
+      get_dependencies(
+        is_object  = ls_object
+        iv_minimal = abap_false
+        iv_level   = 1 ).
     ENDLOOP.
 
     clean_own_packages( ).
