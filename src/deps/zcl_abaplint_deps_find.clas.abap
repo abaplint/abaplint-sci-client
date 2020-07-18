@@ -216,70 +216,91 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     lv_object_name = iv_object_name.
 
     CASE lv_object.
-      WHEN 'INCL'.
+      WHEN 'INCL' OR 'PROG'.
         rs_object-object = 'PROG'.
         rs_object-obj_name = lv_object_name.
-      WHEN 'STRU'.
+      WHEN 'PARA'.
+        rs_object-object = 'PARA'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'SUSO'.
+        rs_object-object = 'SUSO'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'STRU' OR 'TABL'.
         rs_object-object = 'TABL'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'CLAS'.
+        rs_object-object = 'CLAS'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'INTF'.
+        rs_object-object = 'INTF'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'DTEL'.
+        rs_object-object = 'DTEL'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'TTYP'.
+        rs_object-object = 'TTYP'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'XSLT'.
+        rs_object-object = 'XSLT'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'VIEW'.
+        rs_object-object = 'VIEW'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'TRAN'.
+        rs_object-object = 'TRAN'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'MSAG'.
+        rs_object-object = 'MSAG'.
         rs_object-obj_name = lv_object_name.
       WHEN 'MESS'.
         rs_object-object = 'MSAG'.
         rs_object-obj_name = iv_encl_object.
+      WHEN 'FUNC'.
+        rs_object-object = 'FUGR'.
+        rs_object-obj_name = iv_encl_object.
       WHEN OTHERS.
 
-* 1. Determine if R3TR already
-        CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
-          EXPORTING
-            iv_object      = lv_object
-          IMPORTING
-            es_type        = ls_ko
-          EXCEPTIONS
-            illegal_object = 1
-            OTHERS         = 2.
 
-        IF sy-subrc = 1.
 * 2. Map WB type to TADIR
-          CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
-            EXPORTING
-              wb_objtype        = lv_object(3)
-            IMPORTING
-              transport_objtype = lv_object
-            EXCEPTIONS
-              no_mapping_found  = 1
-              no_unique_mapping = 2
-              OTHERS            = 3.
-          IF sy-subrc = 0.
-            lv_object_name = iv_encl_object.
-            "Class vs. interface is not differenciated
-            IF lv_object = 'CLAS'.
-              "Decide if interface / class
-              SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
+        CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
+          EXPORTING
+            wb_objtype        = lv_object(3)
+          IMPORTING
+            transport_objtype = lv_object
+          EXCEPTIONS
+            no_mapping_found  = 1
+            no_unique_mapping = 2
+            OTHERS            = 3.
+        IF sy-subrc = 0.
+          lv_object_name = iv_encl_object.
+          "Class vs. interface is not differenciated
+          IF lv_object = 'CLAS'.
+            "Decide if interface / class
+            SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
+            IF sy-subrc = 0.
+              IF lv_clstype = seoc_clstype_interface.
+                lv_object = 'INTF'.
+              ENDIF.
+            ELSE.
+              "Decide if Enhancement Spot
+              SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
               IF sy-subrc = 0.
-                IF lv_clstype = seoc_clstype_interface.
-                  lv_object = 'INTF'.
-                ENDIF.
-              ELSE.
-                "Decide if Enhancement Spot
-                SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
-                IF sy-subrc = 0.
-                  lv_object = 'ENHS'.
-                ENDIF.
+                lv_object = 'ENHS'.
               ENDIF.
             ENDIF.
-            "Retry type check
-            CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
-              EXPORTING
-                iv_object      = lv_object
-              IMPORTING
-                es_type        = ls_ko
-              EXCEPTIONS
-                illegal_object = 1
-                OTHERS         = 2.
-          ELSE.
-            ASSERT 0 = 1. "Unknown Type
           ENDIF.
+          "Retry type check
+          CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
+            EXPORTING
+              iv_object      = lv_object
+            IMPORTING
+              es_type        = ls_ko
+            EXCEPTIONS
+              illegal_object = 1
+              OTHERS         = 2.
+        ELSE.
+          ASSERT 0 = 1. "Unknown Type
         ENDIF.
-        ASSERT sy-subrc = 0. "Something missing in translation
 
         "3. Translate TADIR entry
         ls_e071-pgmid = ls_ko-pgmid.
