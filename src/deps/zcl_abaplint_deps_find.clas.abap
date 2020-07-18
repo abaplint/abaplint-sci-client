@@ -271,35 +271,25 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             no_mapping_found  = 1
             no_unique_mapping = 2
             OTHERS            = 3.
-        IF sy-subrc = 0.
-          lv_object_name = iv_encl_object.
-          "Class vs. interface is not differenciated
-          IF lv_object = 'CLAS'.
-            "Decide if interface / class
-            SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
+        ASSERT sy-subrc = 0.
+        ASSERT lv_object = 'CLAS'. " testing
+
+        lv_object_name = iv_encl_object.
+        "Class vs. interface is not differenciated
+        IF lv_object = 'CLAS'.
+          "Decide if interface / class
+          SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
+          IF sy-subrc = 0.
+            IF lv_clstype = seoc_clstype_interface.
+              lv_object = 'INTF'.
+            ENDIF.
+          ELSE.
+            "Decide if Enhancement Spot
+            SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
             IF sy-subrc = 0.
-              IF lv_clstype = seoc_clstype_interface.
-                lv_object = 'INTF'.
-              ENDIF.
-            ELSE.
-              "Decide if Enhancement Spot
-              SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
-              IF sy-subrc = 0.
-                lv_object = 'ENHS'.
-              ENDIF.
+              lv_object = 'ENHS'.
             ENDIF.
           ENDIF.
-          "Retry type check
-          CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
-            EXPORTING
-              iv_object      = lv_object
-            IMPORTING
-              es_type        = ls_ko
-            EXCEPTIONS
-              illegal_object = 1
-              OTHERS         = 2.
-        ELSE.
-          ASSERT 0 = 1. "Unknown Type
         ENDIF.
 
         "3. Translate TADIR entry
