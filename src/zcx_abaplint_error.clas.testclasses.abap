@@ -14,7 +14,7 @@ CLASS ltcl_error IMPLEMENTATION.
 
   METHOD raise.
 
-    DATA lx TYPE REF TO zcx_abaplint_error.
+    DATA lx_error TYPE REF TO zcx_abaplint_error.
     DATA lv_msg TYPE string.
 
     lv_msg = repeat( val = 'a' occ = 50 ) && repeat( val = 'b' occ = 50 ) && '123'.
@@ -22,10 +22,10 @@ CLASS ltcl_error IMPLEMENTATION.
     TRY.
         zcx_abaplint_error=>raise( lv_msg ).
         cl_abap_unit_assert=>fail( ).
-      CATCH zcx_abaplint_error INTO lx.
+      CATCH zcx_abaplint_error INTO lx_error.
         cl_abap_unit_assert=>assert_equals(
           exp = lv_msg
-          act = lx->get_text( ) ).
+          act = lx_error->get_text( ) ).
     ENDTRY.
 
   ENDMETHOD.
