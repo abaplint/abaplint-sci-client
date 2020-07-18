@@ -4,14 +4,15 @@ CLASS zcl_abaplint_deps_find DEFINITION
 
   PUBLIC SECTION.
 
-    TYPES: BEGIN OF ty_options,
-             max_level         TYPE i,
-             continue_into_sap TYPE abap_bool,
-           END OF ty_options.
+    TYPES:
+      BEGIN OF ty_options,
+        max_level         TYPE i,
+        continue_into_sap TYPE abap_bool,
+      END OF ty_options .
 
     METHODS constructor
       IMPORTING
-        is_options TYPE ty_options OPTIONAL.
+        !is_options TYPE ty_options OPTIONAL .
     METHODS find_by_item
       IMPORTING
         !iv_object_type TYPE trobjtype
@@ -21,14 +22,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
       RAISING
         zcx_abapgit_exception
         zcx_abaplint_error .
-    METHODS find_by_item_minimal
-      IMPORTING
-        !iv_object_type TYPE trobjtype
-        !iv_object_name TYPE sobj_name
-      RETURNING
-        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
-      RAISING
-        zcx_abapgit_exception .
     METHODS find_by_packages
       IMPORTING
         !it_packages    TYPE tr_devclasses
@@ -77,8 +70,9 @@ CLASS zcl_abaplint_deps_find DEFINITION
         VALUE(rt_tadir) TYPE ty_tadir_tt .
     METHODS get_dependencies
       IMPORTING
-        !is_object TYPE zif_abapgit_definitions=>ty_tadir
-        !iv_level  TYPE i
+        !is_object  TYPE zif_abapgit_definitions=>ty_tadir
+        !iv_minimal TYPE abap_bool DEFAULT abap_true
+        !iv_level   TYPE i
       RAISING
         zcx_abaplint_error .
     METHODS resolve
@@ -363,6 +357,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD find_by_item.
 
+* assumption: the input item is a checked top level item, ie do not find only minimal dependencies
 * finds dependencies by item, package tree is ignored
 
     DATA: ls_object   TYPE zif_abapgit_definitions=>ty_tadir,
@@ -384,8 +379,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     clear_results( ).
 
     get_dependencies(
-      is_object = ls_object
-      iv_level  = 1 ).
+      is_object  = ls_object
+      iv_minimal = abap_false
+      iv_level   = 1 ).
 
     LOOP AT mt_results INTO ls_result.
       APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
@@ -397,27 +393,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD find_by_item_minimal.
-
-* find minimal dependencies required by abaplint to perform syntax check
-
-* Candidates:
-*   super classes, required for abaplint syntax check
-*   interfaces that are implemented, required for abaplint syntax check
-*   objects used within same package/project scope
-
-* todo
-    WRITE iv_object_type.
-    WRITE iv_object_name.
-    CLEAR rt_tadir.
-
-  ENDMETHOD.
-
-
   METHOD find_by_packages.
 
 * given a set of packages, all dependencies are found for these packages
 * only returns dependencies outside of the input package structure
+
+* the input packages are the objects to be checked
 
     DATA: lv_package LIKE LINE OF it_packages,
           ls_result  LIKE LINE OF mt_results,
@@ -449,6 +430,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
         get_dependencies(
           is_object  = ls_object
+          iv_minimal = abap_false
           iv_level   = 1 ).
       ENDLOOP.
     ENDLOOP.
@@ -510,7 +492,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     ELSE.
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING
-          message = |Max depth { ms_options-max_level } reached for class { lv_clsname }. Exiting dependency walk|.
+          message = |Max depth { ms_options-max_level } reached, class { lv_clsname }, exiting|.
     ENDIF.
 
   ENDMETHOD.
@@ -620,7 +602,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
 * Determine direct dependency
 *
-    IF is_object-object = 'CLAS'.
+    IF is_object-object = 'CLAS' AND iv_minimal = abap_true.
       find_clas_dependencies(
         EXPORTING
           iv_name  = is_object-obj_name
@@ -877,8 +859,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *    ls_type-obj_type = 'SFSW'
 *    rs_types-sfsw = zcl_abapgit_objects=>is_supported( ls_type )
 
-    ls_type-obj_type = 'DEVC'.
-    rs_types-devc = zcl_abapgit_objects=>is_supported( ls_type ).
+* no
+*    ls_type-obj_type = 'DEVC'
+*    rs_types-devc = zcl_abapgit_objects=>is_supported( ls_type )
 
 * not needed by abaplint yet
 *    ls_type-obj_type = 'SQSC'

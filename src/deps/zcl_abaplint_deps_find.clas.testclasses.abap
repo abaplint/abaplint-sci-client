@@ -7,6 +7,7 @@ CLASS ltcl_find_by_item DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLES
     METHODS:
       setup,
       usr02 FOR TESTING RAISING cx_static_check,
+      zcl_abapgit_object_dtel FOR TESTING RAISING cx_static_check,
       txmilograw FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
@@ -62,6 +63,20 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 * the check tables should not be found by the dependency analysis, they are not relevant to abaplint
     READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'SEC_POLICY_CUST' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( exp = 4 ).
+
+  ENDMETHOD.
+
+  METHOD zcl_abapgit_object_dtel.
+
+    DATA: lt_results TYPE zif_abapgit_definitions=>ty_tadir_tt.
+
+    lt_results = mo_cut->find_by_item(
+      iv_object_type = 'CLAS'
+      iv_object_name = 'ZCL_ABAPGIT_OBJECT_DTEL' ).
+
+* the class calls function module DDIF_DTEL_PUT, so this function group is a dependency
+    READ TABLE lt_results WITH KEY object = 'FUGR' obj_name = 'SDIF' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( ).
 
   ENDMETHOD.
 
