@@ -50,10 +50,10 @@ CLASS zcl_abaplint_deps_find DEFINITION
         VALUE(rt_tadir) TYPE ty_tadir_tt .
     METHODS find_clas_dependencies
       IMPORTING
-        !iv_name  TYPE tadir-obj_name
-        !iv_level TYPE i
+        !iv_name        TYPE tadir-obj_name
+        !iv_level       TYPE i
       CHANGING
-        !ct_tadir TYPE ty_tadir_tt
+        VALUE(ct_tadir) TYPE ty_tadir_tt
       RAISING
         zcx_abaplint_error .
     METHODS find_tabl_dependencies
