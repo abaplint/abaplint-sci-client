@@ -4,9 +4,13 @@ CLASS zcl_abaplint_deps_find DEFINITION
 
   PUBLIC SECTION.
 
+    TYPES: BEGIN OF ty_options,
+             max_level TYPE i,
+           END OF ty_options.
+
     METHODS constructor
       IMPORTING
-        !iv_max_level TYPE i DEFAULT 20 .
+        is_options TYPE ty_options OPTIONAL.
     METHODS find_by_item
       IMPORTING
         !iv_object_type TYPE trobjtype
@@ -43,7 +47,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     TYPES:
       ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
 
-    DATA mv_max_level TYPE i .
+    DATA ms_options TYPE ty_options.
 
     METHODS convert_senvi_to_tadir
       IMPORTING
@@ -149,7 +153,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
 
   METHOD constructor.
-    mv_max_level = iv_max_level.
+
+    ms_options = is_options.
+    IF ms_options-max_level IS INITIAL.
+      ms_options-max_level = 20 .
+    ENDIF.
+
     ms_types = prepare_supported_types( ).
   ENDMETHOD.
 
@@ -473,7 +482,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         AND name <> iv_name.
     ENDIF.
 
-    IF iv_level < mv_max_level.
+    IF iv_level < ms_options-max_level.
       resolve(
         EXPORTING
           it_wbcrossgt = lt_wbcrossgt
@@ -482,7 +491,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     ELSE.
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING
-          message = |Max depth { mv_max_level } reached for class { lv_clsname }. Exiting dependency walk|.
+          message = |Max depth { ms_options-max_level } reached for class { lv_clsname }. Exiting dependency walk|.
     ENDIF.
 
   ENDMETHOD.
