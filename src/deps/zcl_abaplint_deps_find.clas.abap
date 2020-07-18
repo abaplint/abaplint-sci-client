@@ -216,12 +216,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     CASE lv_object.
       WHEN 'INCL'.
-        lv_object = 'PROG'.
+        rs_object-object = 'PROG'.
+        rs_object-obj_name = lv_object_name.
       WHEN 'STRU'.
-        lv_object = 'TABL'.
+        rs_object-object = 'TABL'.
+        rs_object-obj_name = lv_object_name.
       WHEN 'MESS'.
-        lv_object = 'MSAG'.
-        lv_object_name = iv_encl_object.
+        rs_object-object = 'MSAG'.
+        rs_object-obj_name = iv_encl_object.
       WHEN OTHERS.
 
 * 1. Determine if R3TR already
