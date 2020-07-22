@@ -30,6 +30,12 @@ CLASS zcl_abaplint_deps_find DEFINITION
       RAISING
         zcx_abapgit_exception
         zcx_abaplint_error .
+    CLASS-METHODS determine_package
+      IMPORTING
+        !iv_object_type   TYPE trobjtype
+        !iv_object_name   TYPE sobj_name
+      RETURNING
+        VALUE(rv_package) TYPE devclass .
   PROTECTED SECTION.
 
     TYPES:
@@ -94,12 +100,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !iv_package TYPE devclass .
     METHODS clean_own_packages .
     METHODS clear_results .
-    METHODS determine_package
-      IMPORTING
-        !iv_object_type   TYPE trobjtype
-        !iv_object_name   TYPE sobj_name
-      RETURNING
-        VALUE(rv_package) TYPE devclass .
     METHODS prepare_supported_types
       RETURNING
         VALUE(rs_types) TYPE envi_types .

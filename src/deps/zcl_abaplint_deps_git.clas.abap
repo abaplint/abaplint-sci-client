@@ -13,8 +13,9 @@ CLASS zcl_abaplint_deps_git DEFINITION
         !iv_git_comment TYPE string .
     METHODS run
       IMPORTING
-        !iv_test  TYPE abap_bool DEFAULT abap_false
-        !iv_depth TYPE i
+        !iv_test       TYPE abap_bool DEFAULT abap_false
+        !iv_depth      TYPE i
+        !it_additional TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
         zcx_abapgit_exception
         zcx_abaplint_error .
@@ -42,6 +43,8 @@ CLASS zcl_abaplint_deps_git DEFINITION
       RAISING
         zcx_abapgit_exception .
     METHODS get_local
+      IMPORTING
+        !it_additional  TYPE zif_abapgit_definitions=>ty_tadir_tt
       RETURNING
         VALUE(rt_local) TYPE zif_abapgit_definitions=>ty_files_tt
       RAISING
@@ -125,6 +128,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     CREATE OBJECT lo_dep_ser.
 
     lt_tadir = lo_dep_find->find_by_packages( mv_packages ).
+    APPEND LINES OF it_additional TO lt_tadir.
     lt_local = lo_dep_ser->serialize( lt_tadir ).
     APPEND LINES OF lt_local TO rt_local.
 
@@ -138,7 +142,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     DATA ls_stage TYPE ty_stage.
 
     mv_depth = iv_depth.
-    lt_local = get_local( ).
+    lt_local = get_local( it_additional ).
 
     cl_progress_indicator=>progress_indicate(
       i_text               = |GIT, Pulling files from Repository|
