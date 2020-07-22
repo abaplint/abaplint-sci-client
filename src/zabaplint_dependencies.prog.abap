@@ -74,11 +74,11 @@ FORM deps.
   DATA lx_error2 TYPE REF TO zcx_abaplint_error.
   DATA lt_additional TYPE zif_abapgit_definitions=>ty_tadir_tt.
 
-  PERFORM add_extra TABLES lt_additional s_name1 USING p_obj1.
-  PERFORM add_extra TABLES lt_additional s_name2 USING p_obj2.
-  PERFORM add_extra TABLES lt_additional s_name3 USING p_obj3.
-  PERFORM add_extra TABLES lt_additional s_name4 USING p_obj4.
-  PERFORM add_extra TABLES lt_additional s_name5 USING p_obj5.
+  PERFORM add_extra USING lt_additional s_name1[] p_obj1.
+  PERFORM add_extra USING lt_additional s_name2[] p_obj2.
+  PERFORM add_extra USING lt_additional s_name3[] p_obj3.
+  PERFORM add_extra USING lt_additional s_name4[] p_obj4.
+  PERFORM add_extra USING lt_additional s_name5[] p_obj5.
 
   SELECT devclass FROM tdevc INTO TABLE ltb_devc WHERE devclass IN s_devc.
   TRY.
@@ -100,18 +100,20 @@ FORM deps.
 
 ENDFORM.
 
-FORM add_extra TABLES it_adds TYPE zif_abapgit_definitions=>ty_tadir_tt it_names TYPE ty_names USING i_obj TYPE trobjtype.
+FORM add_extra USING it_adds TYPE zif_abapgit_definitions=>ty_tadir_tt it_names TYPE ty_names i_obj TYPE trobjtype.
 
-  DATA: lv_name    TYPE sobj_name,
-        lv_package TYPE devclass.
+  DATA: ls_adds     TYPE zif_abapgit_definitions=>ty_tadir,
+        ls_name     LIKE LINE OF it_names,
+        lv_obj_name TYPE sobj_name.
 
-  LOOP AT it_names.
-    CLEAR it_adds.
-    it_adds-object = i_obj.
-    it_adds-obj_name = it_names-low.
-    lv_name = it_names-low.
-    lv_package = zcl_abaplint_deps_find=>determine_package( iv_object_type = i_obj iv_object_name = lv_name ).
-    it_adds-devclass = lv_package.
-    APPEND it_adds.
+  LOOP AT it_names INTO ls_name.
+    CLEAR ls_adds.
+    ls_adds-object = i_obj.
+    ls_adds-obj_name = ls_name-low.
+    lv_obj_name = ls_name-low.
+    ls_adds-devclass = zcl_abaplint_deps_find=>determine_package(
+      iv_object_type = i_obj
+      iv_object_name = lv_obj_name ).
+    APPEND ls_adds TO it_adds.
   ENDLOOP.
 ENDFORM.
