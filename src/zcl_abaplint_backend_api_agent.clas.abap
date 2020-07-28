@@ -112,10 +112,10 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
           message = |API request failed [{ lv_scode }]: Unexpected API response shape|.
     ENDIF.
 
-    IF li_reader->value_integer( '/success' ) <> 1.
+    IF li_reader->get_integer( '/success' ) <> 1.
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING
-          message = |API request failed [{ lv_scode }]: { li_reader->value_string( '/error/message' ) }|.
+          message = |API request failed [{ lv_scode }]: { li_reader->get_string( '/error/message' ) }|.
     ENDIF.
 
     IF lv_scode < 200 OR lv_scode >= 300.
