@@ -209,11 +209,11 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     LOOP AT lt_issues INTO lv_issue.
       lv_prefix = '/issues/' && lv_issue && '/data'.
       APPEND INITIAL LINE TO rt_issues ASSIGNING <issue>.
-      <issue>-message   = li_json->value_string( lv_prefix && '/message' ).
-      <issue>-key       = li_json->value_string( lv_prefix && '/key' ).
-      <issue>-filename  = li_json->value_string( lv_prefix && '/filename' ).
-      <issue>-start-row = li_json->value_string( lv_prefix && '/start/row' ).
-      <issue>-start-col = li_json->value_string( lv_prefix && '/start/col' ).
+      <issue>-message   = li_json->get_string( lv_prefix && '/message' ).
+      <issue>-key       = li_json->get_string( lv_prefix && '/key' ).
+      <issue>-filename  = li_json->get_string( lv_prefix && '/filename' ).
+      <issue>-start-row = li_json->get_string( lv_prefix && '/start/row' ).
+      <issue>-start-col = li_json->get_string( lv_prefix && '/start/col' ).
     ENDLOOP.
 
   ENDMETHOD.
@@ -281,7 +281,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     TRY.
         li_json = lo_agent->request( c_uri-ping ).
-        rs_message-message = li_json->value_string( '' ).
+        rs_message-message = li_json->get_string( '' ).
         rs_message-error   = abap_false.
       CATCH zcx_abaplint_error INTO lx_error.
         rs_message-message = lx_error->message.
