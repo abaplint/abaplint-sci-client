@@ -183,7 +183,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
 
-
     lt_files = cs_files-files.
     CLEAR cs_files-files.
 
