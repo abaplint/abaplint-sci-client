@@ -261,9 +261,7 @@
       "pattern": "^TY_.+$"
     },
     "unreachable_code": true,
-    "unused_variables": {
-      "exclude": ["zcx_abaplint_error"]
-    },
+    "unused_variables": false,
     "use_new": false,
     "when_others_last": true,
     "whitespace_end": true,
