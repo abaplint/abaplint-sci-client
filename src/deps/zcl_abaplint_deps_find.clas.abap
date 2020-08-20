@@ -279,7 +279,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             no_unique_mapping = 2
             OTHERS            = 3.
         ASSERT sy-subrc = 0.
-        ASSERT lv_object = 'CLAS'. " testing
+        ASSERT lv_object = 'CLAS' OR lv_object = 'ENHS'. " testing
 
         lv_object_name = iv_encl_object.
         "Class vs. interface is not differenciated
