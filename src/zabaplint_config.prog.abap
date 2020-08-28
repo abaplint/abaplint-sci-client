@@ -18,7 +18,5 @@ AT SELECTION-SCREEN.
     lcl_password_dialog=>on_screen_event( sscrfields-ucomm ).
   ENDIF.
 
-
 START-OF-SELECTION.
-
   CALL FUNCTION 'Z_ABAPLINT_CONFIGURATION'.
