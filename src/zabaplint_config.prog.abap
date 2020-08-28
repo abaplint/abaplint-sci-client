@@ -1,6 +1,6 @@
 REPORT zabaplint_config.
 
-TABLES: sscrfields.
+TABLES sscrfields.
 
 INCLUDE zabapgit_password_dialog.
 INCLUDE zabapgit_forms.
