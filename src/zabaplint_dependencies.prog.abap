@@ -2,10 +2,10 @@ REPORT zabaplint_dependencies.
 
 TABLES: sscrfields, tdevc, tadir.
 
-TYPES: ty_names TYPE RANGE OF tadir-obj_name.
-DATA: ltb_devc TYPE tab_packages.
+TYPES ty_names TYPE RANGE OF tadir-obj_name.
+DATA ltb_devc TYPE tab_packages.
 
-PARAMETERS: p_git  TYPE text200 OBLIGATORY.
+PARAMETERS p_git TYPE text200 OBLIGATORY.
 SELECT-OPTIONS: s_devc FOR tdevc-devclass OBLIGATORY.
 
 PARAMETERS: p_depth TYPE i DEFAULT 10,
