@@ -373,6 +373,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
   METHOD strip_form_body.
 
+    CONSTANTS lc_form TYPE c LENGTH 1 VALUE 'O'.
+
     DATA lt_structures TYPE STANDARD TABLE OF sstruc WITH DEFAULT KEY.
     DATA lt_statements TYPE sstmnt_tab.
     DATA lt_tokens     TYPE stokesx_tab.
@@ -391,9 +393,12 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       STATEMENTS INTO lt_statements
       WITH ANALYSIS.
 
-    DELETE lt_structures WHERE stmnt_type <> scan_struc_stmnt_type-form.
+    DELETE lt_structures WHERE stmnt_type <> lc_form.
     WHILE lines( lt_structures ) > 0.
-      ls_last = lt_structures[ lines( lt_structures ) ].
+      READ TABLE lt_structures INDEX lines( lt_structures ) INTO ls_last.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
 
       READ TABLE lt_statements INTO ls_from INDEX ls_last-stmnt_from.
       IF sy-subrc <> 0.
