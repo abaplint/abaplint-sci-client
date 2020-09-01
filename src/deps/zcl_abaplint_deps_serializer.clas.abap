@@ -20,6 +20,11 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
         zcx_abapgit_exception .
   PROTECTED SECTION.
 
+    METHODS strip_form_body
+      IMPORTING
+        !iv_string       TYPE string
+      RETURNING
+        VALUE(rv_string) TYPE string .
     METHODS strip_xml
       IMPORTING
         !iv_string       TYPE string
@@ -240,6 +245,13 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
     ENDIF.
 
+    lv_filename = |{ to_lower( translate( val = cs_files-item-obj_name from = '/' to = '#' ) ) }.prog.abap|.
+    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+    IF sy-subrc = 0.
+      lv_string = strip_form_body( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
+      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -355,6 +367,14 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     APPEND ls_tadir TO lt_tadir.
 
     rt_files = serialize( lt_tadir ).
+
+  ENDMETHOD.
+
+
+  METHOD strip_form_body.
+
+* todo
+    rv_string = iv_string.
 
   ENDMETHOD.
 
