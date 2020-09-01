@@ -373,8 +373,45 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
   METHOD strip_form_body.
 
-* todo
-    rv_string = iv_string.
+    DATA lt_structures TYPE STANDARD TABLE OF sstruc WITH EMPTY KEY.
+    DATA lt_tokens     TYPE stokesx_tab.
+    DATA lv_modified   TYPE abap_bool VALUE abap_false.
+    DATA lt_statements TYPE sstmnt_tab.
+
+    SPLIT iv_string AT |\n| INTO TABLE DATA(lt_code).
+
+    SCAN ABAP-SOURCE lt_code
+      TOKENS INTO lt_tokens
+      STRUCTURES INTO lt_structures
+      STATEMENTS INTO lt_statements
+      WITH ANALYSIS.
+
+    DELETE lt_structures WHERE stmnt_type <> scan_struc_stmnt_type-form.
+    WHILE lines( lt_structures ) > 0.
+      DATA(ls_last) = lt_structures[ lines( lt_structures ) ].
+
+      READ TABLE lt_statements INTO DATA(ls_from) INDEX ls_last-stmnt_from.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+      READ TABLE lt_statements INTO DATA(ls_to) INDEX ls_last-stmnt_to.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+
+      DELETE lt_code FROM ls_from-trow + 1 TO ls_to-trow - 1.
+      IF sy-subrc = 0.
+        lv_modified = abap_true.
+      ENDIF.
+
+      DELETE lt_structures INDEX lines( lt_structures ).
+    ENDWHILE.
+
+    IF lv_modified = abap_true.
+      rv_string = concat_lines_of( table = lt_code sep = |\n| ).
+    ELSE.
+      rv_string = iv_string.
+    ENDIF.
 
   ENDMETHOD.
 
