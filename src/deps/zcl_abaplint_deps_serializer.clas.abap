@@ -373,16 +373,17 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
   METHOD strip_form_body.
 
-    DATA lt_structures TYPE STANDARD TABLE OF sstruc WITH EMPTY KEY.
+    DATA lt_structures TYPE STANDARD TABLE OF sstruc WITH DEFAULT KEY.
     DATA lt_statements TYPE sstmnt_tab.
     DATA lt_tokens     TYPE stokesx_tab.
     DATA ls_last       LIKE LINE OF lt_structures.
     DATA ls_from       LIKE LINE OF lt_statements.
     DATA ls_to         LIKE LINE OF lt_statements.
     DATA lv_modified   TYPE abap_bool VALUE abap_false.
+    DATA lt_code       TYPE STANDARD TABLE OF string WITH DEFAULT KEY.
 
 
-    SPLIT iv_string AT |\n| INTO TABLE DATA(lt_code).
+    SPLIT iv_string AT |\n| INTO TABLE lt_code.
 
     SCAN ABAP-SOURCE lt_code
       TOKENS INTO lt_tokens
