@@ -4,9 +4,15 @@ CLASS zcl_abaplint_deps_find DEFINITION
 
   PUBLIC SECTION.
 
+    TYPES:
+      BEGIN OF ty_options,
+        max_level         TYPE i,
+        continue_into_sap TYPE abap_bool,
+      END OF ty_options .
+
     METHODS constructor
       IMPORTING
-        !iv_max_level TYPE i DEFAULT 20 .
+        !is_options TYPE ty_options OPTIONAL .
     METHODS find_by_item
       IMPORTING
         !iv_object_type TYPE trobjtype
@@ -16,14 +22,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
       RAISING
         zcx_abapgit_exception
         zcx_abaplint_error .
-    METHODS find_by_item_minimal
-      IMPORTING
-        !iv_object_type TYPE trobjtype
-        !iv_object_name TYPE sobj_name
-      RETURNING
-        VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
-      RAISING
-        zcx_abapgit_exception .
     METHODS find_by_packages
       IMPORTING
         !it_packages    TYPE tr_devclasses
@@ -32,6 +30,12 @@ CLASS zcl_abaplint_deps_find DEFINITION
       RAISING
         zcx_abapgit_exception
         zcx_abaplint_error .
+    CLASS-METHODS determine_package
+      IMPORTING
+        !iv_object_type   TYPE trobjtype
+        !iv_object_name   TYPE sobj_name
+      RETURNING
+        VALUE(rv_package) TYPE devclass .
   PROTECTED SECTION.
 
     TYPES:
@@ -43,7 +47,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     TYPES:
       ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
 
-    DATA mv_max_level TYPE i .
+    DATA ms_options TYPE ty_options .
 
     METHODS convert_senvi_to_tadir
       IMPORTING
@@ -52,21 +56,29 @@ CLASS zcl_abaplint_deps_find DEFINITION
         VALUE(rt_tadir) TYPE ty_tadir_tt .
     METHODS find_clas_dependencies
       IMPORTING
-        !iv_name  TYPE tadir-obj_name
-        !iv_level TYPE i
+        !iv_name        TYPE tadir-obj_name
+        !iv_level       TYPE i
       CHANGING
-        !ct_tadir TYPE ty_tadir_tt
+        VALUE(ct_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
+    METHODS find_tabl_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE ty_tadir_tt
       RAISING
         zcx_abaplint_error .
     METHODS find_dtel_dependencies
       IMPORTING
-        !iv_name  TYPE tadir-obj_name
-      CHANGING
-        !ct_tadir TYPE ty_tadir_tt .
+        !iv_name        TYPE tadir-obj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE ty_tadir_tt .
     METHODS get_dependencies
       IMPORTING
-        !is_object TYPE zif_abapgit_definitions=>ty_tadir
-        !iv_level  TYPE i
+        !is_object  TYPE zif_abapgit_definitions=>ty_tadir
+        !iv_minimal TYPE abap_bool DEFAULT abap_true
+        !iv_level   TYPE i
       RAISING
         zcx_abaplint_error .
     METHODS resolve
@@ -79,8 +91,8 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !iv_name TYPE seoclsname .
   PRIVATE SECTION.
 
-    DATA mv_packages TYPE tr_devclasses .
-    DATA mv_results TYPE ty_tadir_tt .
+    DATA mt_packages TYPE tr_devclasses .
+    DATA mt_results TYPE ty_tadir_tt .
     DATA ms_types TYPE envi_types .
 
     METHODS add_subpackages
@@ -88,12 +100,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !iv_package TYPE devclass .
     METHODS clean_own_packages .
     METHODS clear_results .
-    METHODS determine_package
-      IMPORTING
-        !iv_object_type   TYPE trobjtype
-        !iv_object_name   TYPE sobj_name
-      RETURNING
-        VALUE(rv_package) TYPE devclass .
     METHODS prepare_supported_types
       RETURNING
         VALUE(rs_types) TYPE envi_types .
@@ -116,10 +122,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD add_subpackages.
 
-    DATA: lt_packages LIKE mv_packages.
-    DATA: lv_package LIKE LINE OF mv_packages.
+    DATA: lt_packages LIKE mt_packages.
+    DATA: lv_package LIKE LINE OF mt_packages.
 
-    APPEND iv_package TO mv_packages.
+    APPEND iv_package TO mt_packages.
     SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE parentcl = iv_package.
     LOOP AT lt_packages INTO lv_package.
       add_subpackages( lv_package ).
@@ -130,26 +136,31 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD clean_own_packages.
 
-    DATA: lv_package LIKE LINE OF mv_packages.
+    DATA: lv_package LIKE LINE OF mt_packages.
 
-    LOOP AT mv_packages INTO lv_package.
-      READ TABLE mv_results
+    LOOP AT mt_packages INTO lv_package.
+      READ TABLE mt_results
         WITH KEY ref_obj_type = 'DEVC' ref_obj_name = lv_package
         TRANSPORTING NO FIELDS.
       IF sy-subrc = 0.
-        DELETE mv_results INDEX sy-tabix.
+        DELETE mt_results INDEX sy-tabix.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
 
 
   METHOD clear_results.
-    CLEAR mv_results[].
+    CLEAR mt_results[].
   ENDMETHOD.
 
 
   METHOD constructor.
-    mv_max_level = iv_max_level.
+
+    ms_options = is_options.
+    IF ms_options-max_level IS INITIAL.
+      ms_options-max_level = 20.
+    ENDIF.
+
     ms_types = prepare_supported_types( ).
   ENDMETHOD.
 
@@ -205,68 +216,88 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     lv_object_name = iv_object_name.
 
     CASE lv_object.
-      WHEN 'INCL'.
-        lv_object = 'PROG'.
-      WHEN 'STRU'.
-        lv_object = 'TABL'.
+      WHEN 'INCL' OR 'PROG'.
+        rs_object-object = 'PROG'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'PARA'.
+        rs_object-object = 'PARA'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'SUSO'.
+        rs_object-object = 'SUSO'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'STRU' OR 'TABL'.
+        rs_object-object = 'TABL'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'CLAS'.
+        rs_object-object = 'CLAS'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'INTF'.
+        rs_object-object = 'INTF'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'ENHS'.
+        rs_object-object = 'ENHS'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'ENHO'.
+        rs_object-object = 'ENHO'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'SQLT'.
+        "Not Supported
+      WHEN 'DTEL'.
+        rs_object-object = 'DTEL'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'TTYP'.
+        rs_object-object = 'TTYP'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'XSLT'.
+        rs_object-object = 'XSLT'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'VIEW'.
+        rs_object-object = 'VIEW'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'TRAN'.
+        rs_object-object = 'TRAN'.
+        rs_object-obj_name = lv_object_name.
+      WHEN 'MSAG'.
+        rs_object-object = 'MSAG'.
+        rs_object-obj_name = lv_object_name.
       WHEN 'MESS'.
-        lv_object = 'MSAG'.
-        lv_object_name = iv_encl_object.
+        rs_object-object = 'MSAG'.
+        rs_object-obj_name = iv_encl_object.
+      WHEN 'FUNC'.
+        rs_object-object = 'FUGR'.
+        rs_object-obj_name = iv_encl_object.
       WHEN OTHERS.
 
-* 1. Determine if R3TR already
-        CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
-          EXPORTING
-            iv_object      = lv_object
-          IMPORTING
-            es_type        = ls_ko
-          EXCEPTIONS
-            illegal_object = 1
-            OTHERS         = 2.
-
-        IF sy-subrc = 1.
 * 2. Map WB type to TADIR
-          CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
-            EXPORTING
-              wb_objtype        = lv_object(3)
-            IMPORTING
-              transport_objtype = lv_object
-            EXCEPTIONS
-              no_mapping_found  = 1
-              no_unique_mapping = 2
-              OTHERS            = 3.
+        CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
+          EXPORTING
+            wb_objtype        = lv_object(3)
+          IMPORTING
+            transport_objtype = lv_object
+          EXCEPTIONS
+            no_mapping_found  = 1
+            no_unique_mapping = 2
+            OTHERS            = 3.
+        ASSERT sy-subrc = 0.
+        ASSERT lv_object = 'CLAS' OR lv_object = 'ENHS'. " testing
+
+        lv_object_name = iv_encl_object.
+        "Class vs. interface is not differenciated
+        IF lv_object = 'CLAS'.
+          "Decide if interface / class
+          SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
           IF sy-subrc = 0.
-            lv_object_name = iv_encl_object.
-            "Class vs. interface is not differenciated
-            IF lv_object = 'CLAS'.
-              "Decide if interface / class
-              SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
-              IF sy-subrc = 0.
-                IF lv_clstype = seoc_clstype_interface.
-                  lv_object = 'INTF'.
-                ENDIF.
-              ELSE.
-                "Decide if Enhancement Spot
-                SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
-                IF sy-subrc = 0.
-                  lv_object = 'ENHS'.
-                ENDIF.
-              ENDIF.
+            IF lv_clstype = seoc_clstype_interface.
+              lv_object = 'INTF'.
             ENDIF.
-            "Retry type check
-            CALL FUNCTION 'TR_GET_PGMID_FOR_OBJECT'
-              EXPORTING
-                iv_object      = lv_object
-              IMPORTING
-                es_type        = ls_ko
-              EXCEPTIONS
-                illegal_object = 1
-                OTHERS         = 2.
           ELSE.
-            ASSERT 0 = 1. "Unknown Type
+            "Decide if Enhancement Spot
+            SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
+            IF sy-subrc = 0.
+              lv_object = 'ENHS'.
+            ENDIF.
           ENDIF.
         ENDIF.
-        ASSERT sy-subrc = 0. "Something missing in translation
 
         "3. Translate TADIR entry
         ls_e071-pgmid = ls_ko-pgmid.
@@ -344,12 +375,13 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD find_by_item.
 
+* assumption: the input item is a checked top level item, ie do not find only minimal dependencies
 * finds dependencies by item, package tree is ignored
 
     DATA: ls_object   TYPE zif_abapgit_definitions=>ty_tadir,
           lt_packages TYPE tr_devclasses,
           lv_package  TYPE devclass,
-          ls_result   LIKE LINE OF mv_results.
+          ls_result   LIKE LINE OF mt_results.
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
 
@@ -365,10 +397,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     clear_results( ).
 
     get_dependencies(
-      is_object = ls_object
-      iv_level  = 1 ).
+      is_object  = ls_object
+      iv_minimal = abap_false
+      iv_level   = 1 ).
 
-    LOOP AT mv_results INTO ls_result.
+    LOOP AT mt_results INTO ls_result.
       APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
       <ls_tadir>-object = ls_result-ref_obj_type.
       <ls_tadir>-obj_name = ls_result-ref_obj_name.
@@ -378,30 +411,17 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD find_by_item_minimal.
-
-* find minimal dependencies required by abaplint to perform syntax check
-
-* Candidates:
-*   super classes, required for abaplint syntax check
-*   interfaces that are implemented, required for abaplint syntax check
-*   objects used within same package/project scope
-
-* todo
-    WRITE iv_object_type.
-    WRITE iv_object_name.
-    CLEAR rt_tadir.
-
-  ENDMETHOD.
-
-
   METHOD find_by_packages.
 
 * given a set of packages, all dependencies are found for these packages
 * only returns dependencies outside of the input package structure
 
+* the input packages are the objects to be checked
+
     DATA: lv_package LIKE LINE OF it_packages,
-          ls_result  LIKE LINE OF mv_results,
+          ls_result  LIKE LINE OF mt_results,
+          lt_tadir   TYPE zif_abapgit_definitions=>ty_tadir_tt,
+          ls_tadir   LIKE LINE OF lt_tadir,
           ls_object  TYPE zif_abapgit_definitions=>ty_tadir.
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF rt_tadir.
@@ -411,23 +431,32 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     clear_results( ).
 
     LOOP AT it_packages INTO lv_package.
-      ls_object-object   = 'DEVC'.
-      ls_object-obj_name = lv_package.
+      APPEND LINES OF zcl_abapgit_factory=>get_tadir( )->read( lv_package ) TO lt_tadir.
+    ENDLOOP.
+    SORT lt_tadir BY object obj_name.
+    DELETE ADJACENT DUPLICATES FROM lt_tadir COMPARING object obj_name.
 
-      cl_progress_indicator=>progress_indicate(
-        i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
-        i_processed          = sy-tabix
-        i_total              = lines( it_packages )
-        i_output_immediately = abap_true ).
+    LOOP AT lt_tadir INTO ls_tadir WHERE object <> 'DEVC'.
+      ls_object-object   = ls_tadir-object.
+      ls_object-obj_name = ls_tadir-obj_name.
+
+      IF sy-tabix MOD 10 = 0.
+        cl_progress_indicator=>progress_indicate(
+          i_text               = |Processing, { ls_object-object } { ls_object-obj_name }|
+          i_processed          = sy-tabix
+          i_total              = lines( lt_tadir )
+          i_output_immediately = abap_true ).
+      ENDIF.
 
       get_dependencies(
         is_object  = ls_object
+        iv_minimal = abap_false
         iv_level   = 1 ).
     ENDLOOP.
 
     clean_own_packages( ).
 
-    LOOP AT mv_results INTO ls_result.
+    LOOP AT mt_results INTO ls_result.
       APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
       <ls_tadir>-object = ls_result-ref_obj_type.
       <ls_tadir>-obj_name = ls_result-ref_obj_name.
@@ -443,16 +472,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lt_wbcrossgt TYPE wbcrossgtt.
     DATA lv_clsname TYPE seoclsname.
     DATA lv_final TYPE abap_bool.
-    DATA lo_oo_class TYPE REF TO cl_oo_class.
 
     lv_clsname = |{ iv_name }|.
 
-    TRY.
-        lo_oo_class ?= cl_oo_class=>get_instance( lv_clsname ).
-        lv_final = lo_oo_class->is_final( ).
-      CATCH cx_class_not_existent.
-        RETURN.
-    ENDTRY.
+    SELECT SINGLE clsfinal FROM seoclassdf INTO lv_final WHERE clsname = lv_clsname AND version = '1'.
+    IF sy-subrc <> 0.
+* class does not exist
+      RETURN.
+    ENDIF.
 
     APPEND cl_oo_classname_service=>get_pubsec_name( |{ iv_name }| ) TO lt_includes.
     IF lv_final = abap_false.
@@ -473,7 +500,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         AND name <> iv_name.
     ENDIF.
 
-    IF iv_level < mv_max_level.
+    IF iv_level < ms_options-max_level.
       resolve(
         EXPORTING
           it_wbcrossgt = lt_wbcrossgt
@@ -482,7 +509,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     ELSE.
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING
-          message = |Max depth { mv_max_level } reached for class { lv_clsname }. Exiting dependency walk|.
+          message = |Max depth { ms_options-max_level } reached, class { lv_clsname }, exiting|.
     ENDIF.
 
   ENDMETHOD.
@@ -492,23 +519,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
 * find just the domain for the data element if exists, ignores value tables and more
 
-*    DATA: lv_domname TYPE dd04l-domname
-*          ls_tadir   LIKE LINE OF ct_tadir
-*
-*    SELECT SINGLE domname FROM dd04l
-*      INTO lv_domname
-*      WHERE rollname = iv_name
-*      AND as4local = 'A'
-*      AND as4vers = 0
-*    IF sy-subrc = 0 AND NOT lv_domname IS INITIAL
-*      ls_tadir-ref_obj_type = 'DOMA'
-*      ls_tadir-ref_obj_name = lv_domname
-*      INSERT ls_tadir INTO TABLE ct_tadir
-*    ENDIF
-
     DATA ls_x030l TYPE x030l.
     DATA lv_tabname TYPE dd02l-tabname.
-    DATA ls_tadir LIKE LINE OF ct_tadir.
+    DATA ls_tadir LIKE LINE OF rt_tadir.
 
     lv_tabname = iv_name.
 
@@ -525,8 +538,47 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     IF sy-subrc = 0 AND NOT ls_x030l-refname IS INITIAL.
       ls_tadir-ref_obj_type = 'DOMA'.
       ls_tadir-ref_obj_name = ls_x030l-refname.
-      INSERT ls_tadir INTO TABLE ct_tadir.
+      INSERT ls_tadir INTO TABLE rt_tadir.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD find_tabl_dependencies.
+
+    DATA lv_tabname TYPE dd02l-tabname.
+    DATA ls_tadir LIKE LINE OF rt_tadir.
+    DATA lt_x031l TYPE STANDARD TABLE OF x031l.
+
+    FIELD-SYMBOLS: <ls_x031l> LIKE LINE OF lt_x031l.
+
+    lv_tabname = iv_name.
+
+    CALL FUNCTION 'DD_GET_NAMETAB'
+      EXPORTING
+        tabname   = lv_tabname
+        get_all   = abap_true
+      TABLES
+        x031l_tab = lt_x031l
+      EXCEPTIONS
+        not_found = 1
+        no_fields = 2
+        OTHERS    = 3.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    LOOP AT lt_x031l ASSIGNING <ls_x031l>.
+      IF <ls_x031l>-fieldname(8) = '.INCLUDE' AND NOT <ls_x031l>-rollname IS INITIAL.
+        ls_tadir-ref_obj_type = 'TABL'.
+        ls_tadir-ref_obj_name = <ls_x031l>-rollname.
+        INSERT ls_tadir INTO TABLE rt_tadir.
+      ELSEIF NOT <ls_x031l>-rollname IS INITIAL.
+        ls_tadir-ref_obj_type = 'DTEL'.
+        ls_tadir-ref_obj_name = <ls_x031l>-rollname.
+        INSERT ls_tadir INTO TABLE rt_tadir.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -538,7 +590,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           lt_environment TYPE senvi_tab,
           lv_index       LIKE sy-tabix,
           ls_tadir       TYPE LINE OF ty_tadir_tt,
-          lv_flag        TYPE flag,
+          lv_flag        TYPE abap_bool,
           lv_devclass    TYPE devclass,
           lv_delflag     TYPE objdelflag.
     DATA: BEGIN OF ls_tadir_obj,
@@ -553,9 +605,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lv_level LIKE iv_level.
 
 
-    IF is_object-object = 'DEVC' AND is_object-obj_name(1) = '$'.
-* nothing
-    ELSE.
+    IF is_object-object <> 'DEVC' OR is_object-obj_name(1) <> '$'.
       SELECT SINGLE object obj_name srcsystem author devclass genflag
         FROM tadir INTO CORRESPONDING FIELDS OF ls_tadir_obj
         WHERE pgmid = 'R3TR' AND object = is_object-object AND obj_name = is_object-obj_name.
@@ -567,21 +617,22 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
 * Determine direct dependency
 *
-    IF is_object-object = 'CLAS'.
+    IF is_object-object = 'CLAS' AND iv_minimal = abap_true.
       find_clas_dependencies(
         EXPORTING
           iv_name  = is_object-obj_name
           iv_level = iv_level
         CHANGING
           ct_tadir = lt_tadir ).
+    ELSEIF is_object-object = 'TABL'.
+      lt_tadir = find_tabl_dependencies( is_object-obj_name ).
     ELSEIF is_object-object = 'DTEL'.
-      find_dtel_dependencies(
-        EXPORTING
-          iv_name  = is_object-obj_name
-        CHANGING
-          ct_tadir = lt_tadir ).
+      lt_tadir = find_dtel_dependencies( is_object-obj_name ).
     ELSE.
       lv_obj_type = is_object-object.
+
+* never call with package as input, its out of our control
+      ASSERT lv_obj_type <> 'DEVC'.
 
       CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
         EXPORTING
@@ -602,15 +653,25 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       ASSERT sy-subrc = 0.
 
       lt_tadir = convert_senvi_to_tadir( lt_environment ).
+
+      IF lv_obj_type = 'FUGR' AND iv_minimal = abap_true.
+* function module parameter types cannot reference types in OO?
+        DELETE lt_tadir WHERE ref_obj_type = 'PROG'
+          OR ref_obj_type = 'TRAN'
+          OR ref_obj_type = 'MSAG'
+          OR ref_obj_type = 'FUGR'
+          OR ref_obj_type = 'CLAS'
+          OR ref_obj_type = 'INTF'.
+      ENDIF.
     ENDIF.
 
 *
 * Remove entries already in collection
 *
-    IF lines( mv_results ) > 0.
+    IF lines( mt_results ) > 0.
       LOOP AT lt_tadir INTO ls_tadir.
         lv_index = sy-tabix.
-        READ TABLE mv_results WITH KEY ref_obj_type = ls_tadir-ref_obj_type
+        READ TABLE mt_results WITH KEY ref_obj_type = ls_tadir-ref_obj_type
                                        ref_obj_name = ls_tadir-ref_obj_name
                               TRANSPORTING NO FIELDS.
         IF sy-subrc = 0.
@@ -634,14 +695,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lv_devclass = determine_package( iv_object_type = ls_tadir-ref_obj_type
                                        iv_object_name = ls_tadir-ref_obj_name ).
 
-      lv_flag = 'X'.
+      lv_flag = abap_true.
       IF sy-subrc = 0.
-        READ TABLE mv_packages FROM lv_devclass TRANSPORTING NO FIELDS.
+        READ TABLE mt_packages FROM lv_devclass TRANSPORTING NO FIELDS.
         IF sy-subrc <> 0.
-          CLEAR lv_flag.
+          lv_flag = abap_false.
         ENDIF.
       ENDIF.
-      IF lv_flag = 'X'.
+      IF lv_flag = abap_true.
         DELETE lt_tadir INDEX lv_index.
       ELSE.
         ls_tadir-devclass = lv_devclass.
@@ -662,15 +723,16 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     ENDLOOP.
 
     "Add to dependency collection
-    INSERT LINES OF lt_tadir INTO TABLE mv_results.
+    INSERT LINES OF lt_tadir INTO TABLE mt_results.
 
 *
 * if SAP object, do not go deeper
 *
 * TODO: when is this valid? add as configuration in constructor?
-    IF NOT ( ( ls_tadir_obj-author = 'SAP'
-           OR ls_tadir_obj-author = 'SAP*' )
-           AND ls_tadir_obj-srcsystem = 'SAP' ).
+    IF ms_options-continue_into_sap = abap_true OR
+        NOT ( ( ls_tadir_obj-author = 'SAP'
+        OR ls_tadir_obj-author = 'SAP*' )
+        AND ls_tadir_obj-srcsystem = 'SAP' ).
 *
 * Try to find dependend objects
 *
@@ -720,8 +782,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     ls_type-obj_type = 'TABL'.
     rs_types-tabl = zcl_abapgit_objects=>is_supported( ls_type ).
-    ls_type-obj_type = 'SHLP'.
-    rs_types-shlp = zcl_abapgit_objects=>is_supported( ls_type ).
+
+* not needed by abaplint yet
+*    ls_type-obj_type = 'SHLP'
+*    rs_types-shlp = zcl_abapgit_objects=>is_supported( ls_type )
 
 * handled manually in the code
     rs_types-doma = abap_false.
@@ -820,8 +884,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *    ls_type-obj_type = 'SFSW'
 *    rs_types-sfsw = zcl_abapgit_objects=>is_supported( ls_type )
 
-    ls_type-obj_type = 'DEVC'.
-    rs_types-devc = zcl_abapgit_objects=>is_supported( ls_type ).
+* no
+*    ls_type-obj_type = 'DEVC'
+*    rs_types-devc = zcl_abapgit_objects=>is_supported( ls_type )
 
 * not needed by abaplint yet
 *    ls_type-obj_type = 'SQSC'
@@ -838,6 +903,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_wbcrossgt LIKE LINE OF it_wbcrossgt.
     DATA ls_tadir LIKE LINE OF ct_tadir.
     DATA lv_clstype TYPE seoclass-clstype.
+    DATA lv_name TYPE badi_spot.
 
     LOOP AT it_wbcrossgt INTO ls_wbcrossgt.
       CASE ls_wbcrossgt-otype.
@@ -845,7 +911,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = ls_wbcrossgt-name(30).
           IF sy-subrc <> 0.
             "Decide if Enhancement Spot
-            SELECT COUNT( * ) FROM badi_spot WHERE badi_name = ls_wbcrossgt-name.
+            SELECT SINGLE badi_name FROM badi_spot INTO lv_name WHERE badi_name = ls_wbcrossgt-name.
             IF sy-subrc = 0.
               CLEAR ls_tadir.
               ls_tadir-ref_obj_type = 'ENHS'.
@@ -885,7 +951,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA: lv_package LIKE LINE OF it_packages.
 
-    CLEAR mv_packages[].
+    CLEAR mt_packages[].
     "Determine sub packages
     LOOP AT it_packages INTO lv_package.
       add_subpackages( lv_package ).

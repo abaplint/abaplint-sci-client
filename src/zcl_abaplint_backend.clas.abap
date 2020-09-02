@@ -17,7 +17,7 @@ CLASS zcl_abaplint_backend DEFINITION
         start    TYPE ty_position,
       END OF ty_issue .
     TYPES:
-      ty_issues TYPE STANDARD TABLE OF ty_issue WITH KEY table_line.
+      ty_issues TYPE STANDARD TABLE OF ty_issue WITH KEY table_line .
     TYPES:
       BEGIN OF ty_message,
         error   TYPE abap_bool,
@@ -32,10 +32,16 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rt_issues)  TYPE ty_issues
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error
+        zcx_abapgit_exception .
     METHODS ping
       RETURNING
         VALUE(rs_message) TYPE ty_message
+      RAISING
+        zcx_abaplint_error .
+    METHODS get_default_config
+      RETURNING
+        VALUE(rv_json) TYPE string
       RAISING
         zcx_abaplint_error .
     METHODS constructor
@@ -62,7 +68,8 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rv_files) TYPE string
       RAISING
-        zcx_abaplint_error .
+        zcx_abaplint_error
+        zcx_abapgit_exception .
     METHODS build_files
       IMPORTING
         !iv_object_type TYPE trobjtype
@@ -70,6 +77,12 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rv_files) TYPE string .
   PRIVATE SECTION.
+    CONSTANTS:
+      BEGIN OF c_uri,
+        ping               TYPE string VALUE '/api/v1/ping',
+        check_file         TYPE string VALUE '/api/v1/check_file',
+        get_default_config TYPE string VALUE '/api/v1/default_config',
+      END OF c_uri.
 ENDCLASS.
 
 
@@ -183,7 +196,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
     li_json = lo_agent->request(
       iv_method = if_http_request=>co_request_method_post
-      iv_uri    = '/api/v1/check_file'
+      iv_uri    = c_uri-check_file
       iv_payload = lv_cdata ).
 
     DATA lt_issues TYPE string_table.
@@ -196,11 +209,11 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     LOOP AT lt_issues INTO lv_issue.
       lv_prefix = '/issues/' && lv_issue && '/data'.
       APPEND INITIAL LINE TO rt_issues ASSIGNING <issue>.
-      <issue>-message   = li_json->value_string( lv_prefix && '/message' ).
-      <issue>-key       = li_json->value_string( lv_prefix && '/key' ).
-      <issue>-filename  = li_json->value_string( lv_prefix && '/filename' ).
-      <issue>-start-row = li_json->value_string( lv_prefix && '/start/row' ).
-      <issue>-start-col = li_json->value_string( lv_prefix && '/start/col' ).
+      <issue>-message   = li_json->get_string( lv_prefix && '/message' ).
+      <issue>-key       = li_json->get_string( lv_prefix && '/key' ).
+      <issue>-filename  = li_json->get_string( lv_prefix && '/filename' ).
+      <issue>-start-row = li_json->get_string( lv_prefix && '/start/row' ).
+      <issue>-start-col = li_json->get_string( lv_prefix && '/start/col' ).
     ENDLOOP.
 
   ENDMETHOD.
@@ -228,6 +241,36 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_default_config.
+
+    DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
+    DATA li_json TYPE REF TO zif_ajson_reader.
+    DATA lo_json TYPE REF TO zcl_ajson.
+    DATA lx_error TYPE REF TO zcx_ajson_error.
+
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+
+    li_json = lo_agent->request( c_uri-get_default_config ).
+    li_json = li_json->slice( '/config' ).
+    lo_json ?= li_json.
+    TRY.
+        rv_json = lo_json->stringify( iv_indent = 2 ).
+      CATCH zcx_ajson_error INTO lx_error.
+        RAISE EXCEPTION TYPE zcx_abaplint_error
+          EXPORTING
+            message = lx_error->message.
+    ENDTRY.
+
+    IF rv_json IS INITIAL.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = 'Fetched Config is empty!'.
+    ENDIF.
+
+
+  ENDMETHOD.
+
+
   METHOD ping.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
@@ -237,8 +280,8 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
 
     TRY.
-        li_json = lo_agent->request( '/api/v1/ping' ).
-        rs_message-message = li_json->value_string( '' ).
+        li_json = lo_agent->request( c_uri-ping ).
+        rs_message-message = li_json->get_string( '' ).
         rs_message-error   = abap_false.
       CATCH zcx_abaplint_error INTO lx_error.
         rs_message-message = lx_error->message.

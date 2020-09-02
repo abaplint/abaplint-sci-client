@@ -27,9 +27,12 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 
     DATA lo_serializer TYPE REF TO zcl_abaplint_deps_serializer.
     DATA lo_find TYPE REF TO zcl_abaplint_deps_find.
+    DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
 
     CREATE OBJECT lo_serializer.
-    CREATE OBJECT lo_find EXPORTING iv_max_level = iv_depth.
+
+    ls_options-max_level = iv_depth.
+    CREATE OBJECT lo_find EXPORTING is_options = ls_options.
 
     DATA lt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt.
 
