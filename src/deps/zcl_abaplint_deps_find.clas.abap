@@ -554,7 +554,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   METHOD find_extra_prog_dependencies.
 
     DATA lv_progname LIKE sy-repid.
-    DATA lt_includes TYPE STANDARD TABLE OF d010inc WITH EMPTY KEY.
+    DATA lt_includes TYPE STANDARD TABLE OF d010inc WITH DEFAULT KEY.
     DATA lv_devclass TYPE tadir-devclass.
     DATA ls_tadir LIKE LINE OF ct_tadir.
     DATA ls_include LIKE LINE OF lt_includes.
