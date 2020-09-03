@@ -8,6 +8,7 @@ CLASS ltcl_find_by_item DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLES
       setup,
       usr02 FOR TESTING RAISING cx_static_check,
       dd01v FOR TESTING RAISING cx_static_check,
+      upx_compare_cust FOR TESTING RAISING cx_static_check,
       zcl_abapgit_object_dtel FOR TESTING RAISING cx_static_check,
       zcl_abapgit_object_cus0 FOR TESTING RAISING cx_static_check,
       txmilograw FOR TESTING RAISING cx_static_check.
@@ -118,6 +119,19 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 * no direct transactions used
     READ TABLE lt_results WITH KEY object = 'TRAN' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( exp = 4 ).
+
+  ENDMETHOD.
+
+  METHOD upx_compare_cust.
+
+    DATA: lt_results TYPE zif_abapgit_definitions=>ty_tadir_tt.
+
+    lt_results = mo_cut->find_by_item(
+      iv_object_type = 'PROG'
+      iv_object_name = 'UPX_COMPARE_CUST' ).
+
+    READ TABLE lt_results WITH KEY object = 'PROG' obj_name = '<ICON>' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( ).
 
   ENDMETHOD.
 
