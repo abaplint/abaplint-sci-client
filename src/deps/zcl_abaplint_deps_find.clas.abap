@@ -36,66 +36,73 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !iv_object_name   TYPE sobj_name
       RETURNING
         VALUE(rv_package) TYPE devclass .
-  PROTECTED SECTION.
+protected section.
 
-    TYPES:
-      BEGIN OF ty_tadir,
+  types:
+    BEGIN OF ty_tadir,
         ref_obj_type TYPE trobjtype,
         ref_obj_name TYPE sobj_name,
         devclass     TYPE devclass,
       END OF ty_tadir .
-    TYPES:
-      ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
+  types:
+    ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
 
-    DATA ms_options TYPE ty_options .
+  data MS_OPTIONS type TY_OPTIONS .
 
-    METHODS convert_senvi_to_tadir
-      IMPORTING
-        !it_senvi       TYPE senvi_tab
-      RETURNING
-        VALUE(rt_tadir) TYPE ty_tadir_tt .
-    METHODS find_clas_dependencies
-      IMPORTING
-        !iv_name        TYPE tadir-obj_name
-        !iv_level       TYPE i
-      CHANGING
-        VALUE(ct_tadir) TYPE ty_tadir_tt
-      RAISING
-        zcx_abaplint_error .
-    METHODS find_extra_prog_dependencies
-      IMPORTING
-        !iv_name        TYPE tadir-obj_name
-      CHANGING
-        VALUE(ct_tadir) TYPE ty_tadir_tt
-      RAISING
-        zcx_abaplint_error .
-    METHODS find_tabl_dependencies
-      IMPORTING
-        !iv_name        TYPE tadir-obj_name
-      RETURNING
-        VALUE(rt_tadir) TYPE ty_tadir_tt
-      RAISING
-        zcx_abaplint_error .
-    METHODS find_dtel_dependencies
-      IMPORTING
-        !iv_name        TYPE tadir-obj_name
-      RETURNING
-        VALUE(rt_tadir) TYPE ty_tadir_tt .
-    METHODS get_dependencies
-      IMPORTING
-        !is_object  TYPE zif_abapgit_definitions=>ty_tadir
-        !iv_minimal TYPE abap_bool DEFAULT abap_true
-        !iv_level   TYPE i
-      RAISING
-        zcx_abaplint_error .
-    METHODS resolve
-      IMPORTING
-        !it_wbcrossgt TYPE wbcrossgtt
-      CHANGING
-        !ct_tadir     TYPE ty_tadir_tt .
-    METHODS update_index
-      IMPORTING
-        !iv_name TYPE seoclsname .
+  methods CONVERT_SENVI_TO_TADIR
+    importing
+      !IT_SENVI type SENVI_TAB
+    returning
+      value(RT_TADIR) type TY_TADIR_TT .
+  methods FIND_CLAS_DEPENDENCIES
+    importing
+      !IV_NAME type TADIR-OBJ_NAME
+      !IV_LEVEL type I
+    changing
+      value(CT_TADIR) type TY_TADIR_TT
+    raising
+      ZCX_ABAPLINT_ERROR .
+  methods FIND_EXTRA_FUGR_DEPENDENCIES
+    importing
+      !IV_NAME type TADIR-OBJ_NAME
+    changing
+      value(CT_TADIR) type TY_TADIR_TT
+    raising
+      ZCX_ABAPLINT_ERROR .
+  methods FIND_EXTRA_PROG_DEPENDENCIES
+    importing
+      !IV_NAME type TADIR-OBJ_NAME
+    changing
+      value(CT_TADIR) type TY_TADIR_TT
+    raising
+      ZCX_ABAPLINT_ERROR .
+  methods FIND_TABL_DEPENDENCIES
+    importing
+      !IV_NAME type TADIR-OBJ_NAME
+    returning
+      value(RT_TADIR) type TY_TADIR_TT
+    raising
+      ZCX_ABAPLINT_ERROR .
+  methods FIND_DTEL_DEPENDENCIES
+    importing
+      !IV_NAME type TADIR-OBJ_NAME
+    returning
+      value(RT_TADIR) type TY_TADIR_TT .
+  methods GET_DEPENDENCIES
+    importing
+      !IS_OBJECT type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR
+      !IV_MINIMAL type ABAP_BOOL default ABAP_TRUE
+      !IV_LEVEL type I
+    raising
+      ZCX_ABAPLINT_ERROR .
+  methods RESOLVE
+    importing
+      !IT_WBCROSSGT type WBCROSSGTT
+    changing
+      !CT_TADIR type TY_TADIR_TT .
+  methods UPDATE_INDEX
+    importing
+      !IV_NAME type SEOCLSNAME .
   PRIVATE SECTION.
 
     DATA mt_packages TYPE tr_devclasses .
@@ -551,6 +558,45 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD find_extra_fugr_dependencies.
+
+    DATA lv_progname LIKE sy-repid.
+    DATA lt_includes TYPE STANDARD TABLE OF d010inc WITH DEFAULT KEY.
+    DATA lv_devclass TYPE tadir-devclass.
+    DATA ls_tadir LIKE LINE OF ct_tadir.
+    DATA ls_include LIKE LINE OF lt_includes.
+    DATA lv_group TYPE rs38l-area.
+    DATA lv_pname TYPE tfdir-pname.
+
+    lv_group = iv_name.
+
+    CALL FUNCTION 'FUNCTION_INCLUDE_INFO'
+      IMPORTING
+        pname               = lv_pname
+      CHANGING
+        group               = lv_group
+      EXCEPTIONS
+        function_not_exists = 1
+        include_not_exists  = 2
+        group_not_exists    = 3
+        no_selections       = 4
+        no_function_include = 5
+        OTHERS              = 6.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    lv_progname = lv_pname.
+
+    find_extra_prog_dependencies(
+      EXPORTING
+        iv_name  = lv_progname
+      CHANGING
+        ct_tadir = ct_tadir ).
+
+  ENDMETHOD.
+
+
   METHOD find_extra_prog_dependencies.
 
     DATA lv_progname LIKE sy-repid.
@@ -715,6 +761,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     IF is_object-object = 'PROG'.
       find_extra_prog_dependencies(
+        EXPORTING
+          iv_name  = is_object-obj_name
+        CHANGING
+          ct_tadir = lt_tadir ).
+    ELSEIF is_object-object = 'FUGR'.
+      find_extra_fugr_dependencies(
         EXPORTING
           iv_name  = is_object-obj_name
         CHANGING
