@@ -195,11 +195,26 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD map_to_internal.
 
-    DATA lo_pih TYPE REF TO cl_oo_source_pos_index_helper.
-    DATA li_index_helper TYPE REF TO if_oo_source_pos_index_helper.
+    DATA:
+      lt_tabl         TYPE TABLE OF string,
+      lv_subc         TYPE subc,
+      lv_name         TYPE string,
+      lv_target       TYPE string,
+      lv_pname        TYPE pname,
+      lv_include      TYPE includenr,
+      lv_namespace    TYPE namespace,
+      lv_area         TYPE rs38l_area,
+      lo_pih          TYPE REF TO cl_oo_source_pos_index_helper,
+      li_index_helper TYPE REF TO if_oo_source_pos_index_helper,
+      ls_position     TYPE if_oo_source_pos_index_helper=>ty_source_pos_index,
+      lv_col          TYPE i.
 
     rs_result-line   = is_issue-start-row.
     rs_result-column = is_issue-start-col.
+
+    lv_name = to_upper( cl_http_utility=>unescape_url( is_issue-filename ) ).
+    REPLACE ALL OCCURRENCES OF '#' IN lv_name WITH '/'.
+    SPLIT lv_name AT '.' INTO TABLE lt_tabl.
 
     CASE object_type.
       WHEN 'FUGR'.
@@ -208,20 +223,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         "2. Function Level (TFDIR exists)
         "3. Include Level (TRDIR-SUBC = I)
 
-        DATA: lv_tabl      TYPE TABLE OF string,
-              lv_subc      TYPE subc,
-              lv_name      TYPE string,
-              lv_target    TYPE string,
-              lv_pname     TYPE pname,
-              lv_include   TYPE includenr,
-              lv_namespace TYPE namespace,
-              lv_area      TYPE rs38l_area.
-
         "Determine Object name
-        SPLIT is_issue-filename AT '.' INTO TABLE lv_tabl.
-        READ TABLE lv_tabl INDEX 3 INTO lv_name. "Object Name
-        TRANSLATE lv_name TO UPPER CASE.
-        REPLACE ALL OCCURRENCES OF '#' IN lv_name WITH '/'.
+        READ TABLE lt_tabl INDEX 3 INTO lv_name. "Object Name
 
         "3. Include?
         SELECT SINGLE subc FROM trdir INTO lv_subc WHERE name = lv_name.
@@ -250,24 +253,45 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
           ENDIF.
         ENDIF.
       WHEN 'CLAS'.
-* todo, make sure the index exists?
-* todo, what if the issue is in the XML file?
-* todo, handle the 5 different global class includes
-        CREATE OBJECT lo_pih.
-        li_index_helper ?= lo_pih.
+        " todo, what if the issue is in the XML file?
 
-        DATA ls_position TYPE if_oo_source_pos_index_helper=>ty_source_pos_index.
-        DATA lv_col TYPE i.
-        lv_col = is_issue-start-col. " ??? how to avoid ?
-        ls_position = li_index_helper->get_class_include_by_position(
-          class_name = object_name
-          version    = 'A'
-          line       = is_issue-start-row
-          column     = lv_col ).
+        " Determine class part (see ZCL_ABAPGIT_OBJECT_CLAS->SERIALIZE)
+        SPLIT is_issue-filename AT '.' INTO TABLE lt_tabl.
+        IF lines( lt_tabl ) = 4.
+          rs_result-sub_obj_type = 'PROG'.
+          rs_result-sub_obj_name = object_name.
 
-        rs_result-sub_obj_type = 'PROG'.
-        rs_result-sub_obj_name = ls_position-include_name.
-        rs_result-line = ls_position-start_line.
+          READ TABLE lt_tabl INDEX 3 INTO lv_name.
+          CASE lv_name.
+            WHEN 'locals_def'.
+              rs_result-sub_obj_name+30 = seop_incextapp_definition.
+            WHEN 'locals_imp'.
+              rs_result-sub_obj_name+30 = seop_incextapp_implementation.
+            WHEN 'testclasses'.
+              rs_result-sub_obj_name+30 = seop_incextapp_testclasses .
+            WHEN 'macros'.
+              rs_result-sub_obj_name+30 = seop_incextapp_macros .
+          ENDCASE.
+
+          REPLACE ALL OCCURRENCES OF ` ` IN rs_result-sub_obj_name(30) WITH '='.
+        ELSE. "methods
+          CREATE OBJECT lo_pih.
+          li_index_helper ?= lo_pih.
+
+          lv_col = is_issue-start-col. " cast int2 > int4
+
+          " Check class/method index (will automatically create index if it's missing)
+          ls_position = li_index_helper->get_class_include_by_position(
+            class_name = object_name
+            version    = 'A'
+            line       = is_issue-start-row
+            column     = lv_col ).
+
+          rs_result-sub_obj_type = 'PROG'.
+          rs_result-sub_obj_name = ls_position-include_name.
+          rs_result-line = ls_position-start_line.
+        ENDIF.
+
       WHEN OTHERS.
         rs_result-sub_obj_type = object_type.
         rs_result-sub_obj_name = object_name.
