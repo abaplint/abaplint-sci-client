@@ -36,73 +36,73 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !iv_object_name   TYPE sobj_name
       RETURNING
         VALUE(rv_package) TYPE devclass .
-protected section.
+  PROTECTED SECTION.
 
-  types:
-    BEGIN OF ty_tadir,
+    TYPES:
+      BEGIN OF ty_tadir,
         ref_obj_type TYPE trobjtype,
         ref_obj_name TYPE sobj_name,
         devclass     TYPE devclass,
       END OF ty_tadir .
-  types:
-    ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
+    TYPES:
+      ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
 
-  data MS_OPTIONS type TY_OPTIONS .
+    DATA ms_options TYPE ty_options .
 
-  methods CONVERT_SENVI_TO_TADIR
-    importing
-      !IT_SENVI type SENVI_TAB
-    returning
-      value(RT_TADIR) type TY_TADIR_TT .
-  methods FIND_CLAS_DEPENDENCIES
-    importing
-      !IV_NAME type TADIR-OBJ_NAME
-      !IV_LEVEL type I
-    changing
-      value(CT_TADIR) type TY_TADIR_TT
-    raising
-      ZCX_ABAPLINT_ERROR .
-  methods FIND_EXTRA_FUGR_DEPENDENCIES
-    importing
-      !IV_NAME type TADIR-OBJ_NAME
-    changing
-      value(CT_TADIR) type TY_TADIR_TT
-    raising
-      ZCX_ABAPLINT_ERROR .
-  methods FIND_EXTRA_PROG_DEPENDENCIES
-    importing
-      !IV_NAME type TADIR-OBJ_NAME
-    changing
-      value(CT_TADIR) type TY_TADIR_TT
-    raising
-      ZCX_ABAPLINT_ERROR .
-  methods FIND_TABL_DEPENDENCIES
-    importing
-      !IV_NAME type TADIR-OBJ_NAME
-    returning
-      value(RT_TADIR) type TY_TADIR_TT
-    raising
-      ZCX_ABAPLINT_ERROR .
-  methods FIND_DTEL_DEPENDENCIES
-    importing
-      !IV_NAME type TADIR-OBJ_NAME
-    returning
-      value(RT_TADIR) type TY_TADIR_TT .
-  methods GET_DEPENDENCIES
-    importing
-      !IS_OBJECT type ZIF_ABAPGIT_DEFINITIONS=>TY_TADIR
-      !IV_MINIMAL type ABAP_BOOL default ABAP_TRUE
-      !IV_LEVEL type I
-    raising
-      ZCX_ABAPLINT_ERROR .
-  methods RESOLVE
-    importing
-      !IT_WBCROSSGT type WBCROSSGTT
-    changing
-      !CT_TADIR type TY_TADIR_TT .
-  methods UPDATE_INDEX
-    importing
-      !IV_NAME type SEOCLSNAME .
+    METHODS convert_senvi_to_tadir
+      IMPORTING
+        !it_senvi       TYPE senvi_tab
+      RETURNING
+        VALUE(rt_tadir) TYPE ty_tadir_tt .
+    METHODS find_clas_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+        !iv_level       TYPE i
+      CHANGING
+        VALUE(ct_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
+    METHODS find_extra_fugr_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+      CHANGING
+        VALUE(ct_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
+    METHODS find_extra_prog_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+      CHANGING
+        VALUE(ct_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
+    METHODS find_tabl_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
+    METHODS find_dtel_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+      RETURNING
+        VALUE(rt_tadir) TYPE ty_tadir_tt .
+    METHODS get_dependencies
+      IMPORTING
+        !is_object  TYPE zif_abapgit_definitions=>ty_tadir
+        !iv_minimal TYPE abap_bool DEFAULT abap_true
+        !iv_level   TYPE i
+      RAISING
+        zcx_abaplint_error .
+    METHODS resolve
+      IMPORTING
+        !it_wbcrossgt TYPE wbcrossgtt
+      CHANGING
+        !ct_tadir     TYPE ty_tadir_tt .
+    METHODS update_index
+      IMPORTING
+        !iv_name TYPE seoclsname .
   PRIVATE SECTION.
 
     DATA mt_packages TYPE tr_devclasses .
