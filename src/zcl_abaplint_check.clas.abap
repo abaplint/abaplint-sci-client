@@ -268,9 +268,9 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
             WHEN 'locals_imp'.
               rs_result-sub_obj_name+30 = seop_incextapp_implementation.
             WHEN 'testclasses'.
-              rs_result-sub_obj_name+30 = seop_incextapp_testclasses .
+              rs_result-sub_obj_name+30 = seop_incextapp_testclasses.
             WHEN 'macros'.
-              rs_result-sub_obj_name+30 = seop_incextapp_macros .
+              rs_result-sub_obj_name+30 = seop_incextapp_macros.
           ENDCASE.
 
           REPLACE ALL OCCURRENCES OF ` ` IN rs_result-sub_obj_name(30) WITH '='.
