@@ -287,10 +287,12 @@ ENDFORM.
 
 FORM init_3000.
 
-  DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+  IF zabaplint_glob_data IS INITIAL.
+    DATA lo_config TYPE REF TO zcl_abaplint_configuration.
 
-  CREATE OBJECT lo_config.
-  zabaplint_glob_data = lo_config->get_global( ).
+    CREATE OBJECT lo_config.
+    zabaplint_glob_data = lo_config->get_global( ).
+  ENDIF.
 
 ENDFORM.
 
@@ -330,6 +332,12 @@ FORM add_raw.
 
   CREATE OBJECT lo_config.
   READ TABLE lt_fields INTO ls_field INDEX 1.
+
+  IF zcl_abapgit_factory=>get_sap_package( |{ ls_field-value }| )->exists( ) = abap_false.
+    MESSAGE e001(zabaplint) WITH ls_field-value.
+    RETURN.
+  ENDIF.
+
   lo_config->add_package( |{ ls_field-value }| ).
   lcl_tree_content=>refresh( ).
 
