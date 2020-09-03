@@ -62,6 +62,13 @@ CLASS zcl_abaplint_deps_find DEFINITION
         VALUE(ct_tadir) TYPE ty_tadir_tt
       RAISING
         zcx_abaplint_error .
+    METHODS find_extra_prog_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+      CHANGING
+        VALUE(ct_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
     METHODS find_tabl_dependencies
       IMPORTING
         !iv_name        TYPE tadir-obj_name
@@ -544,6 +551,47 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD find_extra_prog_dependencies.
+
+    DATA lv_progname LIKE sy-repid.
+    DATA lt_includes TYPE STANDARD TABLE OF d010inc WITH DEFAULT KEY.
+    DATA lv_devclass TYPE tadir-devclass.
+    DATA ls_tadir LIKE LINE OF ct_tadir.
+    DATA ls_include LIKE LINE OF lt_includes.
+
+    lv_progname = iv_name.
+
+* search for INCLUDEs in the main program
+    SELECT * FROM d010inc
+      INTO TABLE lt_includes
+      WHERE master = lv_progname.
+
+    LOOP AT lt_includes INTO ls_include.
+      IF ls_include-include = '<REPINI>'
+          OR ls_include-include = '<SYSINI>'
+          OR ls_include-include = '<SYSSEL>'.
+        CONTINUE.
+      ENDIF.
+
+* make sure its an independent object and lookup the package
+      SELECT SINGLE devclass FROM tadir
+        INTO lv_devclass
+        WHERE pgmid = 'R3TR'
+        AND object = 'PROG'
+        AND obj_name = ls_include-include.
+      IF sy-subrc = 0.
+        CLEAR ls_tadir.
+        ls_tadir-ref_obj_type = 'PROG'.
+        ls_tadir-ref_obj_name = ls_include-include.
+        ls_tadir-devclass = lv_devclass.
+        INSERT ls_tadir INTO TABLE ct_tadir.
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
   METHOD find_tabl_dependencies.
 
     DATA lv_tabname TYPE dd02l-tabname.
@@ -663,6 +711,14 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           OR ref_obj_type = 'CLAS'
           OR ref_obj_type = 'INTF'.
       ENDIF.
+    ENDIF.
+
+    IF is_object-object = 'PROG'.
+      find_extra_prog_dependencies(
+        EXPORTING
+          iv_name  = is_object-obj_name
+        CHANGING
+          ct_tadir = lt_tadir ).
     ENDIF.
 
 *
