@@ -20,6 +20,11 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
         zcx_abapgit_exception .
   PROTECTED SECTION.
 
+    METHODS strip_form_body
+      IMPORTING
+        !iv_string       TYPE string
+      RETURNING
+        VALUE(rv_string) TYPE string .
     METHODS strip_xml
       IMPORTING
         !iv_string       TYPE string
@@ -240,6 +245,13 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
     ENDIF.
 
+    lv_filename = |{ to_lower( translate( val = cs_files-item-obj_name from = '/' to = '#' ) ) }.prog.abap|.
+    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+    IF sy-subrc = 0.
+      lv_string = strip_form_body( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
+      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -355,6 +367,61 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     APPEND ls_tadir TO lt_tadir.
 
     rt_files = serialize( lt_tadir ).
+
+  ENDMETHOD.
+
+
+  METHOD strip_form_body.
+
+    CONSTANTS lc_form TYPE c LENGTH 1 VALUE 'O'.
+
+    DATA lt_structures TYPE STANDARD TABLE OF sstruc WITH DEFAULT KEY.
+    DATA lt_statements TYPE sstmnt_tab.
+    DATA lt_tokens     TYPE stokesx_tab.
+    DATA ls_last       LIKE LINE OF lt_structures.
+    DATA ls_from       LIKE LINE OF lt_statements.
+    DATA ls_to         LIKE LINE OF lt_statements.
+    DATA lv_modified   TYPE abap_bool VALUE abap_false.
+    DATA lt_code       TYPE STANDARD TABLE OF string WITH DEFAULT KEY.
+
+
+    SPLIT iv_string AT |\n| INTO TABLE lt_code.
+
+    SCAN ABAP-SOURCE lt_code
+      TOKENS INTO lt_tokens
+      STRUCTURES INTO lt_structures
+      STATEMENTS INTO lt_statements
+      WITH ANALYSIS.
+
+    DELETE lt_structures WHERE stmnt_type <> lc_form.
+    WHILE lines( lt_structures ) > 0.
+      READ TABLE lt_structures INDEX lines( lt_structures ) INTO ls_last.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+
+      READ TABLE lt_statements INTO ls_from INDEX ls_last-stmnt_from.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+      READ TABLE lt_statements INTO ls_to INDEX ls_last-stmnt_to.
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+
+      DELETE lt_code FROM ls_from-trow + 1 TO ls_to-trow - 1.
+      IF sy-subrc = 0.
+        lv_modified = abap_true.
+      ENDIF.
+
+      DELETE lt_structures INDEX lines( lt_structures ).
+    ENDWHILE.
+
+    IF lv_modified = abap_true.
+      rv_string = concat_lines_of( table = lt_code sep = |\n| ).
+    ELSE.
+      rv_string = iv_string.
+    ENDIF.
 
   ENDMETHOD.
 
