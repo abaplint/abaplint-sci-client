@@ -8,6 +8,7 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
       setup,
       cl_ci_tests FOR TESTING RAISING cx_static_check,
       svrs FOR TESTING RAISING cx_static_check,
+      zabaplint_dependencies FOR TESTING RAISING cx_static_check,
       cx_iac_helper_check_7bit_acsii FOR TESTING RAISING cx_static_check,
       zabaplint_ui FOR TESTING RAISING cx_static_check.
 
@@ -48,6 +49,17 @@ CLASS ltcl_test IMPLEMENTATION.
 
     ls_item-obj_type = 'FUGR'.
     ls_item-obj_name = 'SVRS'.
+
+    mo_cut->serialize_item( ls_item ).
+
+  ENDMETHOD.
+
+  METHOD zabaplint_dependencies.
+
+    DATA: ls_item TYPE zif_abapgit_definitions=>ty_item.
+
+    ls_item-obj_type = 'PROG'.
+    ls_item-obj_name = 'ZABAPLINT_DEPENDENCIES'.
 
     mo_cut->serialize_item( ls_item ).
 

@@ -29,7 +29,11 @@
     [
         "seoc_version_active",
         "seoc_clstype_class",
-        "seoc_clstype_interface"
+        "seoc_clstype_interface",
+        "seop_incextapp_definition",
+        "seop_incextapp_implementation",
+        "seop_incextapp_testclasses",
+        "seop_incextapp_macros"
     ],
     "globalMacros": []
   },
