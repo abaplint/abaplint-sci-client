@@ -263,7 +263,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
           lt_abap TYPE abaptxt255_tab.
 
     CASE iv_program_name.
-      WHEN 'IFRE_BEGIN_OF_RE_CLASSIC'.
+      WHEN 'IFRE_BEGIN_OF_RE_CLASSIC' OR 'IFRE_BEGIN_OF_RE_EA_FIN'.
         READ TABLE cs_files_item-files ASSIGNING <ls_file> INDEX 1.
         lv_abap = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
         SPLIT lv_abap AT zif_abapgit_definitions=>c_newline INTO TABLE lt_abap.
@@ -275,7 +275,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 *       when editing files via eg. GitHub web interface it adds a newline at end of file
         lv_abap = lv_abap && zif_abapgit_definitions=>c_newline.
         <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_abap ).
-      WHEN 'IFRE_END_OF_RE_CLASSIC'.
+      WHEN 'IFRE_END_OF_RE_CLASSIC' OR 'IFRE_END_OF_RE_EA_FIN'.
         READ TABLE cs_files_item-files ASSIGNING <ls_file> INDEX 1.
         lv_abap = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
         SPLIT lv_abap AT zif_abapgit_definitions=>c_newline INTO TABLE lt_abap.
