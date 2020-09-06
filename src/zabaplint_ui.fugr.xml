@@ -164,10 +164,10 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>TEXT05</NAME>
-       <TEXT>https://github.com/abaplint/abaplint-cloud-foundry</TEXT>
+       <TEXT>https://github.com/abaplint/abaplint-sci-server</TEXT>
        <LINE>004</LINE>
        <COLUMN>013</COLUMN>
-       <LENGTH>050</LENGTH>
+       <LENGTH>047</LENGTH>
        <VISLENGTH>050</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
