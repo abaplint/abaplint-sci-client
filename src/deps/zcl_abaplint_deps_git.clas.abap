@@ -64,6 +64,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
     DATA ls_remote LIKE LINE OF it_remote.
     DATA ls_local LIKE LINE OF it_local.
+    FIELD-SYMBOLS: <r> LIKE ls_remote.
 
     rs_stage-comment-committer-email = mv_git_email.
     rs_stage-comment-committer-name = mv_git_name.
@@ -75,13 +76,21 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       READ TABLE it_remote WITH KEY
         path = ls_local-path
         filename = ls_local-filename
-        sha1 = ls_local-sha1 TRANSPORTING NO FIELDS.
+        ASSIGNING <r>.
       IF sy-subrc <> 0.
         WRITE: / 'Add', ls_local-path, ls_local-filename.
         rs_stage-stage->add(
           iv_path     = ls_local-path
           iv_filename = ls_local-filename
           iv_data     = ls_local-data ).
+      ELSE.
+        IF <r>-sha1 <> ls_local-sha1.
+          WRITE: / 'Changed', ls_local-path, ls_local-filename.
+          rs_stage-stage->add(
+            iv_path     = ls_local-path
+            iv_filename = ls_local-filename
+            iv_data     = ls_local-data ).
+        ENDIF.
       ENDIF.
     ENDLOOP.
 
