@@ -83,14 +83,12 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
           iv_path     = ls_local-path
           iv_filename = ls_local-filename
           iv_data     = ls_local-data ).
-      ELSE.
-        IF <r>-sha1 <> ls_local-sha1.
-          WRITE: / 'Changed', ls_local-path, ls_local-filename.
-          rs_stage-stage->add(
-            iv_path     = ls_local-path
-            iv_filename = ls_local-filename
-            iv_data     = ls_local-data ).
-        ENDIF.
+      ELSEIF <r>-sha1 <> ls_local-sha1.
+        WRITE: / 'Changed', ls_local-path, ls_local-filename.
+        rs_stage-stage->add(
+          iv_path     = ls_local-path
+          iv_filename = ls_local-filename
+          iv_data     = ls_local-data ).
       ENDIF.
     ENDLOOP.
 
