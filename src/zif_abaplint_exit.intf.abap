@@ -1,10 +1,10 @@
-interface ZIF_ABAPLINT_EXIT
-  public .
+INTERFACE zif_abaplint_exit
+  PUBLIC.
 
 
-  methods HANDLE_SPECIAL_ABAPS
-    importing
-      !IV_PROGRAM_NAME type PROGRAMM
-    changing
-      !CS_FILES_ITEM type ZCL_ABAPGIT_OBJECTS=>TY_SERIALIZATION .
-endinterface.
+  METHODS handle_special_abaps
+    IMPORTING
+      !iv_program_name TYPE programm
+    CHANGING
+      !cs_files_item   TYPE zcl_abapgit_objects=>ty_serialization .
+ENDINTERFACE.

@@ -1,18 +1,18 @@
-class ZCL_ABAPLINT_EXIT definition
-  public
-  create public .
+CLASS zcl_abaplint_exit DEFINITION
+  PUBLIC
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_ABAPLINT_EXIT .
+    INTERFACES zif_abaplint_exit .
 
-  class-methods GET_INSTANCE
-    returning
-      value(RI_EXIT) type ref to ZIF_ABAPLINT_EXIT .
+    CLASS-METHODS get_instance
+      RETURNING
+        VALUE(ri_exit) TYPE REF TO zif_abaplint_exit .
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  class-data GI_EXIT type ref to ZIF_ABAPLINT_EXIT .
+    CLASS-DATA gi_exit TYPE REF TO zif_abaplint_exit .
 ENDCLASS.
 
 
@@ -34,7 +34,7 @@ CLASS ZCL_ABAPLINT_EXIT IMPLEMENTATION.
   ENDMETHOD.
 
 
-  method ZIF_ABAPLINT_EXIT~HANDLE_SPECIAL_ABAPS.
+  METHOD zif_abaplint_exit~handle_special_abaps.
 
     TRY.
         gi_exit->handle_special_abaps( EXPORTING iv_program_name = iv_program_name
