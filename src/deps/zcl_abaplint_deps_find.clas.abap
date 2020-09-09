@@ -529,6 +529,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_x030l TYPE x030l.
     DATA lv_tabname TYPE dd02l-tabname.
     DATA ls_tadir LIKE LINE OF rt_tadir.
+    DATA lv_clstype TYPE seoclass-clstype.
 
     lv_tabname = iv_name.
 
@@ -543,7 +544,17 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         not_found = 1
         OTHERS    = 2.
     IF sy-subrc = 0 AND NOT ls_x030l-refname IS INITIAL.
-      ls_tadir-ref_obj_type = 'DOMA'.
+      SELECT SINGLE clstype FROM seoclass INTO lv_clstype
+        WHERE clsname = ls_x030l-refname.
+      IF sy-subrc = 0.
+        IF lv_clstype = '1'.
+          ls_tadir-ref_obj_type = 'INTF'.
+        ELSE.
+          ls_tadir-ref_obj_type = 'CLAS'.
+        ENDIF.
+      ELSE.
+        ls_tadir-ref_obj_type = 'DOMA'.
+      ENDIF.
       ls_tadir-ref_obj_name = ls_x030l-refname.
       INSERT ls_tadir INTO TABLE rt_tadir.
     ENDIF.
@@ -597,6 +608,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lv_tabname TYPE dd02l-tabname.
     DATA ls_tadir LIKE LINE OF rt_tadir.
     DATA lt_x031l TYPE STANDARD TABLE OF x031l.
+    DATA lv_clstype TYPE seoclass-clstype.
 
     FIELD-SYMBOLS: <ls_x031l> LIKE LINE OF lt_x031l.
 
@@ -616,16 +628,27 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    LOOP AT lt_x031l ASSIGNING <ls_x031l>.
-      IF <ls_x031l>-fieldname(8) = '.INCLUDE' AND NOT <ls_x031l>-rollname IS INITIAL.
-        ls_tadir-ref_obj_type = 'TABL'.
-        ls_tadir-ref_obj_name = <ls_x031l>-rollname.
-        INSERT ls_tadir INTO TABLE rt_tadir.
-      ELSEIF NOT <ls_x031l>-rollname IS INITIAL.
-        ls_tadir-ref_obj_type = 'DTEL'.
-        ls_tadir-ref_obj_name = <ls_x031l>-rollname.
-        INSERT ls_tadir INTO TABLE rt_tadir.
-      ENDIF.
+    LOOP AT lt_x031l ASSIGNING <ls_x031l> WHERE NOT rollname IS INITIAL.
+      CASE <ls_x031l>-dtyp.
+        WHEN 'OREF'. "type ref to
+          SELECT SINGLE clstype FROM seoclass INTO lv_clstype
+            WHERE clsname = <ls_x031l>-rollname.
+          IF sy-subrc = 0 AND lv_clstype = '1'.
+            ls_tadir-ref_obj_type = 'INTF'.
+          ELSE.
+            ls_tadir-ref_obj_type = 'CLAS'.
+          ENDIF.
+        WHEN 'STR1'. "structure
+          ls_tadir-ref_obj_type = 'TABL'.
+        WHEN 'TTAB'. "table type
+          ls_tadir-ref_obj_type = 'TTYP'.
+        WHEN 'BREF'. "boxed
+          ls_tadir-ref_obj_type = 'TABL'.
+        WHEN OTHERS.
+          ls_tadir-ref_obj_type = 'DTEL'.
+      ENDCASE.
+      ls_tadir-ref_obj_name = <ls_x031l>-rollname.
+      INSERT ls_tadir INTO TABLE rt_tadir.
     ENDLOOP.
 
   ENDMETHOD.
