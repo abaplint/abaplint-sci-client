@@ -297,6 +297,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         IF iv_encl_object IS NOT INITIAL AND sy-subrc = 1.
           SELECT SINGLE object FROM tadir INTO lv_object
             WHERE pgmid = 'R3TR'
+            AND object IN ('CLAS','ENHS','CUS0','CUS1','CUS2')
             AND obj_name = iv_encl_object.
         ENDIF.
         ASSERT sy-subrc = 0.
