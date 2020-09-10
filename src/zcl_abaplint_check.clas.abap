@@ -163,7 +163,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     cl_gui_frontend_services=>execute(
       EXPORTING
-        document               = 'https://abaplint.org'
+        document               = 'https://rules.abaplint.org/'
       EXCEPTIONS
         cntl_error             = 1
         error_no_gui           = 2
