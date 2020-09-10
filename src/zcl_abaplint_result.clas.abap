@@ -6,19 +6,10 @@ CLASS zcl_abaplint_result DEFINITION
 
   PUBLIC SECTION.
 
-    TYPES:
-      BEGIN OF ty_map,
-        rule TYPE string,
-        code TYPE sci_errc,
-      END OF ty_map .
-
-    CLASS-DATA:
-      mt_map TYPE TABLE OF ty_map READ-ONLY .
-
     CLASS-METHODS class_constructor .
     METHODS constructor
       IMPORTING
-        !p_kind TYPE sychar01 .
+        !iv_kind TYPE sychar01 .
     CLASS-METHODS map_code_to_rule
       IMPORTING
         !iv_code       TYPE sci_errc
@@ -34,6 +25,14 @@ CLASS zcl_abaplint_result DEFINITION
         REDEFINITION .
   PROTECTED SECTION.
   PRIVATE SECTION.
+    TYPES:
+      BEGIN OF ty_map,
+        rule TYPE string,
+        code TYPE sci_errc,
+      END OF ty_map .
+
+    CLASS-DATA:
+      mt_map TYPE TABLE OF ty_map.
 ENDCLASS.
 
 
@@ -43,302 +42,46 @@ CLASS ZCL_ABAPLINT_RESULT IMPLEMENTATION.
 
   METHOD class_constructor.
 
-    DATA ls_map TYPE ty_map.
+    DATA:
+      lv_map TYPE string,
+      lt_map TYPE TABLE OF string,
+      ls_map TYPE ty_map.
 
-    ls_map-rule = '7bit_ascii'.
-    ls_map-code = 'LINT_0001'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'abapdoc'.
-    ls_map-code = 'LINT_0002'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'allowed_object_naming'.
-    ls_map-code = 'LINT_0003'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'allowed_object_types'.
-    ls_map-code = 'LINT_0004'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'ambiguous_statement'.
-    ls_map-code = 'LINT_0005'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'avoid_use'.
-    ls_map-code = 'LINT_0006'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'begin_end_names'.
-    ls_map-code = 'LINT_0007'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'begin_single_include'.
-    ls_map-code = 'LINT_0008'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'chain_mainly_declarations'.
-    ls_map-code = 'LINT_0009'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'check_abstract'.
-    ls_map-code = 'LINT_0010'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'check_comments'.
-    ls_map-code = 'LINT_0011'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'check_ddic'.
-    ls_map-code = 'LINT_0012'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'check_include'.
-    ls_map-code = 'LINT_0013'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'check_no_handler_pragma'.
-    ls_map-code = 'LINT_0014'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'check_syntax'.
-    ls_map-code = 'LINT_0015'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'check_text_elements'.
-    ls_map-code = 'LINT_0016'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'check_transformation_exists'.
-    ls_map-code = 'LINT_0017'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'class_attribute_names'.
-    ls_map-code = 'LINT_0018'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'cloud_types'.
-    ls_map-code = 'LINT_0019'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'colon_missing_space'.
-    ls_map-code = 'LINT_0020'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'commented_code'.
-    ls_map-code = 'LINT_0021'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'constructor_visibility_public'.
-    ls_map-code = 'LINT_0022'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'contains_tab'.
-    ls_map-code = 'LINT_0023'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'definitions_top'.
-    ls_map-code = 'LINT_0024'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'description_empty'.
-    ls_map-code = 'LINT_0025'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'double_space'.
-    ls_map-code = 'LINT_0026'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'downport'.
-    ls_map-code = 'LINT_0027'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'empty_line_in_statement'.
-    ls_map-code = 'LINT_0028'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'empty_statement'.
-    ls_map-code = 'LINT_0029'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'empty_structure'.
-    ls_map-code = 'LINT_0030'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'exit_or_check'.
-    ls_map-code = 'LINT_0031'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'exporting'.
-    ls_map-code = 'LINT_0032'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'forbidden_identifier'.
-    ls_map-code = 'LINT_0033'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'forbidden_pseudo_and_pragma'.
-    ls_map-code = 'LINT_0034'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'forbidden_void_type'.
-    ls_map-code = 'LINT_0035'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'form_tables_obsolete'.
-    ls_map-code = 'LINT_0036'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'fully_type_constants'.
-    ls_map-code = 'LINT_0037'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'functional_writing'.
-    ls_map-code = 'LINT_0038'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'global_class'.
-    ls_map-code = 'LINT_0039'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'identical_form_names'.
-    ls_map-code = 'LINT_0040'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'if_in_if'.
-    ls_map-code = 'LINT_0041'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'implement_methods'.
-    ls_map-code = 'LINT_0042'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'in_statement_indentation'.
-    ls_map-code = 'LINT_0043'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'indentation'.
-    ls_map-code = 'LINT_0044'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'inline_data_old_versions'.
-    ls_map-code = 'LINT_0045'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'keep_single_parameter_on_one_line'.
-    ls_map-code = 'LINT_0046'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'keyword_case'.
-    ls_map-code = 'LINT_0047'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'line_break_multiple_parameters'.
-    ls_map-code = 'LINT_0048'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'line_break_style'.
-    ls_map-code = 'LINT_0049'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'line_length'.
-    ls_map-code = 'LINT_0050'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'line_only_punc'.
-    ls_map-code = 'LINT_0051'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'local_class_naming'.
-    ls_map-code = 'LINT_0052'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'local_testclass_location'.
-    ls_map-code = 'LINT_0053'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'local_variable_names'.
-    ls_map-code = 'LINT_0054'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'main_file_contents'.
-    ls_map-code = 'LINT_0055'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'max_one_statement'.
-    ls_map-code = 'LINT_0056'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'message_exists'.
-    ls_map-code = 'LINT_0057'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'method_length'.
-    ls_map-code = 'LINT_0058'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'method_parameter_names'.
-    ls_map-code = 'LINT_0059'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'mix_returning'.
-    ls_map-code = 'LINT_0060'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'msag_consistency'.
-    ls_map-code = 'LINT_0061'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'names_no_dash'.
-    ls_map-code = 'LINT_0062'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'nesting'.
-    ls_map-code = 'LINT_0063'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'newline_between_methods'.
-    ls_map-code = 'LINT_0064'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'no_public_attributes'.
-    ls_map-code = 'LINT_0065'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'object_naming'.
-    ls_map-code = 'LINT_0066'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'obsolete_statement'.
-    ls_map-code = 'LINT_0067'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'parser_error'.
-    ls_map-code = 'LINT_0068'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'parser_missing_space'.
-    ls_map-code = 'LINT_0069'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'prefer_inline'.
-    ls_map-code = 'LINT_0070'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'prefer_returning_to_exporting'.
-    ls_map-code = 'LINT_0071'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'preferred_compare_operator'.
-    ls_map-code = 'LINT_0072'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'prefix_is_current_class'.
-    ls_map-code = 'LINT_0073'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'reduce_string_templates'.
-    ls_map-code = 'LINT_0074'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'release_idoc'.
-    ls_map-code = 'LINT_0075'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'remove_descriptions'.
-    ls_map-code = 'LINT_0076'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'rfc_error_handling'.
-    ls_map-code = 'LINT_0077'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'selection_screen_naming'.
-    ls_map-code = 'LINT_0078'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'sequential_blank'.
-    ls_map-code = 'LINT_0079'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'short_case'.
-    ls_map-code = 'LINT_0080'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'sicf_consistency'.
-    ls_map-code = 'LINT_0081'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'space_before_colon'.
-    ls_map-code = 'LINT_0082'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'space_before_dot'.
-    ls_map-code = 'LINT_0083'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'sql_escape_host_variables'.
-    ls_map-code = 'LINT_0084'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'start_at_tab'.
-    ls_map-code = 'LINT_0085'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'superclass_final'.
-    ls_map-code = 'LINT_0086'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'tabl_enhancement_category'.
-    ls_map-code = 'LINT_0087'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'try_without_catch'.
-    ls_map-code = 'LINT_0088'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'type_form_parameters'.
-    ls_map-code = 'LINT_0089'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'types_naming'.
-    ls_map-code = 'LINT_0090'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'unknown_types'.
-    ls_map-code = 'LINT_0091'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'unreachable_code'.
-    ls_map-code = 'LINT_0092'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'unused_types'.
-    ls_map-code = 'LINT_0093'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'unused_variables'.
-    ls_map-code = 'LINT_0094'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'use_new'.
-    ls_map-code = 'LINT_0095'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'when_others_last'.
-    ls_map-code = 'LINT_0096'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'whitespace_end'.
-    ls_map-code = 'LINT_0097'.
-    INSERT ls_map INTO TABLE mt_map.
-    ls_map-rule = 'xml_consistency'.
-    ls_map-code = 'LINT_0098'.
-    INSERT ls_map INTO TABLE mt_map.
+    lv_map = '7bit_ascii,LINT_0001|abapdoc,LINT_0002|allowed_object_naming,LINT_0003|allowed_object_types,LINT_0004|'
+      && 'ambiguous_statement,LINT_0005|avoid_use,LINT_0006|begin_end_names,LINT_0007|begin_single_include,LINT_0008|'
+      && 'chain_mainly_declarations,LINT_0009|check_abstract,LINT_0010|check_comments,LINT_0011|check_ddic,LINT_0012|'
+      && 'check_include,LINT_0013|check_no_handler_pragma,LINT_0014|check_syntax,LINT_0015|check_text_elements,'
+      && 'LINT_0016|check_transformation_exists,LINT_0017|class_attribute_names,LINT_0018|cloud_types,LINT_0019|'
+      && 'colon_missing_space,LINT_0020|commented_code,LINT_0021|constructor_visibility_public,LINT_0022|'
+      && 'contains_tab,LINT_0023|definitions_top,LINT_0024|description_empty,LINT_0025|double_space,LINT_0026|'
+      && 'downport,LINT_0027|empty_line_in_statement,LINT_0028|empty_statement,LINT_0029|empty_structure,LINT_0030|'
+      && 'exit_or_check,LINT_0031|exporting,LINT_0032|forbidden_identifier,LINT_0033|forbidden_pseudo_and_pragma,'
+      && 'LINT_0034|forbidden_void_type,LINT_0035|form_tables_obsolete,LINT_0036|fully_type_constants,LINT_0037|'
+      && 'functional_writing,LINT_0038|global_class,LINT_0039|identical_form_names,LINT_0040|if_in_if,LINT_0041|'
+      && 'implement_methods,LINT_0042|in_statement_indentation,LINT_0043|indentation,LINT_0044|'
+      && 'inline_data_old_versions,LINT_0045|keep_single_parameter_on_one_line,LINT_0046|keyword_case,LINT_0047|'
+      && 'line_break_multiple_parameters,LINT_0048|line_break_style,LINT_0049|line_length,LINT_0050|line_only_punc,'
+      && 'LINT_0051|local_class_naming,LINT_0052|local_testclass_location,LINT_0053|local_variable_names,LINT_0054|'
+      && 'main_file_contents,LINT_0055|max_one_statement,LINT_0056|message_exists,LINT_0057|method_length,LINT_0058|'
+      && 'method_parameter_names,LINT_0059|mix_returning,LINT_0060|msag_consistency,LINT_0061|names_no_dash,'
+      && 'LINT_0062|nesting,LINT_0063|newline_between_methods,LINT_0064|no_public_attributes,LINT_0065|object_naming,'
+      && 'LINT_0066|obsolete_statement,LINT_0067|parser_error,LINT_0068|parser_missing_space,LINT_0069|prefer_inline,'
+      && 'LINT_0070|prefer_returning_to_exporting,LINT_0071|preferred_compare_operator,LINT_0072|'
+      && 'prefix_is_current_class,LINT_0073|reduce_string_templates,LINT_0074|release_idoc,LINT_0075|'
+      && 'remove_descriptions,LINT_0076|rfc_error_handling,LINT_0077|selection_screen_naming,LINT_0078|'
+      && 'sequential_blank,LINT_0079|short_case,LINT_0080|sicf_consistency,LINT_0081|space_before_colon,LINT_0082|'
+      && 'space_before_dot,LINT_0083|sql_escape_host_variables,LINT_0084|start_at_tab,LINT_0085|superclass_final,'
+      && 'LINT_0086|tabl_enhancement_category,LINT_0087|try_without_catch,LINT_0088|type_form_parameters,LINT_0089|'
+      && 'types_naming,LINT_0090|unknown_types,LINT_0091|unreachable_code,LINT_0092|unused_types,LINT_0093|'
+      && 'unused_variables,LINT_0094|use_new,LINT_0095|when_others_last,LINT_0096|whitespace_end,LINT_0097|'
+      && 'xml_consistency,LINT_0098'.
+
+    SPLIT lv_map AT '|' INTO TABLE lt_map.
+
+    LOOP AT lt_map INTO lv_map.
+      SPLIT lv_map AT ',' INTO ls_map-rule ls_map-code.
+      INSERT ls_map INTO TABLE mt_map.
+    ENDLOOP.
 
     SORT mt_map.
 
@@ -347,7 +90,7 @@ CLASS ZCL_ABAPLINT_RESULT IMPLEMENTATION.
 
   METHOD constructor.
 
-    super->constructor( p_kind              = p_kind
+    super->constructor( p_kind              = iv_kind
                         p_has_documentation = abap_true ).
 
   ENDMETHOD.

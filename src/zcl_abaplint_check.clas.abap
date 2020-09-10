@@ -125,7 +125,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     CREATE OBJECT p_result TYPE zcl_abaplint_result
       EXPORTING
-        p_kind = p_kind.
+        iv_kind = p_kind.
 
   ENDMETHOD.
 
