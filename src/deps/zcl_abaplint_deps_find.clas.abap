@@ -726,13 +726,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lt_tadir = convert_senvi_to_tadir( lt_environment ).
 
       IF lv_obj_type = 'FUGR' AND iv_minimal = abap_true.
-* function module parameter types cannot reference types in OO?
+        " function module parameter can reference types in OO
         DELETE lt_tadir WHERE ref_obj_type = 'PROG'
           OR ref_obj_type = 'TRAN'
           OR ref_obj_type = 'MSAG'
-          OR ref_obj_type = 'FUGR'
-          OR ref_obj_type = 'CLAS'
-          OR ref_obj_type = 'INTF'.
+          OR ref_obj_type = 'FUGR'.
       ENDIF.
     ENDIF.
 
