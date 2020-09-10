@@ -32,7 +32,7 @@ CLASS zcl_abaplint_result DEFINITION
       END OF ty_map .
 
     CLASS-DATA:
-      mt_map TYPE TABLE OF ty_map.
+      gt_map TYPE TABLE OF ty_map.
 ENDCLASS.
 
 
@@ -80,10 +80,10 @@ CLASS ZCL_ABAPLINT_RESULT IMPLEMENTATION.
 
     LOOP AT lt_map INTO lv_map.
       SPLIT lv_map AT ',' INTO ls_map-rule ls_map-code.
-      INSERT ls_map INTO TABLE mt_map.
+      INSERT ls_map INTO TABLE gt_map.
     ENDLOOP.
 
-    SORT mt_map.
+    SORT gt_map.
 
   ENDMETHOD.
 
@@ -110,7 +110,7 @@ CLASS ZCL_ABAPLINT_RESULT IMPLEMENTATION.
 
     DATA ls_map TYPE ty_map.
 
-    READ TABLE mt_map INTO ls_map WITH KEY code = iv_code.
+    READ TABLE gt_map INTO ls_map WITH KEY code = iv_code.
     IF sy-subrc = 0.
       rv_rule = ls_map-rule.
     ENDIF.
@@ -122,7 +122,7 @@ CLASS ZCL_ABAPLINT_RESULT IMPLEMENTATION.
 
     DATA ls_map TYPE ty_map.
 
-    READ TABLE mt_map INTO ls_map WITH KEY rule = iv_rule.
+    READ TABLE gt_map INTO ls_map WITH KEY rule = iv_rule.
     IF sy-subrc = 0.
       rv_code = ls_map-code.
     ENDIF.
