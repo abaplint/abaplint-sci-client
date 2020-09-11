@@ -110,6 +110,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     CREATE OBJECT lo_deps.
     lt_found = lo_deps->find(
       iv_depth       = ms_config-depth
+      iv_continue    = ms_config-conti
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
 
