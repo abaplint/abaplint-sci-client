@@ -33,6 +33,9 @@ Serialize dependencies of a package structure to git.
 
 **Warning:** Do not specify the git repository of the package as the target!
 
+To ensure that all where-used references for SAP objects are correct, run the Abap SAPRSEUB in background once.
+It is more efficient to have a seperate dependency repository for each AbapGit repository.
+
 For use in connection with static code analysis, method implementations of dependencies are excluded in the files.
 
 #### Example

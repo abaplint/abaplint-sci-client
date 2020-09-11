@@ -45,12 +45,6 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
       RETURNING
         VALUE(rt_code) TYPE abaptxt255_tab .
   PRIVATE SECTION.
-
-    CLASS-METHODS handle_special_abaps
-      IMPORTING
-        !iv_program_name TYPE programm
-      CHANGING
-        !cs_files_item   TYPE zcl_abapgit_objects=>ty_serialization .
 ENDCLASS.
 
 
@@ -255,42 +249,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD handle_special_abaps.
-
-    FIELD-SYMBOLS: <ls_file> LIKE LINE OF cs_files_item-files.
-
-    DATA: lv_abap TYPE string,
-          lt_abap TYPE abaptxt255_tab.
-
-    CASE iv_program_name.
-      WHEN 'IFRE_BEGIN_OF_RE_CLASSIC'.
-        READ TABLE cs_files_item-files ASSIGNING <ls_file> INDEX 1.
-        lv_abap = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
-        SPLIT lv_abap AT zif_abapgit_definitions=>c_newline INTO TABLE lt_abap.
-
-        APPEND '*ABAPLINT: Added line below to ensure that AbapLint can handle the code' TO lt_abap.
-        APPEND 'ENDIF.' TO lt_abap.
-
-        CONCATENATE LINES OF lt_abap INTO lv_abap SEPARATED BY zif_abapgit_definitions=>c_newline.
-*       when editing files via eg. GitHub web interface it adds a newline at end of file
-        lv_abap = lv_abap && zif_abapgit_definitions=>c_newline.
-        <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_abap ).
-      WHEN 'IFRE_END_OF_RE_CLASSIC'.
-        READ TABLE cs_files_item-files ASSIGNING <ls_file> INDEX 1.
-        lv_abap = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
-        SPLIT lv_abap AT zif_abapgit_definitions=>c_newline INTO TABLE lt_abap.
-
-        INSERT '*ABAPLINT: Added line below to ensure that AbapLint can handle the code' INTO lt_abap INDEX 1.
-        INSERT 'IF 1 = 0.' INTO lt_abap INDEX 2.
-
-        CONCATENATE LINES OF lt_abap INTO lv_abap SEPARATED BY zif_abapgit_definitions=>c_newline.
-*       when editing files via eg. GitHub web interface it adds a newline at end of file
-        lv_abap = lv_abap && zif_abapgit_definitions=>c_newline.
-        <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_abap ).
-    ENDCASE.
-  ENDMETHOD.
-
-
   METHOD serialize.
 
     DATA ls_tadir LIKE LINE OF it_tadir.
@@ -336,9 +294,10 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
         WHEN 'FUGR'.
           build_fugr( CHANGING cs_files = ls_files_item ).
         WHEN 'PROG'.
-          handle_special_abaps(
-            EXPORTING iv_program_name = ls_tadir-obj_name
-            CHANGING cs_files_item = ls_files_item ).
+          "Exit call
+          zcl_abaplint_exit=>get_instance( )->handle_special_abaps(
+                  EXPORTING iv_program_name = ls_tadir-obj_name
+                  CHANGING cs_files_item = ls_files_item ).
 
           build_prog( CHANGING cs_files = ls_files_item ).
         WHEN OTHERS.

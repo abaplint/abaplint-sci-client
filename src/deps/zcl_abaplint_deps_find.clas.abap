@@ -218,7 +218,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD convert_type_to_r3tr.
 
-    DATA ls_ko TYPE ko100.
     DATA lv_object TYPE trobjtype.
     DATA lv_object_name TYPE sobj_name.
     DATA ls_e071 TYPE e071.
@@ -280,6 +279,15 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       WHEN 'FUNC'.
         rs_object-object = 'FUGR'.
         rs_object-obj_name = iv_encl_object.
+      WHEN 'CUS0'.
+        rs_object-object = 'CUS0'.
+        rs_object-obj_name = iv_encl_object.
+      WHEN 'CUS1'.
+        rs_object-object = 'CUS1'.
+        rs_object-obj_name = iv_encl_object.
+      WHEN 'CUS2'.
+        rs_object-object = 'CUS2'.
+        rs_object-obj_name = iv_encl_object.
       WHEN OTHERS.
 
 * 2. Map WB type to TADIR
@@ -292,8 +300,16 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             no_mapping_found  = 1
             no_unique_mapping = 2
             OTHERS            = 3.
+        "Unknown type, try finding it via enclosing object in tadir
+        IF iv_encl_object IS NOT INITIAL AND sy-subrc = 1.
+          SELECT SINGLE object FROM tadir INTO lv_object
+            WHERE pgmid = 'R3TR'
+            AND object IN ('CLAS','ENHS','CUS0','CUS1','CUS2')
+            AND obj_name = iv_encl_object.
+        ENDIF.
         ASSERT sy-subrc = 0.
-        ASSERT lv_object = 'CLAS' OR lv_object = 'ENHS'. " testing
+        ASSERT lv_object = 'CLAS' OR lv_object = 'ENHS' OR
+          lv_object = 'CUS0' OR lv_object = 'CUS1' OR lv_object = 'CUS2'.
 
         lv_object_name = iv_encl_object.
         "Class vs. interface is not differenciated
@@ -314,8 +330,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         ENDIF.
 
         "3. Translate TADIR entry
-        ls_e071-pgmid = ls_ko-pgmid.
-        ls_e071-object = ls_ko-object.
+        ls_e071-pgmid = 'R3TR'.
+        ls_e071-object = lv_object.
         ls_e071-obj_name = lv_object_name.
         CALL FUNCTION 'TR_CHECK_TYPE'
           EXPORTING
@@ -536,6 +552,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_x030l TYPE x030l.
     DATA lv_tabname TYPE dd02l-tabname.
     DATA ls_tadir LIKE LINE OF rt_tadir.
+    DATA lv_clstype TYPE seoclass-clstype.
 
     lv_tabname = iv_name.
 
@@ -550,7 +567,17 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         not_found = 1
         OTHERS    = 2.
     IF sy-subrc = 0 AND NOT ls_x030l-refname IS INITIAL.
-      ls_tadir-ref_obj_type = 'DOMA'.
+      SELECT SINGLE clstype FROM seoclass INTO lv_clstype
+        WHERE clsname = ls_x030l-refname.
+      IF sy-subrc = 0.
+        IF lv_clstype = '1'.
+          ls_tadir-ref_obj_type = 'INTF'.
+        ELSE.
+          ls_tadir-ref_obj_type = 'CLAS'.
+        ENDIF.
+      ELSE.
+        ls_tadir-ref_obj_type = 'DOMA'.
+      ENDIF.
       ls_tadir-ref_obj_name = ls_x030l-refname.
       INSERT ls_tadir INTO TABLE rt_tadir.
     ENDIF.
@@ -643,6 +670,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lv_tabname TYPE dd02l-tabname.
     DATA ls_tadir LIKE LINE OF rt_tadir.
     DATA lt_x031l TYPE STANDARD TABLE OF x031l.
+    DATA lv_clstype TYPE seoclass-clstype.
 
     FIELD-SYMBOLS: <ls_x031l> LIKE LINE OF lt_x031l.
 
@@ -662,16 +690,31 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    LOOP AT lt_x031l ASSIGNING <ls_x031l>.
-      IF <ls_x031l>-fieldname(8) = '.INCLUDE' AND NOT <ls_x031l>-rollname IS INITIAL.
+    LOOP AT lt_x031l ASSIGNING <ls_x031l> WHERE NOT rollname IS INITIAL.
+      IF <ls_x031l>-fieldname(8) = '.INCLUDE'.
         ls_tadir-ref_obj_type = 'TABL'.
-        ls_tadir-ref_obj_name = <ls_x031l>-rollname.
-        INSERT ls_tadir INTO TABLE rt_tadir.
-      ELSEIF NOT <ls_x031l>-rollname IS INITIAL.
-        ls_tadir-ref_obj_type = 'DTEL'.
-        ls_tadir-ref_obj_name = <ls_x031l>-rollname.
-        INSERT ls_tadir INTO TABLE rt_tadir.
+      ELSE.
+        CASE <ls_x031l>-dtyp.
+          WHEN 'OREF'. "type ref to
+            SELECT SINGLE clstype FROM seoclass INTO lv_clstype
+              WHERE clsname = <ls_x031l>-rollname.
+            IF sy-subrc = 0 AND lv_clstype = '1'.
+              ls_tadir-ref_obj_type = 'INTF'.
+            ELSE.
+              ls_tadir-ref_obj_type = 'CLAS'.
+            ENDIF.
+          WHEN 'STR1'. "structure
+            ls_tadir-ref_obj_type = 'TABL'.
+          WHEN 'TTAB'. "table type
+            ls_tadir-ref_obj_type = 'TTYP'.
+          WHEN 'BREF'. "boxed
+            ls_tadir-ref_obj_type = 'TABL'.
+          WHEN OTHERS.
+            ls_tadir-ref_obj_type = 'DTEL'.
+        ENDCASE.
       ENDIF.
+      ls_tadir-ref_obj_name = <ls_x031l>-rollname.
+      INSERT ls_tadir INTO TABLE rt_tadir.
     ENDLOOP.
 
   ENDMETHOD.
@@ -749,13 +792,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lt_tadir = convert_senvi_to_tadir( lt_environment ).
 
       IF lv_obj_type = 'FUGR' AND iv_minimal = abap_true.
-* function module parameter types cannot reference types in OO?
+        " function module parameter can reference types in OO
         DELETE lt_tadir WHERE ref_obj_type = 'PROG'
           OR ref_obj_type = 'TRAN'
           OR ref_obj_type = 'MSAG'
-          OR ref_obj_type = 'FUGR'
-          OR ref_obj_type = 'CLAS'
-          OR ref_obj_type = 'INTF'.
+          OR ref_obj_type = 'FUGR'.
       ENDIF.
     ENDIF.
 
