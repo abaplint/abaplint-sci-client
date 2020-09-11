@@ -9,6 +9,7 @@ CLASS zcl_abaplint_deps DEFINITION
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
         !iv_depth       TYPE zabaplint_glob-depth
+        !iv_continue    TYPE zabaplint_glob-conti
       RETURNING
         VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt
       RAISING
@@ -32,6 +33,7 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
     CREATE OBJECT lo_serializer.
 
     ls_options-max_level = iv_depth.
+    ls_options-continue_into_sap = iv_continue.
     CREATE OBJECT lo_find EXPORTING is_options = ls_options.
 
     DATA lt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt.
