@@ -31,6 +31,19 @@
      <MASK>  INT4</MASK>
      <DDTEXT>Dependency depth</DDTEXT>
     </DD03P>
+    <DD03P>
+     <TABNAME>ZABAPLINT_GLOB_DATA</TABNAME>
+     <FIELDNAME>CONTI</FIELDNAME>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <POSITION>0003</POSITION>
+     <ADMINFIELD>0</ADMINFIELD>
+     <INTTYPE>C</INTTYPE>
+     <INTLEN>000002</INTLEN>
+     <DATATYPE>CHAR</DATATYPE>
+     <LENG>000001</LENG>
+     <MASK>  CHAR</MASK>
+     <DDTEXT>Continue into SAP objects</DDTEXT>
+    </DD03P>
    </DD03P_TABLE>
   </asx:values>
  </asx:abap>
