@@ -524,7 +524,7 @@ FORM status_2000.
     APPEND 'ADD_RAW' TO lt_exclude.
     APPEND 'ADD_GIT' TO lt_exclude.
     APPEND 'UPDATE_GIT' TO lt_exclude.
-    APPEND 'UPDATE_BCK' TO lt_exclude.
+    APPEND 'UPDATE_DEF' TO lt_exclude.
     APPEND 'DELETE' TO lt_exclude.
   ENDIF.
 
