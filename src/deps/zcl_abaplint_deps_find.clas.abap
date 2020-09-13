@@ -257,9 +257,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           rs_object-object = 'FUGR'.
           rs_object-obj_name = lv_area.
         ENDIF.
-      WHEN 'PARA' OR 'SUSO' OR 'TABL' OR 'CLAS' OR 'INTF' OR 'ENHS' OR 'ENHO' OR 'DTEL' OR 'TTYP' OR 'XSLT'
-        OR 'VIEW' OR 'TRAN' OR 'MSAG'.
-        rs_object-object   = iv_object_type.
+      WHEN 'PARA' OR 'SUSO' OR 'TABL' OR 'CLAS' OR 'INTF' OR 'ENHS' OR 'ENHO' OR 'DTEL'
+      OR 'TTYP' OR 'XSLT' OR 'VIEW' OR 'TRAN' OR 'MSAG'.
+        rs_object-object = iv_object_type.
         rs_object-obj_name = iv_object_name.
       WHEN 'STRU'.
         rs_object-object = 'TABL'.
@@ -273,7 +273,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         rs_object-object = 'FUGR'.
         rs_object-obj_name = iv_encl_object.
       WHEN 'CUS0' OR 'CUS1' OR 'CUS2'.
-        rs_object-object   = iv_object_type.
+        rs_object-object = iv_object_type.
         rs_object-obj_name = iv_encl_object.
       WHEN OTHERS.
         rs_object = convert_wbtype_to_r3tr( iv_object_type = iv_object_type
@@ -352,7 +352,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       rs_object-object = lv_object.
       rs_object-obj_name = lv_object_name.
     ENDIF.
-    
+
   ENDMETHOD.
 
 
