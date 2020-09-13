@@ -17,6 +17,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
       IMPORTING
         !iv_object_type TYPE trobjtype
         !iv_object_name TYPE sobj_name
+        !ii_log         TYPE REF TO zif_abapgit_log
       RETURNING
         VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
@@ -25,6 +26,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     METHODS find_by_packages
       IMPORTING
         !it_packages    TYPE tr_devclasses
+        !ii_log         TYPE REF TO zif_abapgit_log
       RETURNING
         VALUE(rt_tadir) TYPE zif_abapgit_definitions=>ty_tadir_tt
       RAISING
@@ -58,6 +60,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
       IMPORTING
         !iv_name        TYPE tadir-obj_name
         !iv_level       TYPE i
+        !ii_log         TYPE REF TO zif_abapgit_log
       CHANGING
         VALUE(ct_tadir) TYPE ty_tadir_tt
       RAISING
@@ -72,6 +75,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     METHODS find_tabl_dependencies
       IMPORTING
         !iv_name        TYPE tadir-obj_name
+        !ii_log         TYPE REF TO zif_abapgit_log
       RETURNING
         VALUE(rt_tadir) TYPE ty_tadir_tt
       RAISING
@@ -79,6 +83,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     METHODS find_dtel_dependencies
       IMPORTING
         !iv_name        TYPE tadir-obj_name
+        !ii_log         TYPE REF TO zif_abapgit_log
       RETURNING
         VALUE(rt_tadir) TYPE ty_tadir_tt .
     METHODS get_dependencies
@@ -86,6 +91,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !is_object  TYPE zif_abapgit_definitions=>ty_tadir
         !iv_minimal TYPE abap_bool DEFAULT abap_true
         !iv_level   TYPE i
+        !ii_log     TYPE REF TO zif_abapgit_log
       RAISING
         zcx_abaplint_error .
     METHODS resolve
@@ -216,6 +222,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_e071 TYPE e071.
     DATA ls_tadir TYPE tadir.
     DATA lv_clstype TYPE seoclstype.
+    DATA lv_program TYPE progname.
+    DATA lv_area TYPE rs38l_area.
 
     CLEAR rs_object.
     lv_object = iv_object_type.
@@ -225,6 +233,21 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       WHEN 'INCL' OR 'PROG'.
         rs_object-object = 'PROG'.
         rs_object-obj_name = lv_object_name.
+        " Check if it's a function group
+        lv_program = lv_object_name.
+        CALL FUNCTION 'FUNCTION_INCLUDE_CONCATENATE'
+          CHANGING
+            program                  = lv_program
+            complete_area            = lv_area
+          EXCEPTIONS
+            not_enough_input         = 1
+            no_function_pool         = 2
+            delimiter_wrong_position = 3
+            OTHERS                   = 4.
+        IF sy-subrc = 0.
+          rs_object-object = 'FUGR'.
+          rs_object-obj_name = lv_area.
+        ENDIF.
       WHEN 'PARA'.
         rs_object-object = 'PARA'.
         rs_object-obj_name = lv_object_name.
@@ -422,7 +445,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     get_dependencies(
       is_object  = ls_object
       iv_minimal = abap_false
-      iv_level   = 1 ).
+      iv_level   = 1
+      ii_log     = ii_log ).
 
     LOOP AT mt_results INTO ls_result.
       APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
@@ -474,7 +498,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       get_dependencies(
         is_object  = ls_object
         iv_minimal = abap_false
-        iv_level   = 1 ).
+        iv_level   = 1
+        ii_log     = ii_log ).
     ENDLOOP.
 
     clean_own_packages( ).
@@ -495,12 +520,13 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lt_wbcrossgt TYPE wbcrossgtt.
     DATA lv_clsname TYPE seoclsname.
     DATA lv_final TYPE abap_bool.
+    DATA lv_msg TYPE string.
 
     lv_clsname = |{ iv_name }|.
 
     SELECT SINGLE clsfinal FROM seoclassdf INTO lv_final WHERE clsname = lv_clsname AND version = '1'.
     IF sy-subrc <> 0.
-* class does not exist
+      " class does not exist
       RETURN.
     ENDIF.
 
@@ -514,7 +540,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       WHERE include = lt_includes-table_line
       AND name <> iv_name.
     IF lines( lt_wbcrossgt ) = 0.
-* update so it is correct in the next run
+      " update so it is correct in the next run
       update_index( lv_clsname ).
 
       SELECT * FROM wbcrossgt INTO CORRESPONDING FIELDS OF TABLE lt_wbcrossgt
@@ -530,9 +556,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         CHANGING
           ct_tadir     = ct_tadir ).
     ELSE.
+      lv_msg = |Max depth { ms_options-max_level } reached, class { lv_clsname }, exiting|.
+      ii_log->add_error( lv_msg ).
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING
-          message = |Max depth { ms_options-max_level } reached, class { lv_clsname }, exiting|.
+          message = lv_msg.
     ENDIF.
 
   ENDMETHOD.
@@ -559,7 +587,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       EXCEPTIONS
         not_found = 1
         OTHERS    = 2.
-    IF sy-subrc = 0 AND NOT ls_x030l-refname IS INITIAL.
+    IF sy-subrc <> 0.
+      ii_log->add_error( |Error reading nametab for { lv_tabname }| ).
+      RETURN.
+    ENDIF.
+
+    IF NOT ls_x030l-refname IS INITIAL.
       SELECT SINGLE clstype FROM seoclass INTO lv_clstype
         WHERE clsname = ls_x030l-refname.
       IF sy-subrc = 0.
@@ -625,6 +658,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_tadir LIKE LINE OF rt_tadir.
     DATA lt_x031l TYPE STANDARD TABLE OF x031l.
     DATA lv_clstype TYPE seoclass-clstype.
+    DATA lv_typekind TYPE ddtypes-typekind.
 
     FIELD-SYMBOLS: <ls_x031l> LIKE LINE OF lt_x031l.
 
@@ -641,6 +675,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         no_fields = 2
         OTHERS    = 3.
     IF sy-subrc <> 0.
+      ii_log->add_error( |Error reading nametab for { lv_tabname }| ).
       RETURN.
     ENDIF.
 
@@ -657,16 +692,28 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             ELSE.
               ls_tadir-ref_obj_type = 'CLAS'.
             ENDIF.
-          WHEN 'STR1'. "structure
+          WHEN 'STR1' OR 'STR2'. "structure
             ls_tadir-ref_obj_type = 'TABL'.
           WHEN 'TTAB'. "table type
             ls_tadir-ref_obj_type = 'TTYP'.
-          WHEN 'BREF'. "boxed
+          WHEN 'BREF' OR ''. "boxed or initial
             ls_tadir-ref_obj_type = 'TABL'.
           WHEN OTHERS.
             ls_tadir-ref_obj_type = 'DTEL'.
         ENDCASE.
       ENDIF.
+
+      " Get correct type of include structures
+      IF ls_tadir-ref_obj_type = 'TABL'.
+        SELECT SINGLE typekind FROM ddtypes INTO lv_typekind WHERE typename = <ls_x031l>-rollname.
+        IF sy-subrc = 0.
+          ls_tadir-ref_obj_type = lv_typekind.
+        ELSE.
+          ii_log->add_error( |Error reading ddtypes for { <ls_x031l>-rollname }| ).
+          CONTINUE.
+        ENDIF.
+      ENDIF.
+
       ls_tadir-ref_obj_name = <ls_x031l>-rollname.
       INSERT ls_tadir INTO TABLE rt_tadir.
     ENDLOOP.
@@ -679,9 +726,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA: lv_obj_type    TYPE euobj-id,
           lt_tadir       TYPE ty_tadir_tt,
           lt_environment TYPE senvi_tab,
-          lv_index       LIKE sy-tabix,
           ls_tadir       TYPE LINE OF ty_tadir_tt,
-          lv_flag        TYPE abap_bool,
+          ls_item        TYPE zif_abapgit_definitions=>ty_item,
+          lv_object      TYPE tadir-object,
+          lv_msg         TYPE string,
           lv_devclass    TYPE devclass,
           lv_delflag     TYPE objdelflag.
     DATA: BEGIN OF ls_tadir_obj,
@@ -695,12 +743,24 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_object TYPE zif_abapgit_definitions=>ty_tadir.
     DATA lv_level LIKE iv_level.
 
+    ls_item-obj_type = is_object-object.
+    ls_item-obj_name = is_object-obj_name.
+    ii_log->add_info( iv_msg  = |Level { iv_level }: Getting dependencies|
+                      is_item = ls_item ).
 
     IF is_object-object <> 'DEVC' OR is_object-obj_name(1) <> '$'.
       SELECT SINGLE object obj_name srcsystem author devclass genflag
         FROM tadir INTO CORRESPONDING FIELDS OF ls_tadir_obj
         WHERE pgmid = 'R3TR' AND object = is_object-object AND obj_name = is_object-obj_name.
-      IF sy-subrc <> 0 OR ls_tadir_obj-genflag = abap_true.
+      IF sy-subrc = 0.
+        IF ls_tadir_obj-genflag = abap_true.
+          ii_log->add_info( iv_msg  = |Object is marked as "generated" in TADIR and will be skipped|
+                            is_item = ls_item ).
+          RETURN.
+        ENDIF.
+      ELSE.
+        ii_log->add_warning( iv_msg  = |Object not found in TADIR|
+                             is_item = ls_item ).
         RETURN.
       ENDIF.
     ENDIF.
@@ -713,12 +773,15 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         EXPORTING
           iv_name  = is_object-obj_name
           iv_level = iv_level
+          ii_log   = ii_log
         CHANGING
           ct_tadir = lt_tadir ).
     ELSEIF is_object-object = 'TABL'.
-      lt_tadir = find_tabl_dependencies( is_object-obj_name ).
+      lt_tadir = find_tabl_dependencies( iv_name = is_object-obj_name
+                                         ii_log  = ii_log ).
     ELSEIF is_object-object = 'DTEL'.
-      lt_tadir = find_dtel_dependencies( is_object-obj_name ).
+      lt_tadir = find_dtel_dependencies( iv_name = is_object-obj_name
+                                         ii_log  = ii_log ).
     ELSE.
       lv_obj_type = is_object-object.
 
@@ -739,6 +802,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           not_executed      = 3
           OTHERS            = 4.
       IF sy-subrc = 3.
+        ii_log->add_warning( |Error getting environment for { is_object-obj_name }| ).
         RETURN.
       ENDIF.
       ASSERT sy-subrc = 0.
@@ -746,7 +810,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lt_tadir = convert_senvi_to_tadir( lt_environment ).
 
       IF lv_obj_type = 'FUGR' AND iv_minimal = abap_true.
-        " function module parameter can reference types in OO
+* function module parameter types cannot reference types in OO?
         DELETE lt_tadir WHERE ref_obj_type = 'PROG'
           OR ref_obj_type = 'TRAN'
           OR ref_obj_type = 'MSAG'
@@ -767,12 +831,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
     IF lines( mt_results ) > 0.
       LOOP AT lt_tadir INTO ls_tadir.
-        lv_index = sy-tabix.
         READ TABLE mt_results WITH KEY ref_obj_type = ls_tadir-ref_obj_type
                                        ref_obj_name = ls_tadir-ref_obj_name
                               TRANSPORTING NO FIELDS.
         IF sy-subrc = 0.
-          DELETE lt_tadir INDEX lv_index.
+          DELETE lt_tadir.
         ENDIF.
       ENDLOOP.
     ENDIF.
@@ -788,33 +851,41 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       IF ls_tadir-ref_obj_type = 'DEVC'. "sub packages are not handled otherwise
         CONTINUE.
       ENDIF.
-      lv_index = sy-tabix.
       lv_devclass = determine_package( iv_object_type = ls_tadir-ref_obj_type
                                        iv_object_name = ls_tadir-ref_obj_name ).
 
-      lv_flag = abap_true.
+      READ TABLE mt_packages FROM lv_devclass TRANSPORTING NO FIELDS.
       IF sy-subrc = 0.
-        READ TABLE mt_packages FROM lv_devclass TRANSPORTING NO FIELDS.
-        IF sy-subrc <> 0.
-          lv_flag = abap_false.
-        ENDIF.
-      ENDIF.
-      IF lv_flag = abap_true.
-        DELETE lt_tadir INDEX lv_index.
+        DELETE lt_tadir.
       ELSE.
         ls_tadir-devclass = lv_devclass.
-        MODIFY lt_tadir FROM ls_tadir INDEX lv_index.
+        MODIFY lt_tadir FROM ls_tadir.
       ENDIF.
     ENDLOOP.
 
-    "Remove entries without TADIR or with delete flag set
+    " Remove entries without TADIR or with delete flag set
     LOOP AT lt_tadir INTO ls_tadir.
       SELECT SINGLE delflag FROM tadir INTO lv_delflag
-        WHERE pgmid = 'R3TR'
-        AND object = ls_tadir-ref_obj_type
-        AND obj_name = ls_tadir-ref_obj_name.
-      IF sy-subrc <> 0 OR lv_delflag IS NOT INITIAL.
-        MESSAGE s005(zabaplint) WITH ls_tadir-ref_obj_type ls_tadir-ref_obj_name.
+        WHERE pgmid = 'R3TR' AND object = ls_tadir-ref_obj_type AND obj_name = ls_tadir-ref_obj_name.
+      IF sy-subrc = 0.
+        IF lv_delflag = abap_true.
+          MESSAGE s007(zabaplint) WITH ls_tadir-ref_obj_type ls_tadir-ref_obj_name INTO lv_msg.
+          ii_log->add_warning( iv_msg  = lv_msg
+                               is_item = ls_item ).
+          DELETE lt_tadir.
+        ENDIF.
+      ELSE.
+        " Check if this object exists with another type
+        " This would indicate an error in getting the right dependencies
+        SELECT SINGLE object FROM tadir INTO lv_object
+          WHERE pgmid = 'R3TR' AND obj_name = ls_tadir-ref_obj_name.
+        IF sy-subrc = 0.
+          MESSAGE s006(zabaplint) WITH ls_tadir-ref_obj_type ls_tadir-ref_obj_name lv_object INTO lv_msg.
+        ELSE.
+          MESSAGE s005(zabaplint) WITH ls_tadir-ref_obj_type ls_tadir-ref_obj_name INTO lv_msg.
+        ENDIF.
+        ii_log->add_warning( iv_msg  = lv_msg
+                             is_item = ls_item ).
         DELETE lt_tadir.
       ENDIF.
     ENDLOOP.
@@ -844,7 +915,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
         get_dependencies(
           is_object  = ls_object
-          iv_level   = lv_level ).
+          iv_level   = lv_level
+          ii_log     = ii_log ).
       ENDLOOP.
     ENDIF.
   ENDMETHOD.
@@ -1005,6 +1077,11 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     LOOP AT it_wbcrossgt INTO ls_wbcrossgt.
       CASE ls_wbcrossgt-otype.
         WHEN 'TY'.
+          " Skip class-specific types since DDIC types they refer to are already in wbcrossgt
+          IF ls_wbcrossgt-name CS '\TY:'.
+            CONTINUE.
+          ENDIF.
+
           SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = ls_wbcrossgt-name(30).
           IF sy-subrc <> 0.
             "Decide if Enhancement Spot
