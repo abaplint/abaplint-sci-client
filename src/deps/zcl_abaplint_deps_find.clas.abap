@@ -648,7 +648,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA ls_tadir LIKE LINE OF rt_tadir.
     DATA lt_x031l TYPE STANDARD TABLE OF x031l.
     DATA lv_clstype TYPE seoclass-clstype.
-    DATA lv_typekind TYPE ddtypes-typekind.
 
     FIELD-SYMBOLS: <ls_x031l> LIKE LINE OF lt_x031l.
 
@@ -682,28 +681,16 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             ELSE.
               ls_tadir-ref_obj_type = 'CLAS'.
             ENDIF.
-          WHEN 'STR1' OR 'STR2'. "structure
+          WHEN 'STR1'. "structure
             ls_tadir-ref_obj_type = 'TABL'.
           WHEN 'TTAB'. "table type
             ls_tadir-ref_obj_type = 'TTYP'.
-          WHEN 'BREF' OR ''. "boxed or initial
+          WHEN 'BREF'. "boxed
             ls_tadir-ref_obj_type = 'TABL'.
           WHEN OTHERS.
             ls_tadir-ref_obj_type = 'DTEL'.
         ENDCASE.
       ENDIF.
-
-      " Get correct type of include structures
-      IF ls_tadir-ref_obj_type = 'TABL'.
-        SELECT SINGLE typekind FROM ddtypes INTO lv_typekind WHERE typename = <ls_x031l>-rollname.
-        IF sy-subrc = 0.
-          ls_tadir-ref_obj_type = lv_typekind.
-        ELSE.
-          ii_log->add_error( |Error reading ddtypes for { <ls_x031l>-rollname }| ).
-          CONTINUE.
-        ENDIF.
-      ENDIF.
-
       ls_tadir-ref_obj_name = <ls_x031l>-rollname.
       INSERT ls_tadir INTO TABLE rt_tadir.
     ENDLOOP.
@@ -715,6 +702,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     DATA: lt_tadir    TYPE ty_tadir_tt,
           ls_tadir    TYPE LINE OF ty_tadir_tt,
+          lv_index    LIKE sy-tabix,
+          lv_flag     TYPE abap_bool,
           ls_item     TYPE zif_abapgit_definitions=>ty_item,
           lv_object   TYPE tadir-object,
           lv_msg      TYPE string,
@@ -789,11 +778,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 *
     IF lines( mt_results ) > 0.
       LOOP AT lt_tadir INTO ls_tadir.
+        lv_index = sy-tabix.      
         READ TABLE mt_results WITH KEY ref_obj_type = ls_tadir-ref_obj_type
                                        ref_obj_name = ls_tadir-ref_obj_name
                               TRANSPORTING NO FIELDS.
         IF sy-subrc = 0.
-          DELETE lt_tadir.
+          DELETE lt_tadir INDEX lv_index.
         ENDIF.
       ENDLOOP.
     ENDIF.
@@ -809,14 +799,24 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       IF ls_tadir-ref_obj_type = 'DEVC'. "sub packages are not handled otherwise
         CONTINUE.
       ENDIF.
+      lv_index = sy-tabix.
       lv_devclass = determine_package( iv_object_type = ls_tadir-ref_obj_type
                                        iv_object_name = ls_tadir-ref_obj_name ).
 
+      lv_flag = abap_true.
       READ TABLE mt_packages FROM lv_devclass TRANSPORTING NO FIELDS.
       IF sy-subrc = 0.
+        READ TABLE mt_packages FROM lv_devclass TRANSPORTING NO FIELDS.
+        IF sy-subrc <> 0.
+          lv_flag = abap_false.
+        ENDIF.
+      ENDIF.
+      IF lv_flag = abap_true.
+        DELETE lt_tadir INDEX lv_index.
         DELETE lt_tadir.
       ELSE.
         ls_tadir-devclass = lv_devclass.
+        MODIFY lt_tadir FROM ls_tadir INDEX lv_index.
         MODIFY lt_tadir FROM ls_tadir.
       ENDIF.
     ENDLOOP.
@@ -1078,11 +1078,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     LOOP AT it_wbcrossgt INTO ls_wbcrossgt.
       CASE ls_wbcrossgt-otype.
         WHEN 'TY'.
-          " Skip class-specific types since DDIC types they refer to are already in wbcrossgt
-          IF ls_wbcrossgt-name CS '\TY:'.
-            CONTINUE.
-          ENDIF.
-
           SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = ls_wbcrossgt-name(30).
           IF sy-subrc <> 0.
             "Decide if Enhancement Spot
