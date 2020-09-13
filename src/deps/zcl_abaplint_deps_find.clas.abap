@@ -233,30 +233,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD convert_type_to_r3tr.
 
-    DATA lv_program TYPE progname.
-    DATA lv_area TYPE rs38l_area.
-
     CLEAR rs_object.
 
     CASE iv_object_type.
       WHEN 'INCL' OR 'PROG'.
         rs_object-object = 'PROG'.
         rs_object-obj_name = iv_object_name.
-        " Check if it's a function group
-        lv_program = iv_object_name.
-        CALL FUNCTION 'FUNCTION_INCLUDE_CONCATENATE'
-          CHANGING
-            program                  = lv_program
-            complete_area            = lv_area
-          EXCEPTIONS
-            not_enough_input         = 1
-            no_function_pool         = 2
-            delimiter_wrong_position = 3
-            OTHERS                   = 4.
-        IF sy-subrc = 0.
-          rs_object-object = 'FUGR'.
-          rs_object-obj_name = lv_area.
-        ENDIF.
       WHEN 'PARA' OR 'SUSO' OR 'TABL' OR 'CLAS' OR 'INTF' OR 'ENHS' OR 'ENHO' OR 'DTEL'.
         rs_object-object = iv_object_type.
         rs_object-obj_name = iv_object_name.
@@ -802,9 +784,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lv_index = sy-tabix.
       lv_devclass = determine_package( iv_object_type = ls_tadir-ref_obj_type
                                        iv_object_name = ls_tadir-ref_obj_name ).
-
       lv_flag = abap_true.
-      READ TABLE mt_packages FROM lv_devclass TRANSPORTING NO FIELDS.
       IF sy-subrc = 0.
         READ TABLE mt_packages FROM lv_devclass TRANSPORTING NO FIELDS.
         IF sy-subrc <> 0.
@@ -813,11 +793,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       ENDIF.
       IF lv_flag = abap_true.
         DELETE lt_tadir INDEX lv_index.
-        DELETE lt_tadir.
       ELSE.
         ls_tadir-devclass = lv_devclass.
         MODIFY lt_tadir FROM ls_tadir INDEX lv_index.
-        MODIFY lt_tadir FROM ls_tadir.
       ENDIF.
     ENDLOOP.
 
