@@ -14,12 +14,27 @@ START-OF-SELECTION.
 
 FORM run RAISING zcx_abapgit_exception zcx_abaplint_error.
 
-  DATA ls_data TYPE ty_data.
-  DATA lv_xstr TYPE xstring.
+  DATA ls_data    TYPE ty_data.
+  DATA lv_xstr    TYPE xstring.
 
   PERFORM find CHANGING ls_data.
+  PERFORM fix_config CHANGING ls_data-config.
   PERFORM zip USING ls_data CHANGING lv_xstr.
   PERFORM save USING lv_xstr.
+
+ENDFORM.
+
+FORM fix_config CHANGING cv_config TYPE string.
+
+  DATA lv_start   TYPE i.
+  DATA lv_replace TYPE string.
+  DATA lv_end     TYPE i.
+
+  FIND FIRST OCCURRENCE OF '"dependencies": [' IN cv_config MATCH OFFSET lv_start.
+  FIND FIRST OCCURRENCE OF '],' IN cv_config MATCH OFFSET lv_end.
+  lv_replace = |"dependencies": [\{"folder": "/deps", "files": "/**/*.*"\}],|.
+  lv_end = lv_end + 2.
+  cv_config = cv_config(lv_start) && lv_replace && cv_config+lv_end.
 
 ENDFORM.
 
@@ -33,7 +48,7 @@ FORM save USING iv_xstr TYPE xstring RAISING zcx_abapgit_exception.
   lv_path = zcl_abapgit_ui_factory=>get_frontend_services( )->show_file_save_dialog(
     iv_title            = 'Save'
     iv_extension        = 'zip'
-    iv_default_filename = 'abaplint-sci-client-data.zip' ).
+    iv_default_filename = |abaplint-sci-client-data-{ p_type }-{ p_name }.zip| ).
 
   zcl_abapgit_ui_factory=>get_frontend_services( )->file_download(
     iv_path = lv_path
