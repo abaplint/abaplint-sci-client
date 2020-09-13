@@ -94,6 +94,15 @@ CLASS zcl_abaplint_deps_find DEFINITION
         !ii_log     TYPE REF TO zif_abapgit_log
       RAISING
         zcx_abaplint_error .
+    METHODS get_environment
+      IMPORTING
+        !is_object      TYPE zif_abapgit_definitions=>ty_tadir
+        !iv_minimal     TYPE abap_bool DEFAULT abap_true
+        !ii_log         TYPE REF TO zif_abapgit_log
+      RETURNING
+        VALUE(rt_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
     METHODS resolve
       IMPORTING
         !it_wbcrossgt TYPE wbcrossgtt
@@ -120,6 +129,13 @@ CLASS zcl_abaplint_deps_find DEFINITION
       IMPORTING
         !it_packages TYPE tr_devclasses .
     METHODS convert_type_to_r3tr
+      IMPORTING
+        !iv_object_type  TYPE trobjtype
+        !iv_object_name  TYPE sobj_name
+        !iv_encl_object  TYPE sobj_name
+      RETURNING
+        VALUE(rs_object) TYPE zif_abapgit_definitions=>ty_tadir .
+    METHODS convert_wbtype_to_r3tr
       IMPORTING
         !iv_object_type  TYPE trobjtype
         !iv_object_name  TYPE sobj_name
@@ -217,24 +233,17 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD convert_type_to_r3tr.
 
-    DATA lv_object TYPE trobjtype.
-    DATA lv_object_name TYPE sobj_name.
-    DATA ls_e071 TYPE e071.
-    DATA ls_tadir TYPE tadir.
-    DATA lv_clstype TYPE seoclstype.
     DATA lv_program TYPE progname.
     DATA lv_area TYPE rs38l_area.
 
     CLEAR rs_object.
-    lv_object = iv_object_type.
-    lv_object_name = iv_object_name.
 
-    CASE lv_object.
+    CASE iv_object_type.
       WHEN 'INCL' OR 'PROG'.
         rs_object-object = 'PROG'.
-        rs_object-obj_name = lv_object_name.
+        rs_object-obj_name = iv_object_name.
         " Check if it's a function group
-        lv_program = lv_object_name.
+        lv_program = iv_object_name.
         CALL FUNCTION 'FUNCTION_INCLUDE_CONCATENATE'
           CHANGING
             program                  = lv_program
@@ -248,123 +257,102 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           rs_object-object = 'FUGR'.
           rs_object-obj_name = lv_area.
         ENDIF.
-      WHEN 'PARA'.
-        rs_object-object = 'PARA'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'SUSO'.
-        rs_object-object = 'SUSO'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'STRU' OR 'TABL'.
+      WHEN 'PARA' OR 'SUSO' OR 'TABL' OR 'CLAS' OR 'INTF' OR 'ENHS' OR 'ENHO' OR 'DTEL' OR 'TTYP' OR 'XSLT'
+        OR 'VIEW' OR 'TRAN' OR 'MSAG'.
+        rs_object-object   = iv_object_type.
+        rs_object-obj_name = iv_object_name.
+      WHEN 'STRU'.
         rs_object-object = 'TABL'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'CLAS'.
-        rs_object-object = 'CLAS'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'INTF'.
-        rs_object-object = 'INTF'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'ENHS'.
-        rs_object-object = 'ENHS'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'ENHO'.
-        rs_object-object = 'ENHO'.
-        rs_object-obj_name = lv_object_name.
+        rs_object-obj_name = iv_object_name.
       WHEN 'SQLT'.
         "Not Supported
-      WHEN 'DTEL'.
-        rs_object-object = 'DTEL'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'TTYP'.
-        rs_object-object = 'TTYP'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'XSLT'.
-        rs_object-object = 'XSLT'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'VIEW'.
-        rs_object-object = 'VIEW'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'TRAN'.
-        rs_object-object = 'TRAN'.
-        rs_object-obj_name = lv_object_name.
-      WHEN 'MSAG'.
-        rs_object-object = 'MSAG'.
-        rs_object-obj_name = lv_object_name.
       WHEN 'MESS'.
         rs_object-object = 'MSAG'.
         rs_object-obj_name = iv_encl_object.
       WHEN 'FUNC'.
         rs_object-object = 'FUGR'.
         rs_object-obj_name = iv_encl_object.
-      WHEN 'CUS0'.
-        rs_object-object = 'CUS0'.
-        rs_object-obj_name = iv_encl_object.
-      WHEN 'CUS1'.
-        rs_object-object = 'CUS1'.
-        rs_object-obj_name = iv_encl_object.
-      WHEN 'CUS2'.
-        rs_object-object = 'CUS2'.
+      WHEN 'CUS0' OR 'CUS1' OR 'CUS2'.
+        rs_object-object   = iv_object_type.
         rs_object-obj_name = iv_encl_object.
       WHEN OTHERS.
-
-* 2. Map WB type to TADIR
-        CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
-          EXPORTING
-            wb_objtype        = lv_object(3)
-          IMPORTING
-            transport_objtype = lv_object
-          EXCEPTIONS
-            no_mapping_found  = 1
-            no_unique_mapping = 2
-            OTHERS            = 3.
-        "Unknown type, try finding it via enclosing object in tadir
-        IF iv_encl_object IS NOT INITIAL AND sy-subrc = 1.
-          SELECT SINGLE object FROM tadir INTO lv_object
-            WHERE pgmid = 'R3TR'
-            AND object IN ('CLAS','ENHS','CUS0','CUS1','CUS2')
-            AND obj_name = iv_encl_object.
-        ENDIF.
-        ASSERT sy-subrc = 0.
-        ASSERT lv_object = 'CLAS' OR lv_object = 'ENHS' OR
-          lv_object = 'CUS0' OR lv_object = 'CUS1' OR lv_object = 'CUS2'.
-
-        lv_object_name = iv_encl_object.
-        "Class vs. interface is not differenciated
-        IF lv_object = 'CLAS'.
-          "Decide if interface / class
-          SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
-          IF sy-subrc = 0.
-            IF lv_clstype = seoc_clstype_interface.
-              lv_object = 'INTF'.
-            ENDIF.
-          ELSE.
-            "Decide if Enhancement Spot
-            SELECT COUNT( * ) FROM badi_spot WHERE badi_name = lv_object_name.
-            IF sy-subrc = 0.
-              lv_object = 'ENHS'.
-            ENDIF.
-          ENDIF.
-        ENDIF.
-
-        "3. Translate TADIR entry
-        ls_e071-pgmid = 'R3TR'.
-        ls_e071-object = lv_object.
-        ls_e071-obj_name = lv_object_name.
-        CALL FUNCTION 'TR_CHECK_TYPE'
-          EXPORTING
-            wi_e071              = ls_e071
-            iv_translate_objname = 'X'
-          IMPORTING
-            we_tadir             = ls_tadir.
-        ASSERT sy-subrc = 0. "Type must exist
-        lv_object = ls_tadir-object.
-        lv_object_name = ls_tadir-obj_name.
-
-        "Object name empty -> does not exist
-        IF lv_object_name IS NOT INITIAL.
-          rs_object-object = lv_object.
-          rs_object-obj_name = lv_object_name.
-        ENDIF.
+        rs_object = convert_wbtype_to_r3tr( iv_object_type = iv_object_type
+                                            iv_object_name = iv_object_name
+                                            iv_encl_object = iv_encl_object ).
     ENDCASE.
+  ENDMETHOD.
+
+
+  METHOD convert_wbtype_to_r3tr.
+
+    DATA:
+      lv_object      TYPE trobjtype,
+      lv_object_name TYPE sobj_name,
+      ls_e071        TYPE e071,
+      ls_tadir       TYPE tadir,
+      lv_clstype     TYPE seoclstype.
+
+    " Map WB type to TADIR
+    CALL FUNCTION 'GET_TADIR_TYPE_FROM_WB_TYPE'
+      EXPORTING
+        wb_objtype        = iv_object_type(3)
+      IMPORTING
+        transport_objtype = lv_object
+      EXCEPTIONS
+        no_mapping_found  = 1
+        no_unique_mapping = 2
+        OTHERS            = 3.
+    " Unknown type, try finding it via enclosing object in tadir
+    IF iv_encl_object IS NOT INITIAL AND sy-subrc = 1.
+      SELECT SINGLE object FROM tadir INTO lv_object
+        WHERE pgmid = 'R3TR'
+        AND object IN ('CLAS','ENHS','CUS0','CUS1','CUS2')
+        AND obj_name = iv_encl_object.
+    ENDIF.
+    ASSERT sy-subrc = 0.
+    ASSERT lv_object = 'CLAS' OR lv_object = 'ENHS' OR
+      lv_object = 'CUS0' OR lv_object = 'CUS1' OR lv_object = 'CUS2'.
+
+    lv_object_name = iv_encl_object.
+    " Class vs. interface is not differenciated
+    IF lv_object = 'CLAS'.
+      " Decide if interface / class
+      SELECT SINGLE clstype FROM seoclass INTO lv_clstype WHERE clsname = lv_object_name.
+      IF sy-subrc = 0.
+        IF lv_clstype = seoc_clstype_interface.
+          lv_object = 'INTF'.
+        ENDIF.
+      ELSE.
+        " Decide if Enhancement Spot
+        SELECT SINGLE badi_name FROM badi_spot INTO lv_object_name WHERE badi_name = lv_object_name.
+        IF sy-subrc = 0.
+          lv_object = 'ENHS'.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+
+    " Translate TADIR entry
+    ls_e071-pgmid = 'R3TR'.
+    ls_e071-object = lv_object.
+    ls_e071-obj_name = lv_object_name.
+
+    CALL FUNCTION 'TR_CHECK_TYPE'
+      EXPORTING
+        wi_e071              = ls_e071
+        iv_translate_objname = 'X'
+      IMPORTING
+        we_tadir             = ls_tadir.
+    ASSERT sy-subrc = 0. "Type must exist
+
+    lv_object = ls_tadir-object.
+    lv_object_name = ls_tadir-obj_name.
+
+    " Object name empty -> does not exist
+    IF lv_object_name IS NOT INITIAL.
+      rs_object-object = lv_object.
+      rs_object-obj_name = lv_object_name.
+    ENDIF.
+    
   ENDMETHOD.
 
 
@@ -723,15 +711,13 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD get_dependencies.
 
-    DATA: lv_obj_type    TYPE euobj-id,
-          lt_tadir       TYPE ty_tadir_tt,
-          lt_environment TYPE senvi_tab,
-          ls_tadir       TYPE LINE OF ty_tadir_tt,
-          ls_item        TYPE zif_abapgit_definitions=>ty_item,
-          lv_object      TYPE tadir-object,
-          lv_msg         TYPE string,
-          lv_devclass    TYPE devclass,
-          lv_delflag     TYPE objdelflag.
+    DATA: lt_tadir    TYPE ty_tadir_tt,
+          ls_tadir    TYPE LINE OF ty_tadir_tt,
+          ls_item     TYPE zif_abapgit_definitions=>ty_item,
+          lv_object   TYPE tadir-object,
+          lv_msg      TYPE string,
+          lv_devclass TYPE devclass,
+          lv_delflag  TYPE objdelflag.
     DATA: BEGIN OF ls_tadir_obj,
             object    TYPE trobjtype,
             obj_name  TYPE sobj_name,
@@ -783,39 +769,9 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lt_tadir = find_dtel_dependencies( iv_name = is_object-obj_name
                                          ii_log  = ii_log ).
     ELSE.
-      lv_obj_type = is_object-object.
-
-* never call with package as input, its out of our control
-      ASSERT lv_obj_type <> 'DEVC'.
-
-      CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
-        EXPORTING
-          obj_type          = lv_obj_type
-          object_name       = is_object-obj_name
-          environment_types = ms_types
-          online_force      = 'X'
-        TABLES
-          environment       = lt_environment
-        EXCEPTIONS
-          batch             = 1
-          batchjob_error    = 2
-          not_executed      = 3
-          OTHERS            = 4.
-      IF sy-subrc = 3.
-        ii_log->add_warning( |Error getting environment for { is_object-obj_name }| ).
-        RETURN.
-      ENDIF.
-      ASSERT sy-subrc = 0.
-
-      lt_tadir = convert_senvi_to_tadir( lt_environment ).
-
-      IF lv_obj_type = 'FUGR' AND iv_minimal = abap_true.
-* function module parameter types cannot reference types in OO?
-        DELETE lt_tadir WHERE ref_obj_type = 'PROG'
-          OR ref_obj_type = 'TRAN'
-          OR ref_obj_type = 'MSAG'
-          OR ref_obj_type = 'FUGR'.
-      ENDIF.
+      lt_tadir = get_environment( is_object  = is_object
+                                  iv_minimal = iv_minimal
+                                  ii_log     = ii_log ).
     ENDIF.
 
     IF is_object-object = 'PROG'.
@@ -919,6 +875,49 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           ii_log     = ii_log ).
       ENDLOOP.
     ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_environment.
+
+    DATA:
+      lv_obj_type    TYPE euobj-id,
+      lt_environment TYPE senvi_tab.
+
+    lv_obj_type = is_object-object.
+
+    " Never call with package as input, its out of our control
+    ASSERT lv_obj_type <> 'DEVC'.
+
+    CALL FUNCTION 'REPOSITORY_ENVIRONMENT_SET'
+      EXPORTING
+        obj_type          = lv_obj_type
+        object_name       = is_object-obj_name
+        environment_types = ms_types
+        online_force      = 'X'
+      TABLES
+        environment       = lt_environment
+      EXCEPTIONS
+        batch             = 1
+        batchjob_error    = 2
+        not_executed      = 3
+        OTHERS            = 4.
+    IF sy-subrc = 3.
+      ii_log->add_warning( |Error getting environment for { is_object-obj_name }| ).
+      RETURN.
+    ENDIF.
+    ASSERT sy-subrc = 0.
+
+    rt_tadir = convert_senvi_to_tadir( lt_environment ).
+
+    IF lv_obj_type = 'FUGR' AND iv_minimal = abap_true.
+      " Function module parameter types cannot reference types in OO?
+      DELETE rt_tadir WHERE ref_obj_type = 'PROG'
+        OR ref_obj_type = 'TRAN'
+        OR ref_obj_type = 'MSAG'
+        OR ref_obj_type = 'FUGR'.
+    ENDIF.
+
   ENDMETHOD.
 
 
