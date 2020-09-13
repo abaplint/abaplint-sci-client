@@ -92,7 +92,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    rv_config = zcl_abaplint_configuration=>find_from_package( lv_devclass ).
+    rv_config = find_from_package( lv_devclass ).
 
   ENDMETHOD.
 
