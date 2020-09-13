@@ -15,14 +15,53 @@ START-OF-SELECTION.
 FORM run RAISING zcx_abapgit_exception zcx_abaplint_error.
 
   DATA ls_data TYPE ty_data.
+  DATA lv_xstr TYPE xstring.
 
   PERFORM find CHANGING ls_data.
-  BREAK-POINT.
-  PERFORM zip USING ls_data.
+  PERFORM zip USING ls_data CHANGING lv_xstr.
+  PERFORM save USING lv_xstr.
 
 ENDFORM.
 
-FORM zip USING ls_data TYPE ty_data.
+FORM save USING iv_xstr TYPE xstring RAISING zcx_abapgit_exception.
+
+  DATA: lo_zip      TYPE REF TO cl_abap_zip,
+        lv_xstr     TYPE xstring,
+        lv_path     TYPE string,
+        lv_filename TYPE string.
+
+  lv_path = zcl_abapgit_ui_factory=>get_frontend_services( )->show_file_save_dialog(
+    iv_title            = 'Save'
+    iv_extension        = 'zip'
+    iv_default_filename = 'abaplint-sci-client-data.zip' ).
+
+  zcl_abapgit_ui_factory=>get_frontend_services( )->file_download(
+    iv_path = lv_path
+    iv_xstr = iv_xstr ).
+
+ENDFORM.
+
+FORM zip USING is_data TYPE ty_data CHANGING cv_xstr TYPE xstring.
+
+  DATA lo_zip TYPE REF TO cl_abap_zip.
+  DATA ls_file LIKE LINE OF is_data-deps.
+
+  CREATE OBJECT lo_zip.
+  lo_zip->add( name    = 'abaplint.json'
+               content = zcl_abapgit_convert=>string_to_xstring_utf8( is_data-config ) ).
+
+  LOOP AT is_data-deps INTO ls_file.
+    REPLACE FIRST OCCURRENCE OF '/src/' IN ls_file-path WITH 'deps/'.
+    lo_zip->add( name    = |{ ls_file-path }{ ls_file-filename }|
+                 content = ls_file-data ).
+  ENDLOOP.
+
+  LOOP AT is_data-object-files INTO ls_file.
+    lo_zip->add( name    = |src{ ls_file-path }{ ls_file-filename }|
+                 content = ls_file-data ).
+  ENDLOOP.
+
+  cv_xstr = lo_zip->save( ).
 
 ENDFORM.
 
