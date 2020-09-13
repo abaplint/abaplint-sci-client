@@ -7,7 +7,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
     METHODS constructor
       IMPORTING
         !iv_git_url     TYPE string
-        !iv_packages    TYPE tab_packages
+        !it_packages    TYPE tab_packages
         !iv_git_name    TYPE string
         !iv_git_email   TYPE string
         !iv_git_comment TYPE string .
@@ -29,7 +29,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
 
     DATA mv_branch TYPE string .
     DATA mv_git_url TYPE string .
-    DATA mv_packages TYPE tab_packages .
+    DATA mt_packages TYPE tab_packages .
     DATA mv_git_name TYPE string .
     DATA mv_git_email TYPE string .
     DATA mv_git_comment TYPE string .
@@ -110,7 +110,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
   METHOD constructor.
 
     mv_git_url = iv_git_url.
-    mv_packages = iv_packages.
+    mt_packages = it_packages.
     mv_branch  = 'refs/heads/master'.
     mv_git_name = iv_git_name.
     mv_git_email = iv_git_email.
@@ -126,6 +126,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     DATA lt_tadir TYPE zif_abapgit_definitions=>ty_tadir_tt.
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
+    DATA li_log TYPE REF TO zif_abapgit_log.
 
     ls_options-max_level = mv_depth.
 
@@ -133,8 +134,10 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       EXPORTING
         is_options = ls_options.
     CREATE OBJECT lo_dep_ser.
+    CREATE OBJECT li_log TYPE zcl_abapgit_log.
 
-    lt_tadir = lo_dep_find->find_by_packages( mv_packages ).
+    lt_tadir = lo_dep_find->find_by_packages( it_packages = mt_packages
+                                              ii_log      = li_log ).
     APPEND LINES OF it_additional TO lt_tadir.
     lt_local = lo_dep_ser->serialize( lt_tadir ).
     APPEND LINES OF lt_local TO rt_local.

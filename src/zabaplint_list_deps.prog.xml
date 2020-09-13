@@ -53,6 +53,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_LOG</KEY>
+     <ENTRY>Display log</ENTRY>
+     <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_NAME</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>19</LENGTH>

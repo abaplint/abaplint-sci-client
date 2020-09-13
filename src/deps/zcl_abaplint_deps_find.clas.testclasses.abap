@@ -3,6 +3,8 @@ CLASS ltcl_find_by_item DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLES
   PRIVATE SECTION.
     DATA:
       mo_cut TYPE REF TO zcl_abaplint_deps_find.
+    DATA:
+      mo_log TYPE REF TO zif_abapgit_log.
 
     METHODS:
       setup,
@@ -27,6 +29,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
       EXPORTING
         is_options = ls_options.
 
+    CREATE OBJECT mo_log TYPE zcl_abapgit_log.
   ENDMETHOD.
 
   METHOD txmilograw.
@@ -35,7 +38,8 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'TABL'
-      iv_object_name = 'TXMILOGRAW' ).
+      iv_object_name = 'TXMILOGRAW'
+      ii_log         = mo_log ).
 
     READ TABLE lt_results WITH KEY object = 'DTEL' obj_name = 'XMILOGID' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
@@ -61,7 +65,8 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'TABL'
-      iv_object_name = 'USR02' ).
+      iv_object_name = 'USR02'
+      ii_log         = mo_log ).
 
 * the check tables should not be found by the dependency analysis, they are not relevant to abaplint
     READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'SEC_POLICY_CUST' TRANSPORTING NO FIELDS.
@@ -75,7 +80,8 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'CLAS'
-      iv_object_name = 'ZCL_ABAPGIT_OBJECT_DTEL' ).
+      iv_object_name = 'ZCL_ABAPGIT_OBJECT_DTEL'
+      ii_log         = mo_log ).
 
 * the class calls function module DDIF_DTEL_PUT, so this function group is a dependency
     READ TABLE lt_results WITH KEY object = 'FUGR' obj_name = 'SDIF' TRANSPORTING NO FIELDS.
@@ -101,7 +107,8 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'VIEW'
-      iv_object_name = 'DD01V' ).
+      iv_object_name = 'DD01V'
+      ii_log         = mo_log ).
 
     READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'DD01L' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
@@ -114,7 +121,8 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'CLAS'
-      iv_object_name = 'ZCL_ABAPGIT_OBJECT_CUS0' ).
+      iv_object_name = 'ZCL_ABAPGIT_OBJECT_CUS0'
+      ii_log         = mo_log ).
 
 * no direct transactions used
     READ TABLE lt_results WITH KEY object = 'TRAN' TRANSPORTING NO FIELDS.
@@ -128,7 +136,8 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'PROG'
-      iv_object_name = 'UPX_COMPARE_CUST' ).
+      iv_object_name = 'UPX_COMPARE_CUST'
+      ii_log         = mo_log ).
 
     READ TABLE lt_results WITH KEY object = 'PROG' obj_name = '<ICON>' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).

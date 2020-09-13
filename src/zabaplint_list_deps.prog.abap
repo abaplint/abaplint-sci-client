@@ -29,6 +29,8 @@ SELECTION-SCREEN SKIP.
 PARAMETERS: p_skip RADIOBUTTON GROUP g1,
             p_seri RADIOBUTTON GROUP g1,
             p_down RADIOBUTTON GROUP g1.
+SELECTION-SCREEN SKIP.
+PARAMETERS p_log TYPE c AS CHECKBOX.
 SELECTION-SCREEN: END OF BLOCK b2.
 
 START-OF-SELECTION.
@@ -44,7 +46,7 @@ FORM run RAISING cx_static_check.
   DATA lx_error TYPE REF TO zcx_abaplint_error.
   DATA lx_error2 TYPE REF TO zcx_abapgit_exception.
   DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
-
+  DATA li_log TYPE REF TO zif_abapgit_log.
 
   ls_options-max_level = p_depth.
   ls_options-continue_into_sap = p_sap.
@@ -53,25 +55,35 @@ FORM run RAISING cx_static_check.
     EXPORTING
       is_options = ls_options.
 
+  CREATE OBJECT li_log TYPE zcl_abapgit_log.
+
   TRY.
       CASE abap_true.
         WHEN p_obje.
           lt_deps = lo_find->find_by_item(
             iv_object_type = p_type
-            iv_object_name = p_name ).
+            iv_object_name = p_name
+            ii_log         = li_log ).
         WHEN p_devc.
           SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE devclass IN s_devc.
           IF sy-subrc = 0.
-            lt_deps = lo_find->find_by_packages( lt_packages ).
+            lt_deps = lo_find->find_by_packages(
+              it_packages = lt_packages
+              ii_log      = li_log ).
           ENDIF.
         WHEN OTHERS.
           ASSERT 0 = 1.
       ENDCASE.
     CATCH zcx_abaplint_error INTO lx_error.
-      MESSAGE ID '00' TYPE 'E' NUMBER '001' WITH lx_error->message.
+      MESSAGE lx_error->message TYPE 'E'.
     CATCH zcx_abapgit_exception INTO lx_error2.
       MESSAGE lx_error2 TYPE 'E'.
   ENDTRY.
+
+  IF li_log->count( ) > 0 AND p_log = abap_true.
+    zcl_abapgit_log_viewer=>show_log( iv_header_text = sy-title
+                                      ii_log         = li_log ).
+  ENDIF.
 
   FORMAT INTENSIFIED OFF.
   LOOP AT lt_deps INTO ls_deps.
