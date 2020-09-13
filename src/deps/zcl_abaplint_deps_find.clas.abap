@@ -257,8 +257,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           rs_object-object = 'FUGR'.
           rs_object-obj_name = lv_area.
         ENDIF.
-      WHEN 'PARA' OR 'SUSO' OR 'TABL' OR 'CLAS' OR 'INTF' OR 'ENHS' OR 'ENHO' OR 'DTEL'
-      OR 'TTYP' OR 'XSLT' OR 'VIEW' OR 'TRAN' OR 'MSAG'.
+      WHEN 'PARA' OR 'SUSO' OR 'TABL' OR 'CLAS' OR 'INTF' OR 'ENHS' OR 'ENHO' OR 'DTEL'.
+        rs_object-object = iv_object_type.
+        rs_object-obj_name = iv_object_name.
+      WHEN 'TTYP' OR 'XSLT' OR 'VIEW' OR 'TRAN' OR 'MSAG'.
         rs_object-object = iv_object_type.
         rs_object-obj_name = iv_object_name.
       WHEN 'STRU'.
