@@ -126,7 +126,6 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     DATA lt_tadir TYPE zif_abapgit_definitions=>ty_tadir_tt.
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
-    DATA li_log TYPE REF TO zif_abapgit_log.
 
     ls_options-max_level = mv_depth.
 
@@ -134,10 +133,8 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       EXPORTING
         is_options = ls_options.
     CREATE OBJECT lo_dep_ser.
-    CREATE OBJECT li_log TYPE zcl_abapgit_log.
 
-    lt_tadir = lo_dep_find->find_by_packages( it_packages = mt_packages
-                                              ii_log      = li_log ).
+    lt_tadir = lo_dep_find->find_by_packages( mt_packages ).
     APPEND LINES OF it_additional TO lt_tadir.
     lt_local = lo_dep_ser->serialize( lt_tadir ).
     APPEND LINES OF lt_local TO rt_local.

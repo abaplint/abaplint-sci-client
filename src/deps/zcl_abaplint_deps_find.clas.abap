@@ -322,8 +322,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
                          is_item = ms_item ).
       RETURN.
     ENDIF.
-    IF lv_object <> 'CLAS' AND lv_object <> 'ENHS' AND lv_object <> 'CUS0' AND
-      lv_object <> 'CUS1' AND lv_object <> 'CUS2'.
+    IF lv_object <> 'CLAS' AND lv_object <> 'ENHS'
+    AND lv_object <> 'CUS0' AND lv_object <> 'CUS1' AND lv_object <> 'CUS2'.
       mi_log->add_error( iv_msg  = |Unexpected mapping to { lv_object } for { iv_object_type } { iv_object_name }|
                          is_item = ms_item ).
       RETURN.
@@ -772,7 +772,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     " If SAP object, do not go deeper
     IF ( ls_tadir_obj-author = 'SAP' OR ls_tadir_obj-author = 'SAP*' ) AND ls_tadir_obj-srcsystem = 'SAP'
-      AND ms_options-continue_into_sap = abap_false.
+    AND ms_options-continue_into_sap = abap_false.
       RETURN.
     ENDIF.
 
