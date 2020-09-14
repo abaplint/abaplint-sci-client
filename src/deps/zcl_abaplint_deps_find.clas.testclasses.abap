@@ -3,6 +3,8 @@ CLASS ltcl_find_by_item DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLES
   PRIVATE SECTION.
     DATA:
       mo_cut TYPE REF TO zcl_abaplint_deps_find.
+    DATA:
+      mo_log TYPE REF TO zif_abapgit_log.
 
     METHODS:
       setup,
@@ -27,6 +29,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
       EXPORTING
         is_options = ls_options.
 
+    CREATE OBJECT mo_log TYPE zcl_abapgit_log.
   ENDMETHOD.
 
   METHOD txmilograw.

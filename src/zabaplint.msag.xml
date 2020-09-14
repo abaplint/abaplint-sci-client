@@ -42,7 +42,19 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZABAPLINT</ARBGB>
      <MSGNR>005</MSGNR>
-     <TEXT>Object &amp;2 (&amp;1) does not have a TADIR entry or is flaged for deletion</TEXT>
+     <TEXT>Object &amp;2 (&amp;1) not found in TADIR</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPLINT</ARBGB>
+     <MSGNR>006</MSGNR>
+     <TEXT>Object &amp;2 (&amp;1) not found in TADIR (might be object type &amp;3)</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPLINT</ARBGB>
+     <MSGNR>007</MSGNR>
+     <TEXT>Object &amp;2 (&amp;1) is flagged for deletion in TADIR</TEXT>
     </T100>
    </T100>
   </asx:values>
