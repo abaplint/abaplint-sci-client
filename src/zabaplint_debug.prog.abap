@@ -51,7 +51,7 @@ FORM save USING iv_xstr TYPE xstring RAISING zcx_abapgit_exception.
   lv_path = zcl_abapgit_ui_factory=>get_frontend_services( )->show_file_save_dialog(
     iv_title            = 'Save'
     iv_extension        = 'zip'
-    iv_default_filename =  lv_default_filename ).
+    iv_default_filename = lv_default_filename ).
 
   zcl_abapgit_ui_factory=>get_frontend_services( )->file_download(
     iv_path = lv_path
