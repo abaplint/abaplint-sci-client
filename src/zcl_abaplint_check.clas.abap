@@ -42,11 +42,6 @@ CLASS zcl_abaplint_check DEFINITION
     METHODS output_issues
       IMPORTING
         !it_issues TYPE zcl_abaplint_backend=>ty_issues .
-    METHODS find_configuration
-      RETURNING
-        VALUE(rv_config) TYPE string
-      RAISING
-        zcx_abapgit_exception .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -83,24 +78,6 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     has_attributes = abap_true.
     has_documentation = abap_true.
     attributes_ok = abap_true.
-
-  ENDMETHOD.
-
-
-  METHOD find_configuration.
-
-    DATA lv_devclass TYPE tadir-devclass.
-
-    SELECT SINGLE devclass FROM tadir
-      INTO lv_devclass
-      WHERE pgmid = 'R3TR'
-      AND object = object_type
-      AND obj_name = object_name.
-    IF sy-subrc <> 0.
-      RETURN.
-    ENDIF.
-
-    rv_config = zcl_abaplint_configuration=>find_from_package( lv_devclass ).
 
   ENDMETHOD.
 
@@ -308,7 +285,9 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     DATA lv_config TYPE string.
 
     TRY.
-        lv_config = find_configuration( ).
+        lv_config = zcl_abaplint_configuration=>find_from_object(
+          iv_object_type = object_type
+          iv_object_name = object_name ).
       CATCH zcx_abapgit_exception.
     ENDTRY.
 
