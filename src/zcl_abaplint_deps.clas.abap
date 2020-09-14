@@ -39,12 +39,9 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 
     DATA lt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt.
 
-    CREATE OBJECT li_log TYPE zcl_abapgit_log.
-
     lt_deps = lo_find->find_by_item(
       iv_object_type = iv_object_type
-      iv_object_name = iv_object_name
-      ii_log         = li_log ).
+      iv_object_name = iv_object_name ).
 
     DATA ls_dep LIKE LINE OF lt_deps.
     DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.

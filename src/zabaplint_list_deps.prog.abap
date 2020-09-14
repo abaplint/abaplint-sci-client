@@ -55,21 +55,16 @@ FORM run RAISING cx_static_check.
     EXPORTING
       is_options = ls_options.
 
-  CREATE OBJECT li_log TYPE zcl_abapgit_log.
-
   TRY.
       CASE abap_true.
         WHEN p_obje.
           lt_deps = lo_find->find_by_item(
             iv_object_type = p_type
-            iv_object_name = p_name
-            ii_log         = li_log ).
+            iv_object_name = p_name ).
         WHEN p_devc.
           SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE devclass IN s_devc.
           IF sy-subrc = 0.
-            lt_deps = lo_find->find_by_packages(
-              it_packages = lt_packages
-              ii_log      = li_log ).
+            lt_deps = lo_find->find_by_packages( it_packages = lt_packages ).
           ENDIF.
         WHEN OTHERS.
           ASSERT 0 = 1.
@@ -80,6 +75,7 @@ FORM run RAISING cx_static_check.
       MESSAGE lx_error2 TYPE 'E'.
   ENDTRY.
 
+  li_log = lo_find->get_log( ).
   IF li_log->count( ) > 0 AND p_log = abap_true.
     zcl_abapgit_log_viewer=>show_log( iv_header_text = sy-title
                                       ii_log         = li_log ).

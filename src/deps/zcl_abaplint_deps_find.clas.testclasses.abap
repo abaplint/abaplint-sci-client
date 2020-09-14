@@ -38,8 +38,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'TABL'
-      iv_object_name = 'TXMILOGRAW'
-      ii_log         = mo_log ).
+      iv_object_name = 'TXMILOGRAW' ).
 
     READ TABLE lt_results WITH KEY object = 'DTEL' obj_name = 'XMILOGID' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
@@ -65,8 +64,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'TABL'
-      iv_object_name = 'USR02'
-      ii_log         = mo_log ).
+      iv_object_name = 'USR02' ).
 
 * the check tables should not be found by the dependency analysis, they are not relevant to abaplint
     READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'SEC_POLICY_CUST' TRANSPORTING NO FIELDS.
@@ -80,8 +78,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'CLAS'
-      iv_object_name = 'ZCL_ABAPGIT_OBJECT_DTEL'
-      ii_log         = mo_log ).
+      iv_object_name = 'ZCL_ABAPGIT_OBJECT_DTEL' ).
 
 * the class calls function module DDIF_DTEL_PUT, so this function group is a dependency
     READ TABLE lt_results WITH KEY object = 'FUGR' obj_name = 'SDIF' TRANSPORTING NO FIELDS.
@@ -107,8 +104,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'VIEW'
-      iv_object_name = 'DD01V'
-      ii_log         = mo_log ).
+      iv_object_name = 'DD01V' ).
 
     READ TABLE lt_results WITH KEY object = 'TABL' obj_name = 'DD01L' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
@@ -121,8 +117,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'CLAS'
-      iv_object_name = 'ZCL_ABAPGIT_OBJECT_CUS0'
-      ii_log         = mo_log ).
+      iv_object_name = 'ZCL_ABAPGIT_OBJECT_CUS0' ).
 
 * no direct transactions used
     READ TABLE lt_results WITH KEY object = 'TRAN' TRANSPORTING NO FIELDS.
@@ -136,8 +131,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
 
     lt_results = mo_cut->find_by_item(
       iv_object_type = 'PROG'
-      iv_object_name = 'UPX_COMPARE_CUST'
-      ii_log         = mo_log ).
+      iv_object_name = 'UPX_COMPARE_CUST' ).
 
     READ TABLE lt_results WITH KEY object = 'PROG' obj_name = '<ICON>' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
