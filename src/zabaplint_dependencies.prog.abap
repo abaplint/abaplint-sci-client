@@ -88,7 +88,7 @@ FORM deps.
           iv_git_name    = p_cname
           iv_git_email   = p_cemail
           iv_git_comment = p_ccomm
-          iv_packages    = ltb_devc.
+          it_packages    = ltb_devc.
       lo_deps->run( iv_test = p_test
                     iv_depth = p_depth
                     it_additional = lt_additional ).
