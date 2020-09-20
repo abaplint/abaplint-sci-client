@@ -39,7 +39,9 @@ CLASS ZCL_ABAPLINT_RESULT IMPLEMENTATION.
 
     " Temporarily remove code so we get the message template from ZCL_ABAPLINT_CHECK
     lv_code = result-code.
-    result-code = ''.
+    IF lv_code CP 'LINT_*'.
+      result-code = ''.
+    ENDIF.
 
     p_result = super->get_text( ).
 

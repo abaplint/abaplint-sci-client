@@ -27,6 +27,8 @@ CLASS zcl_abaplint_check DEFINITION
         REDEFINITION .
     METHODS run
         REDEFINITION .
+    METHODS run_end
+        REDEFINITION .
   PROTECTED SECTION.
 
     TYPES:
@@ -38,6 +40,7 @@ CLASS zcl_abaplint_check DEFINITION
       END OF ty_internal .
 
     CONSTANTS c_no_config TYPE sci_errc VALUE 'NO_CONFIG' ##NO_TEXT.
+    CONSTANTS c_abaplint TYPE sci_errc VALUE 'ABAPLINT' ##NO_TEXT.
     CONSTANTS c_stats TYPE trobjtype VALUE '1STA' ##NO_TEXT.
 
     METHODS hash
@@ -64,7 +67,9 @@ CLASS zcl_abaplint_check DEFINITION
       END OF ty_map .
 
     CLASS-DATA:
-      gt_map TYPE STANDARD TABLE OF ty_map WITH DEFAULT KEY .
+      gv_start TYPE timestampl,
+      gv_end   TYPE timestampl,
+      gt_map   TYPE STANDARD TABLE OF ty_map WITH DEFAULT KEY.
 
     METHODS add_messages .
     CLASS-METHODS init_mapping .
@@ -169,6 +174,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     IF p_code = c_no_config.
       p_text = 'No configuration found when looking at package hierarchy, &1'.
+    ELSEIF p_code = c_abaplint.
+      p_text = '&1'.
     ELSEIF p_code CP 'LINT_*'.
       READ TABLE scimessages INTO ls_smsg TRANSPORTING text
         WITH TABLE KEY test = myname code = p_code.
@@ -477,6 +484,40 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
             p_code    = 'ERROR' ).
       ENDTRY.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD run_end.
+
+    DATA:
+      lo_backend TYPE REF TO zcl_abaplint_backend,
+      ls_message TYPE zcl_abaplint_backend=>ty_message.
+
+    super->run_end( ).
+
+    CREATE OBJECT lo_backend.
+
+    TRY.
+        ls_message = lo_backend->ping( ).
+        IF ls_message-error = abap_true.
+          RETURN.
+        ENDIF.
+      CATCH zcx_abaplint_error.
+        RETURN. "ignore
+    ENDTRY.
+
+    object_type = '-'.
+    object_name = '-'.
+
+    inform(
+      p_sub_obj_type = '-'
+      p_sub_obj_name = '-'
+      p_test         = myname
+      p_kind         = c_note
+      p_param_1      = ls_message-message
+      p_param_2      = 'ping'
+      p_code         = c_abaplint ).
 
   ENDMETHOD.
 ENDCLASS.
