@@ -5,6 +5,7 @@ CLASS zcl_abaplint_check DEFINITION
 
   PUBLIC SECTION.
 
+    CLASS-METHODS class_constructor .
     METHODS constructor .
 
     METHODS consolidate_for_display
@@ -48,11 +49,57 @@ CLASS zcl_abaplint_check DEFINITION
       IMPORTING
         !it_issues TYPE zcl_abaplint_backend=>ty_issues .
   PRIVATE SECTION.
+
+    TYPES:
+      BEGIN OF ty_map,
+        rule     TYPE string,
+        code     TYPE sci_errc,
+        title    TYPE string,
+        severity TYPE sci_errty,
+      END OF ty_map .
+
+    CLASS-DATA:
+      gt_map TYPE STANDARD TABLE OF ty_map WITH DEFAULT KEY .
+
+    METHODS add_messages .
+    CLASS-METHODS init_mapping .
+    METHODS get_mapping
+      IMPORTING
+        !iv_rule         TYPE string
+      RETURNING
+        VALUE(rv_result) TYPE sci_errc .
 ENDCLASS.
 
 
 
 CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
+
+
+  METHOD add_messages.
+
+    DATA:
+      ls_map TYPE ty_map,
+      ls_msg TYPE scimessage.
+
+    LOOP AT gt_map INTO ls_map.
+      CLEAR ls_msg.
+      ls_msg-test = myname.
+      ls_msg-code = ls_map-code.
+      ls_msg-kind = ls_map-severity.
+      ls_msg-text = ls_map-title.
+      ls_msg-pcom = ''. "Pseudo Comment
+      ls_msg-pcom_alt = ''. "Pragma
+      INSERT ls_msg INTO TABLE scimessages.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD class_constructor.
+
+    init_mapping( ).
+
+  ENDMETHOD.
 
 
   METHOD consolidate_for_display.
@@ -84,6 +131,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     has_documentation = abap_true.
     attributes_ok = abap_true.
 
+    add_messages( ).
+
   ENDMETHOD.
 
 
@@ -92,10 +141,35 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_mapping.
+
+    DATA ls_map TYPE ty_map.
+
+    READ TABLE gt_map INTO ls_map WITH KEY rule = iv_rule.
+    IF sy-subrc <> 0.
+      " In case of no mapping fallback to hash of rule name
+      ls_map-rule = iv_rule.
+      ls_map-code = hash( iv_rule ).
+      INSERT ls_map INTO TABLE gt_map.
+    ENDIF.
+
+    rv_result = ls_map-code.
+
+  ENDMETHOD.
+
+
   METHOD get_message_text.
 
     IF p_code = c_no_config.
       p_text = 'No configuration found when looking at package hierarchy, &1'.
+    ELSEIF p_code CP 'LINT_*'.
+      READ TABLE scimessages INTO smsg TRANSPORTING text
+        WITH TABLE KEY test = myname code = p_code.
+      IF sy-subrc = 0.
+        p_text = smsg-text.
+      ELSE.
+        p_text = '&1 (&2)'.
+      ENDIF.
     ELSE.
       p_text = '&1 (&2)'.
     ENDIF.
@@ -105,9 +179,9 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD get_result_node.
 
-    CREATE OBJECT p_result TYPE cl_ci_result_program
+    CREATE OBJECT p_result TYPE zcl_abaplint_result
       EXPORTING
-        p_kind = p_kind.
+        iv_kind = p_kind.
 
   ENDMETHOD.
 
@@ -130,7 +204,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-* take the first 5 characters of the hash
+    " Take the first 5 characters of the hash
     rv_hash = lv_hash(5).
 
   ENDMETHOD.
@@ -140,7 +214,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     cl_gui_frontend_services=>execute(
       EXPORTING
-        document               = 'https://abaplint.org'
+        document               = 'https://rules.abaplint.org/'
       EXCEPTIONS
         cntl_error             = 1
         error_no_gui           = 2
@@ -166,6 +240,42 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         iv_read_only = p_display.
 
     attributes_ok = abap_true.
+
+  ENDMETHOD.
+
+
+  METHOD init_mapping.
+
+    DATA:
+      lo_backend TYPE REF TO zcl_abaplint_backend,
+      lt_rules   TYPE zcl_abaplint_backend=>ty_rules,
+      lv_code    TYPE n LENGTH 4,
+      ls_map     TYPE ty_map.
+
+    FIELD-SYMBOLS <ls_rule> LIKE LINE OF lt_rules.
+
+    CREATE OBJECT lo_backend.
+
+    TRY.
+        lt_rules = lo_backend->list_rules( ).
+      CATCH zcx_abaplint_error.
+        " This will fallback to hashed rule names
+        RETURN.
+    ENDTRY.
+
+    " Number rules sequentially
+    LOOP AT lt_rules ASSIGNING <ls_rule>.
+      lv_code = lv_code + 1.
+      CLEAR ls_map.
+      ls_map-code = 'LINT_' && lv_code.
+      ls_map-rule = <ls_rule>-key.
+      ls_map-title = <ls_rule>-title.
+      " todo, <ls_rule>-severity once available in API
+      ls_map-severity = 'E'.
+      " SCI_ERRTY is using N for info (sic)
+      TRANSLATE ls_map-severity USING 'IN'.
+      INSERT ls_map INTO TABLE gt_map.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -301,7 +411,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         p_kind         = c_error
         p_param_1      = ls_issue-message
         p_param_2      = ls_issue-key
-        p_code         = hash( ls_issue-key ) ).
+        p_code         = get_mapping( ls_issue-key ) ).
 
     ENDLOOP.
 
