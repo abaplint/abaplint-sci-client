@@ -494,6 +494,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     super->run_end( ).
 
+    " Get ping message which include abaplint backend version
     CREATE OBJECT lo_backend.
 
     TRY.
@@ -505,6 +506,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         RETURN. "ignore
     ENDTRY.
 
+    " Output without object name
     object_type = '-'.
     object_name = '-'.
 
