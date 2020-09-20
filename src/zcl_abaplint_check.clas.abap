@@ -160,13 +160,15 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD get_message_text.
 
+    DATA ls_smsg TYPE LINE OF scimessages.
+
     IF p_code = c_no_config.
       p_text = 'No configuration found when looking at package hierarchy, &1'.
     ELSEIF p_code CP 'LINT_*'.
-      READ TABLE scimessages INTO smsg TRANSPORTING text
+      READ TABLE scimessages INTO ls_smsg TRANSPORTING text
         WITH TABLE KEY test = myname code = p_code.
       IF sy-subrc = 0.
-        p_text = smsg-text.
+        p_text = ls_smsg-text.
       ELSE.
         p_text = '&1 (&2)'.
       ENDIF.
