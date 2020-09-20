@@ -7,6 +7,11 @@ CLASS zcl_abaplint_check DEFINITION
 
     CLASS-METHODS class_constructor .
     METHODS constructor .
+    CLASS-METHODS get_rule
+      IMPORTING
+        !iv_code         TYPE sci_errc
+      RETURNING
+        VALUE(rv_result) TYPE string .
 
     METHODS consolidate_for_display
         REDEFINITION .
@@ -184,6 +189,18 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     CREATE OBJECT p_result TYPE zcl_abaplint_result
       EXPORTING
         iv_kind = p_kind.
+
+  ENDMETHOD.
+
+
+  METHOD get_rule.
+
+    DATA ls_map TYPE ty_map.
+
+    READ TABLE gt_map INTO ls_map WITH KEY code = iv_code.
+    IF sy-subrc = 0.
+      rv_result = ls_map-rule.
+    ENDIF.
 
   ENDMETHOD.
 

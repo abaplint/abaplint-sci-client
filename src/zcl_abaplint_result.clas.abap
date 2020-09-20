@@ -50,9 +50,17 @@ CLASS ZCL_ABAPLINT_RESULT IMPLEMENTATION.
 
   METHOD if_ci_test~display_documentation.
 
+    DATA lv_rule TYPE string.
+
+    IF result-param2 IS INITIAL.
+      lv_rule = zcl_abaplint_check=>get_rule( result-code ).
+    ELSE.
+      lv_rule = result-param2.
+    ENDIF.
+
     cl_gui_frontend_services=>execute(
       EXPORTING
-        document               = 'https://rules.abaplint.org/' && result-param2
+        document               = 'https://rules.abaplint.org/' && lv_rule
       EXCEPTIONS
         cntl_error             = 1
         error_no_gui           = 2
