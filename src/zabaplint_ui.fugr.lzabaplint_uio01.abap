@@ -30,6 +30,5 @@ ENDMODULE.
 *&
 *&---------------------------------------------------------------------*
 MODULE status_3000 OUTPUT.
-  SET PF-STATUS 'STATUS_3000'.
-  SET TITLEBAR 'TITLE_3000'.
+  PERFORM status_3000.
 ENDMODULE.
