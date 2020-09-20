@@ -67,9 +67,7 @@ CLASS zcl_abaplint_check DEFINITION
       END OF ty_map .
 
     CLASS-DATA:
-      gv_start TYPE timestampl,
-      gv_end   TYPE timestampl,
-      gt_map   TYPE STANDARD TABLE OF ty_map WITH DEFAULT KEY.
+      gt_map TYPE STANDARD TABLE OF ty_map WITH DEFAULT KEY.
 
     METHODS add_messages .
     CLASS-METHODS init_mapping .
