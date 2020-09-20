@@ -40,15 +40,18 @@ ENDFORM.
 
 FORM save USING iv_xstr TYPE xstring RAISING zcx_abapgit_exception.
 
-  DATA: lo_zip      TYPE REF TO cl_abap_zip,
-        lv_xstr     TYPE xstring,
-        lv_path     TYPE string,
-        lv_filename TYPE string.
+  DATA: lo_zip              TYPE REF TO cl_abap_zip,
+        lv_xstr             TYPE xstring,
+        lv_path             TYPE string,
+        lv_default_filename TYPE string,
+        lv_filename         TYPE string.
 
+  lv_default_filename = |abaplint-sci-client-data-{ p_type }-{ p_name }.zip|.
+  REPLACE ALL OCCURRENCES OF '/' IN lv_default_filename WITH '#'.
   lv_path = zcl_abapgit_ui_factory=>get_frontend_services( )->show_file_save_dialog(
     iv_title            = 'Save'
     iv_extension        = 'zip'
-    iv_default_filename = |abaplint-sci-client-data-{ p_type }-{ p_name }.zip| ).
+    iv_default_filename = lv_default_filename ).
 
   zcl_abapgit_ui_factory=>get_frontend_services( )->file_download(
     iv_path = lv_path
