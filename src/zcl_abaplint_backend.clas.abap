@@ -14,6 +14,7 @@ CLASS zcl_abaplint_backend DEFINITION
         message  TYPE string,
         key      TYPE string,
         filename TYPE string,
+        severity TYPE string,
         start    TYPE ty_position,
       END OF ty_issue .
     TYPES:
@@ -228,6 +229,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       <issue>-message   = li_json->get_string( lv_prefix && '/message' ).
       <issue>-key       = li_json->get_string( lv_prefix && '/key' ).
       <issue>-filename  = li_json->get_string( lv_prefix && '/filename' ).
+      <issue>-severity  = li_json->get_string( lv_prefix && '/severity' ).
       <issue>-start-row = li_json->get_string( lv_prefix && '/start/row' ).
       <issue>-start-col = li_json->get_string( lv_prefix && '/start/col' ).
     ENDLOOP.
