@@ -25,7 +25,7 @@
   "syntax": {
     "version": "v702",
     "errorNamespace": "^(Z|Y)",
-    "globalConstants": 
+    "globalConstants":
     [
         "seoc_version_active",
         "seoc_clstype_class",
@@ -38,6 +38,19 @@
     "globalMacros": []
   },
   "rules": {
+    "begin_single_include": true,
+    "check_subrc": false,
+    "cyclomatic_complexity": true,
+    "forbidden_pseudo_and_pragma": false,
+    "identical_conditions": true,
+    "line_break_style": false,
+    "names_no_dash": true,
+    "parser_missing_space": true,
+    "prefer_is_not": false,
+    "reduce_string_templates": true,
+    "unused_types": true,
+    "use_bool_expression": false,
+    "use_line_exists": true,
     "definitions_top": false,
     "downport": false,
     "forbidden_identifier": false,
@@ -91,6 +104,7 @@
     "empty_statement": true,
     "empty_structure": {
       "loop": true,
+      "try": true,
       "if": true,
       "while": true,
       "case": true,
@@ -100,7 +114,6 @@
     },
     "exit_or_check": true,
     "exporting": true,
-    "form_no_dash": true,
     "form_tables_obsolete": true,
     "fully_type_constants": {
       "checkData": true
@@ -207,6 +220,8 @@
       "refresh": true,
       "compute": true,
       "add": true,
+      "withHeaderLine": true,
+      "fieldSymbolStructure": true,
       "subtract": true,
       "multiply": true,
       "move": true,
@@ -232,6 +247,7 @@
     "release_idoc": true,
     "remove_descriptions": {
       "ignoreExceptions": false,
+      "ignoreWorkflow": false,
       "exclude": ["zcx_abaplint_error"]
     },
     "rfc_error_handling": true,
@@ -259,7 +275,6 @@
     "start_at_tab": true,
     "superclass_final": true,
     "tabl_enhancement_category": true,
-    "type_begin_single_include": true,
     "type_form_parameters": true,
     "types_naming": {
       "pattern": "^TY_.+$"
