@@ -65,6 +65,13 @@ CLASS zcl_abaplint_deps_find DEFINITION
         VALUE(rt_tadir) TYPE ty_tadir_tt
       RAISING
         zcx_abaplint_error .
+    METHODS find_extra_fugr_dependencies
+      IMPORTING
+        !iv_name        TYPE tadir-obj_name
+      CHANGING
+        VALUE(ct_tadir) TYPE ty_tadir_tt
+      RAISING
+        zcx_abaplint_error .
     METHODS find_extra_prog_dependencies
       IMPORTING
         !iv_name        TYPE tadir-obj_name
@@ -624,6 +631,45 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD find_extra_fugr_dependencies.
+
+    DATA lv_progname LIKE sy-repid.
+    DATA lt_includes TYPE STANDARD TABLE OF d010inc WITH DEFAULT KEY.
+    DATA lv_devclass TYPE tadir-devclass.
+    DATA ls_tadir LIKE LINE OF ct_tadir.
+    DATA ls_include LIKE LINE OF lt_includes.
+    DATA lv_group TYPE rs38l-area.
+    DATA lv_pname TYPE tfdir-pname.
+
+    lv_group = iv_name.
+
+    CALL FUNCTION 'FUNCTION_INCLUDE_INFO'
+      IMPORTING
+        pname               = lv_pname
+      CHANGING
+        group               = lv_group
+      EXCEPTIONS
+        function_not_exists = 1
+        include_not_exists  = 2
+        group_not_exists    = 3
+        no_selections       = 4
+        no_function_include = 5
+        OTHERS              = 6.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    lv_progname = lv_pname.
+
+    find_extra_prog_dependencies(
+      EXPORTING
+        iv_name  = lv_progname
+      CHANGING
+        ct_tadir = ct_tadir ).
+
+  ENDMETHOD.
+
+
   METHOD find_extra_prog_dependencies.
 
     DATA lv_progname LIKE sy-repid.
@@ -786,6 +832,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     IF is_object-object = 'PROG'.
       find_extra_prog_dependencies(
+        EXPORTING
+          iv_name  = is_object-obj_name
+        CHANGING
+          ct_tadir = lt_tadir ).
+    ELSEIF is_object-object = 'FUGR'.
+      find_extra_fugr_dependencies(
         EXPORTING
           iv_name  = is_object-obj_name
         CHANGING
