@@ -134,7 +134,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
     SELECT * FROM zabaplint_pack
       INTO TABLE rt_data
-      ORDER BY PRIMARY KEY.
+      ORDER BY PRIMARY KEY.                             "#EC CI_NOWHERE
 
   ENDMETHOD.
 
