@@ -34,6 +34,7 @@ public section.
   class-methods RAISE
     importing
       !IV_MSG type STRING
+      !IX_PREVIOUS type ref to CX_ROOT optional
     raising
       ZCX_ABAPLINT_ERROR .
 protected section.
@@ -45,7 +46,7 @@ ENDCLASS.
 CLASS ZCX_ABAPLINT_ERROR IMPLEMENTATION.
 
 
-method CONSTRUCTOR.
+  method CONSTRUCTOR.
 CALL METHOD SUPER->CONSTRUCTOR
 EXPORTING
 PREVIOUS = PREVIOUS
@@ -61,7 +62,7 @@ if textid is initial.
 else.
   IF_T100_MESSAGE~T100KEY = TEXTID.
 endif.
-endmethod.
+  endmethod.
 
 
 METHOD raise.
@@ -82,7 +83,8 @@ METHOD raise.
       a1      = ls_msg-a1
       a2      = ls_msg-a2
       a3      = ls_msg-a3
-      a4      = ls_msg-a4.
+      a4      = ls_msg-a4
+      previous = ix_previous.
 
 ENDMETHOD.
 ENDCLASS.
