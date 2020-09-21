@@ -38,6 +38,14 @@ CLASS zcl_abaplint_configuration DEFINITION
         VALUE(rv_config) TYPE string
       RAISING
         zcx_abapgit_exception .
+    CLASS-METHODS find_from_object
+      IMPORTING
+        !iv_object_type  TYPE trobjtype
+        !iv_object_name  TYPE sobj_name
+      RETURNING
+        VALUE(rv_config) TYPE string
+      RAISING
+        zcx_abapgit_exception .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -67,6 +75,24 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
       SET json = iv_json
       WHERE devclass = iv_devclass.
     ASSERT sy-dbcnt = 1.
+
+  ENDMETHOD.
+
+
+  METHOD find_from_object.
+
+    DATA lv_devclass TYPE tadir-devclass.
+
+    SELECT SINGLE devclass FROM tadir
+      INTO lv_devclass
+      WHERE pgmid = 'R3TR'
+      AND object = iv_object_type
+      AND obj_name = iv_object_name.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    rv_config = find_from_package( lv_devclass ).
 
   ENDMETHOD.
 
@@ -108,7 +134,7 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
     SELECT * FROM zabaplint_pack
       INTO TABLE rt_data
-      ORDER BY PRIMARY KEY.
+      ORDER BY PRIMARY KEY.                             "#EC CI_NOWHERE
 
   ENDMETHOD.
 

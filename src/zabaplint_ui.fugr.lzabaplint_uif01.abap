@@ -294,6 +294,13 @@ FORM init_3000.
     zabaplint_glob_data = lo_config->get_global( ).
   ENDIF.
 
+  IF gv_read_only = abap_true.
+    LOOP AT SCREEN.
+      screen-input = '0'.
+      MODIFY SCREEN.
+    ENDLOOP.
+  ENDIF.
+
 ENDFORM.
 
 *&---------------------------------------------------------------------*
@@ -520,7 +527,6 @@ FORM status_2000.
 
   IF gv_read_only = abap_true.
     APPEND 'SAVE' TO lt_exclude.
-    APPEND 'CONFIG' TO lt_exclude.
     APPEND 'ADD_RAW' TO lt_exclude.
     APPEND 'ADD_GIT' TO lt_exclude.
     APPEND 'UPDATE_GIT' TO lt_exclude.
@@ -530,6 +536,19 @@ FORM status_2000.
 
   SET PF-STATUS 'STATUS_2000' EXCLUDING lt_exclude.
   SET TITLEBAR 'TITLE_2000'.
+
+ENDFORM.
+
+FORM status_3000.
+
+  DATA: lt_exclude TYPE TABLE OF sy-ucomm.
+
+  IF gv_read_only = abap_true.
+    APPEND 'SAVE' TO lt_exclude.
+  ENDIF.
+
+  SET PF-STATUS 'STATUS_3000' EXCLUDING lt_exclude.
+  SET TITLEBAR 'TITLE_3000'.
 
 ENDFORM.
 

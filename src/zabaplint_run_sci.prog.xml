@@ -3,7 +3,7 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <PROGDIR>
-    <NAME>ZABAPLINT_LIST_DEPS</NAME>
+    <NAME>ZABAPLINT_RUN_SCI</NAME>
     <SUBC>1</SUBC>
     <RLOAD>E</RLOAD>
     <FIXPT>X</FIXPT>
@@ -13,8 +13,8 @@
     <item>
      <ID>H</ID>
      <KEY>001</KEY>
-     <ENTRY>Type Name                                     Package</ENTRY>
-     <LENGTH>53</LENGTH>
+     <ENTRY>Type Name</ENTRY>
+     <LENGTH>9</LENGTH>
     </item>
     <item>
      <ID>I</ID>
@@ -30,14 +30,14 @@
     </item>
     <item>
      <ID>R</ID>
-     <ENTRY>abaplint - List dependencies</ENTRY>
-     <LENGTH>28</LENGTH>
+     <ENTRY>abaplint - Run Code Inspector for specific objects</ENTRY>
+     <LENGTH>50</LENGTH>
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_DEPTH</KEY>
-     <ENTRY>Max Depth</ENTRY>
-     <LENGTH>29</LENGTH>
+     <KEY>P_CHKV</KEY>
+     <ENTRY>Code Inspector check variant</ENTRY>
+     <LENGTH>36</LENGTH>
     </item>
     <item>
      <ID>S</ID>
@@ -47,15 +47,9 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_DOWN</KEY>
-     <ENTRY>Serialize and download</ENTRY>
-     <LENGTH>30</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_LOG</KEY>
-     <ENTRY>Display log</ENTRY>
-     <LENGTH>19</LENGTH>
+     <KEY>P_KORR</KEY>
+     <ENTRY>By CTS Requests</ENTRY>
+     <LENGTH>23</LENGTH>
     </item>
     <item>
      <ID>S</ID>
@@ -72,24 +66,6 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_SAP</KEY>
-     <ENTRY>Continue into SAP objects</ENTRY>
-     <LENGTH>33</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_SERI</KEY>
-     <ENTRY>Serialize</ENTRY>
-     <LENGTH>17</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_SKIP</KEY>
-     <ENTRY>Skip serialization</ENTRY>
-     <LENGTH>26</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
      <KEY>P_TYPE</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>19</LENGTH>
@@ -101,6 +77,12 @@
      <ENTRY>.</ENTRY>
      <LENGTH>15</LENGTH>
      <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>S_KORR</KEY>
+     <ENTRY>CTS Requests</ENTRY>
+     <LENGTH>20</LENGTH>
     </item>
    </TPOOL>
   </asx:values>
