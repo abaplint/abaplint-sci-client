@@ -23,6 +23,15 @@ CLASS zcl_abaplint_backend DEFINITION
         error   TYPE abap_bool,
         message TYPE string,
       END OF ty_message .
+    TYPES:
+      " Must match the content of the payload for /api/v1/list_rules
+      " https://github.com/abaplint/abaplint-sci-client/pull/158
+      BEGIN OF ty_rule,
+        key   TYPE string,
+        title TYPE string,
+      END OF ty_rule .
+    TYPES:
+      ty_rules TYPE STANDARD TABLE OF ty_rule WITH KEY key .
 
     METHODS check_object
       IMPORTING
@@ -42,6 +51,11 @@ CLASS zcl_abaplint_backend DEFINITION
     METHODS get_default_config
       RETURNING
         VALUE(rv_json) TYPE string
+      RAISING
+        zcx_abaplint_error .
+    METHODS list_rules
+      RETURNING
+        VALUE(rt_rules) TYPE ty_rules
       RAISING
         zcx_abaplint_error .
     METHODS constructor
@@ -82,6 +96,7 @@ CLASS zcl_abaplint_backend DEFINITION
         ping               TYPE string VALUE '/api/v1/ping',
         check_file         TYPE string VALUE '/api/v1/check_file',
         get_default_config TYPE string VALUE '/api/v1/default_config',
+        list_rules         TYPE string VALUE '/api/v1/list_rules',
       END OF c_uri.
 ENDCLASS.
 
@@ -268,6 +283,36 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
           message = 'Fetched Config is empty!'.
     ENDIF.
 
+
+  ENDMETHOD.
+
+
+  METHOD list_rules.
+
+    DATA:
+      lo_agent TYPE REF TO zcl_abaplint_backend_api_agent,
+      li_json  TYPE REF TO zif_ajson_reader,
+      lx_error TYPE REF TO zcx_ajson_error.
+
+    " Get a list of all abaplint rules via /api/v1/list_rules
+    " https://github.com/abaplint/abaplint-sci-server/pull/223
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+
+    li_json = lo_agent->request( c_uri-list_rules ).
+
+    IF NOT li_json IS BOUND.
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = 'Fetched rules are empty!'.
+    ENDIF.
+
+    TRY.
+        li_json->to_abap( IMPORTING ev_container = rt_rules ).
+      CATCH zcx_ajson_error INTO lx_error.
+        RAISE EXCEPTION TYPE zcx_abaplint_error
+          EXPORTING
+            message = lx_error->message.
+    ENDTRY.
 
   ENDMETHOD.
 
