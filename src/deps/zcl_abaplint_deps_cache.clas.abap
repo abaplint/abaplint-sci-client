@@ -43,27 +43,27 @@ CLASS zcl_abaplint_deps_cache DEFINITION
         !is_files TYPE zcl_abapgit_objects=>ty_serialization .
     METHODS reset_files .
   PROTECTED SECTION.
-PRIVATE SECTION.
+  PRIVATE SECTION.
 
-  TYPES:
-    BEGIN OF ty_deps,
-      item    TYPE zif_abapgit_definitions=>ty_item,
-      minimal TYPE abap_bool,
-      tadir   TYPE zcl_abaplint_deps_find=>ty_tadir_tt,
-    END OF ty_deps .
-  TYPES:
-    BEGIN OF ty_files,
-      item  TYPE zif_abapgit_definitions=>ty_item,
-      files TYPE zcl_abapgit_objects=>ty_serialization,
-    END OF ty_files .
+    TYPES:
+      BEGIN OF ty_deps,
+        item    TYPE zif_abapgit_definitions=>ty_item,
+        minimal TYPE abap_bool,
+        tadir   TYPE zcl_abaplint_deps_find=>ty_tadir_tt,
+      END OF ty_deps .
+    TYPES:
+      BEGIN OF ty_files,
+        item  TYPE zif_abapgit_definitions=>ty_item,
+        files TYPE zcl_abapgit_objects=>ty_serialization,
+      END OF ty_files .
 
-  CLASS-DATA go_cache TYPE REF TO zcl_abaplint_deps_cache .
-  DATA:
-    mt_deps TYPE HASHED TABLE OF ty_deps WITH UNIQUE KEY item minimal .
-  DATA:
-    mt_files TYPE HASHED TABLE OF ty_files WITH UNIQUE KEY item .
-  DATA mv_memory TYPE abap_bool .
-  DATA mv_cluster TYPE abap_bool .
+    CLASS-DATA go_cache TYPE REF TO zcl_abaplint_deps_cache .
+    DATA:
+      mt_deps TYPE HASHED TABLE OF ty_deps WITH UNIQUE KEY item minimal .
+    DATA:
+      mt_files TYPE HASHED TABLE OF ty_files WITH UNIQUE KEY item .
+    DATA mv_memory TYPE abap_bool .
+    DATA mv_cluster TYPE abap_bool .
 ENDCLASS.
 
 
