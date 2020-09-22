@@ -30,7 +30,9 @@ PARAMETERS: p_skip RADIOBUTTON GROUP g1,
             p_seri RADIOBUTTON GROUP g1,
             p_down RADIOBUTTON GROUP g1.
 SELECTION-SCREEN SKIP.
-PARAMETERS p_log TYPE c AS CHECKBOX.
+PARAMETERS: p_log   TYPE c AS CHECKBOX,
+            p_mem   TYPE c AS CHECKBOX,
+            p_clust TYPE c AS CHECKBOX.
 SELECTION-SCREEN: END OF BLOCK b2.
 
 START-OF-SELECTION.
@@ -50,6 +52,8 @@ FORM run RAISING cx_static_check.
 
   ls_options-max_level = p_depth.
   ls_options-continue_into_sap = p_sap.
+  ls_options-cache_memory = p_mem.
+  ls_options-cache_cluster = p_clust.
 
   CREATE OBJECT lo_find
     EXPORTING

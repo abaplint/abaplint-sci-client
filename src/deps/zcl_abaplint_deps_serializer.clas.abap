@@ -3,7 +3,6 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-
     METHODS serialize_item
       IMPORTING
         !is_item        TYPE zif_abapgit_definitions=>ty_item
@@ -259,6 +258,10 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF rt_files.
 
+    DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
+    DATA lv_found TYPE abap_bool.
+
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( ).
 
     CREATE OBJECT lo_longtexts.
     zcl_abapgit_injector=>set_longtexts( lo_longtexts ).
@@ -283,25 +286,38 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       ls_item-obj_type = ls_tadir-object.
       ls_item-obj_name = ls_tadir-obj_name.
 
-      ls_files_item = zcl_abapgit_objects=>serialize(
-        is_item                       = ls_item
-        iv_serialize_master_lang_only = abap_true
-        iv_language                   = sy-langu ).
+      lo_cache->read_files(
+        EXPORTING
+          is_item    = ls_item
+        IMPORTING
+          es_files   = ls_files_item
+          ev_found   = lv_found ).
 
-      CASE ls_tadir-object.
-        WHEN 'CLAS'.
-          build_clas( CHANGING cs_files = ls_files_item ).
-        WHEN 'FUGR'.
-          build_fugr( CHANGING cs_files = ls_files_item ).
-        WHEN 'PROG'.
-          "Exit call
-          zcl_abaplint_exit=>get_instance( )->handle_special_abaps(
-                  EXPORTING iv_program_name = ls_tadir-obj_name
-                  CHANGING cs_files_item = ls_files_item ).
+      IF lv_found = abap_false.
+        ls_files_item = zcl_abapgit_objects=>serialize(
+          is_item                       = ls_item
+          iv_serialize_master_lang_only = abap_true
+          iv_language                   = sy-langu ).
 
-          build_prog( CHANGING cs_files = ls_files_item ).
-        WHEN OTHERS.
-      ENDCASE.
+        CASE ls_tadir-object.
+          WHEN 'CLAS'.
+            build_clas( CHANGING cs_files = ls_files_item ).
+          WHEN 'FUGR'.
+            build_fugr( CHANGING cs_files = ls_files_item ).
+          WHEN 'PROG'.
+            "Exit call
+            zcl_abaplint_exit=>get_instance( )->handle_special_abaps(
+                    EXPORTING iv_program_name = ls_tadir-obj_name
+                    CHANGING cs_files_item = ls_files_item ).
+
+            build_prog( CHANGING cs_files = ls_files_item ).
+          WHEN OTHERS.
+        ENDCASE.
+
+        lo_cache->write_files(
+          is_item  = ls_item
+          is_files = ls_files_item ).
+      ENDIF.
 
       LOOP AT ls_files_item-files ASSIGNING <ls_file>.
         ls_path = ls_tadir-devclass.
