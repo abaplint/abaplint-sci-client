@@ -112,7 +112,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     DATA mt_packages TYPE tr_devclasses .
     DATA mt_results TYPE ty_tadir_tt .
     DATA ms_types TYPE envi_types .
-    DATA mi_log TYPE REF TO zif_abapgit_log.
+    DATA mi_log TYPE REF TO zif_abapgit_log .
     DATA ms_item TYPE zif_abapgit_definitions=>ty_item .
 
     METHODS get_dependencies_deep
@@ -129,9 +129,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
         VALUE(rt_tadir) TYPE ty_tadir_tt
       RAISING
         zcx_abaplint_error .
-    METHODS remove_unnecessary_objects
-      CHANGING
-        !ct_tadir TYPE ty_tadir_tt .
     METHODS remove_own_package
       CHANGING
         !ct_tadir TYPE ty_tadir_tt .
@@ -1186,12 +1183,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         <ls_tadir>-devclass = lv_devclass.
       ENDIF.
     ENDLOOP.
-
-  ENDMETHOD.
-
-
-  METHOD remove_unnecessary_objects.
-
 
   ENDMETHOD.
 
