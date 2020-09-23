@@ -505,7 +505,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
 
     " todo, set iv_memory or iv_cluster to enable caching
-    lo_cache = zcl_abaplint_deps_cache=>get_instance( ).
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = abap_false
+                                                      iv_cluster = abap_false ).
 
     super->run_begin( ).
   ENDMETHOD.
