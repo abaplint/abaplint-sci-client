@@ -295,7 +295,7 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
 
     " Save dependencies to persistency
     LOOP AT mt_deps ASSIGNING <ls_deps>
-      WHERE NOT ( item-obj_name CP 'Y*' OR item-obj_name CP 'Z*' OR item-obj_name CP '/*' ).
+        WHERE NOT ( item-obj_name CP 'Y*' OR item-obj_name CP 'Z*' OR item-obj_name CP '/*' ).
 
       CLEAR lv_tabix.
       LOOP AT <ls_deps>-tadir ASSIGNING <ls_tadir>.
@@ -315,7 +315,7 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
 
     " Save serialized files to persistency
     LOOP AT mt_files ASSIGNING <ls_files>
-      WHERE NOT ( item-obj_name CP 'Y*' OR item-obj_name CP 'Z*' OR item-obj_name CP '/*' ).
+        WHERE NOT ( item-obj_name CP 'Y*' OR item-obj_name CP 'Z*' OR item-obj_name CP '/*' ).
 
       CLEAR lv_tabix.
       LOOP AT <ls_files>-files-files ASSIGNING <ls_file>.
