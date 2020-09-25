@@ -175,7 +175,8 @@ CLASS ZCL_ABAPLINT_CODE_INSPECTOR IMPLEMENTATION.
 
   METHOD create_objectset.
 
-    DATA: lt_objs       TYPE scit_objs,
+    DATA: lv_tabix      LIKE sy-tabix,
+          lt_objs       TYPE scit_objs,
           ls_obj        TYPE scir_objs,
           lt_objs_check TYPE scit_objs,
           ls_item       TYPE zif_abapgit_definitions=>ty_item,
@@ -184,27 +185,33 @@ CLASS ZCL_ABAPLINT_CODE_INSPECTOR IMPLEMENTATION.
 
     FIELD-SYMBOLS: <item> LIKE ls_item.
 
-* Check for sub-packages
+* Convert to sci-objects for packages & sub-packages
     LOOP AT mv_items ASSIGNING <item> WHERE obj_type = 'DEVC'.
+      lv_tabix = sy-tabix.
       lt_packages = zcl_abapgit_factory=>get_sap_package( |{ <item>-obj_name }| )->list_subpackages( ).
-    ENDLOOP.
-    LOOP AT lt_packages INTO lv_package.
-      CLEAR ls_item.
-      ls_item-obj_type = 'DEVC'.
-      ls_item-obj_name = lv_package.
-      APPEND ls_item TO mv_items.
-    ENDLOOP.
-    SORT mv_items BY obj_type obj_name.
-    DELETE ADJACENT DUPLICATES FROM mv_items COMPARING ALL FIELDS.
 
-* Convert to sci objects
-    SELECT object AS objtype obj_name AS objname
+      SELECT object AS objtype obj_name AS objname
       FROM tadir
       INTO CORRESPONDING FIELDS OF TABLE lt_objs
-      FOR ALL ENTRIES IN mv_items
-      WHERE pgmid = 'R3TR'
-      AND object = mv_items-obj_type
-      AND obj_name = mv_items-obj_name.                 "#EC CI_GENBUFF
+      FOR ALL ENTRIES IN lt_packages
+      WHERE devclass = lt_packages-table_line
+      AND delflag = abap_false
+      AND pgmid = 'R3TR'.
+
+      DELETE mv_items INDEX lv_tabix.
+    ENDLOOP.
+
+* Convert to sci objects (all other objects)
+    IF lines( mv_items ) > 0.
+      SELECT object AS objtype obj_name AS objname
+        FROM tadir
+        INTO CORRESPONDING FIELDS OF TABLE lt_objs
+        FOR ALL ENTRIES IN mv_items
+        WHERE pgmid = 'R3TR'
+        AND delflag = abap_false
+        AND object = mv_items-obj_type
+        AND obj_name = mv_items-obj_name.
+    ENDIF.
 
     LOOP AT lt_objs INTO ls_obj.
 
