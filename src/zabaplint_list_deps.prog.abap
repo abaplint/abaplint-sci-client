@@ -102,7 +102,7 @@ FORM run RAISING cx_static_check.
 ENDFORM.
 
 FORM serialize USING
-  pt_deps    TYPE zif_abapgit_definitions=>ty_tadir_tt
+    pt_deps    TYPE zif_abapgit_definitions=>ty_tadir_tt
   ps_options TYPE zcl_abaplint_deps_find=>ty_options
   RAISING zcx_abapgit_exception.
 
