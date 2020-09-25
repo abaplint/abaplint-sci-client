@@ -103,8 +103,8 @@ ENDFORM.
 
 FORM serialize USING
     pt_deps    TYPE zif_abapgit_definitions=>ty_tadir_tt
-  ps_options TYPE zcl_abaplint_deps_find=>ty_options
-  RAISING zcx_abapgit_exception.
+    ps_options TYPE zcl_abaplint_deps_find=>ty_options
+    RAISING zcx_abapgit_exception.
 
   DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
   DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
