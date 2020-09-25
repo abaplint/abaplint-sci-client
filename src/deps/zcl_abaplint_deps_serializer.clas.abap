@@ -3,6 +3,10 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
+
+    METHODS constructor
+      IMPORTING
+        !is_options TYPE zcl_abaplint_deps_find=>ty_options OPTIONAL .
     METHODS serialize_item
       IMPORTING
         !is_item        TYPE zif_abapgit_definitions=>ty_item
@@ -18,6 +22,8 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
       RAISING
         zcx_abapgit_exception .
   PROTECTED SECTION.
+
+    DATA ms_options TYPE zcl_abaplint_deps_find=>ty_options .
 
     METHODS strip_form_body
       IMPORTING
@@ -248,6 +254,13 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD constructor.
+
+    ms_options = is_options.
+
+  ENDMETHOD.
+
+
   METHOD serialize.
 
     DATA ls_tadir LIKE LINE OF it_tadir.
@@ -261,7 +274,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
     DATA lv_found TYPE abap_bool.
 
-    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = abap_true ).
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = ms_options-cache_memory
+                                                      iv_disk   = ms_options-cache_disk ).
 
     CREATE OBJECT lo_longtexts.
     zcl_abapgit_injector=>set_longtexts( lo_longtexts ).

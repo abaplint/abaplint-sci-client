@@ -35,12 +35,6 @@
     </item>
     <item>
      <ID>S</ID>
-     <KEY>P_CLUST</KEY>
-     <ENTRY>Use cache (disk)</ENTRY>
-     <LENGTH>24</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
      <KEY>P_DEPTH</KEY>
      <ENTRY>Max Depth</ENTRY>
      <LENGTH>29</LENGTH>
@@ -50,6 +44,12 @@
      <KEY>P_DEVC</KEY>
      <ENTRY>By packages</ENTRY>
      <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_DISK</KEY>
+     <ENTRY>Use cache (disk)</ENTRY>
+     <LENGTH>24</LENGTH>
     </item>
     <item>
      <ID>S</ID>

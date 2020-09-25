@@ -9,7 +9,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
         max_level         TYPE i,
         continue_into_sap TYPE abap_bool,
         cache_memory      TYPE abap_bool,
-        cache_cluster     TYPE abap_bool,
+        cache_disk        TYPE abap_bool,
       END OF ty_options .
     TYPES:
       BEGIN OF ty_tadir,
@@ -819,7 +819,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lv_found TYPE abap_bool.
 
     lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = ms_options-cache_memory
-                                                      iv_disk   = ms_options-cache_cluster ).
+                                                      iv_disk   = ms_options-cache_disk ).
 
     lo_cache->read_deps(
       EXPORTING

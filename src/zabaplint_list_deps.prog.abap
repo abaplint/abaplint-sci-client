@@ -30,9 +30,9 @@ PARAMETERS: p_skip RADIOBUTTON GROUP g1,
             p_seri RADIOBUTTON GROUP g1,
             p_down RADIOBUTTON GROUP g1.
 SELECTION-SCREEN SKIP.
-PARAMETERS: p_log   TYPE c AS CHECKBOX,
-            p_mem   TYPE c AS CHECKBOX,
-            p_clust TYPE c AS CHECKBOX.
+PARAMETERS: p_log  TYPE c AS CHECKBOX,
+            p_mem  TYPE c AS CHECKBOX,
+            p_disk TYPE c AS CHECKBOX.
 SELECTION-SCREEN: END OF BLOCK b2.
 
 START-OF-SELECTION.
@@ -53,7 +53,7 @@ FORM run RAISING cx_static_check.
   ls_options-max_level = p_depth.
   ls_options-continue_into_sap = p_sap.
   ls_options-cache_memory = p_mem.
-  ls_options-cache_cluster = p_clust.
+  ls_options-cache_disk = p_disk.
 
   CREATE OBJECT lo_find
     EXPORTING
@@ -90,7 +90,7 @@ FORM run RAISING cx_static_check.
     WRITE: / ls_deps-object, ls_deps-obj_name, ls_deps-devclass.
   ENDLOOP.
 
-  PERFORM serialize USING lt_deps.
+  PERFORM serialize USING lt_deps ls_options.
 
   ULINE.
   lv_lines = lines( lt_deps ).
@@ -101,7 +101,10 @@ FORM run RAISING cx_static_check.
 
 ENDFORM.
 
-FORM serialize USING pt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt RAISING zcx_abapgit_exception.
+FORM serialize USING
+  pt_deps    TYPE zif_abapgit_definitions=>ty_tadir_tt
+  ps_options TYPE zcl_abaplint_deps_find=>ty_options
+  RAISING zcx_abapgit_exception.
 
   DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
   DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
@@ -112,7 +115,9 @@ FORM serialize USING pt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt RAISING z
   ENDIF.
 
   IF p_down = abap_true OR p_seri = abap_true.
-    CREATE OBJECT lo_dep_ser.
+    CREATE OBJECT lo_dep_ser
+      EXPORTING
+        is_options = ps_options.
     TRY.
         lt_local = lo_dep_ser->serialize( pt_deps ).
       CATCH zcx_abapgit_exception INTO lx_error2.
