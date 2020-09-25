@@ -191,12 +191,12 @@ CLASS ZCL_ABAPLINT_CODE_INSPECTOR IMPLEMENTATION.
       lt_packages = zcl_abapgit_factory=>get_sap_package( |{ <item>-obj_name }| )->list_subpackages( ).
 
       SELECT object AS objtype obj_name AS objname
-      FROM tadir
-      INTO CORRESPONDING FIELDS OF TABLE lt_objs
-      FOR ALL ENTRIES IN lt_packages
-      WHERE devclass = lt_packages-table_line
-      AND delflag = abap_false
-      AND pgmid = 'R3TR'.
+        FROM tadir
+        INTO CORRESPONDING FIELDS OF TABLE lt_objs
+        FOR ALL ENTRIES IN lt_packages
+        WHERE devclass = lt_packages-table_line
+        AND delflag = abap_false
+        AND pgmid = 'R3TR'.
 
       DELETE mv_items INDEX lv_tabix.
     ENDLOOP.
