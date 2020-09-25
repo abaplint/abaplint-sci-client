@@ -261,7 +261,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
     DATA lv_found TYPE abap_bool.
 
-    lo_cache = zcl_abaplint_deps_cache=>get_instance( ).
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = abap_true ).
 
     CREATE OBJECT lo_longtexts.
     zcl_abapgit_injector=>set_longtexts( lo_longtexts ).
@@ -315,8 +315,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
         ENDCASE.
 
         lo_cache->write_files(
-          is_item  = ls_item
-          is_files = ls_files_item ).
+          is_item    = ls_item
+          is_files   = ls_files_item
+          iv_package = ls_tadir-devclass ).
       ENDIF.
 
       LOOP AT ls_files_item-files ASSIGNING <ls_file>.

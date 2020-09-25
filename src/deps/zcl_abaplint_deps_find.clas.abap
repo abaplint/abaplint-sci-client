@@ -819,7 +819,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lv_found TYPE abap_bool.
 
     lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = ms_options-cache_memory
-                                                      iv_cluster = ms_options-cache_cluster ).
+                                                      iv_disk   = ms_options-cache_cluster ).
 
     lo_cache->read_deps(
       EXPORTING
@@ -860,7 +860,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       lo_cache->write_deps(
         is_item    = ms_item
         iv_minimal = iv_minimal
-        it_tadir   = lt_tadir ).
+        it_tadir   = lt_tadir
+        iv_package = ls_tadir_obj-devclass ).
     ENDIF.
 
     " Remove entries already in collection
