@@ -119,7 +119,6 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
         wi_pgmid               = 'R3TR'
         wi_object              = is_item-obj_type
         wi_objname             = is_item-obj_name
-*       IV_NAMESPACE           = IV_NAMESPACE
       IMPORTING
         we_name_class          = lv_name_class
       EXCEPTIONS
@@ -140,7 +139,7 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
           rv_result = abap_true.
         ENDIF.
       WHEN 'N'. " namespace
-        IF lv_seconds < 10 * lc_day_in_sec.
+        IF lv_seconds < 10 * lc_minute_in_sec.
           rv_result = abap_true.
         ENDIF.
       WHEN OTHERS.
