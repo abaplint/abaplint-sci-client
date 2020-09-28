@@ -61,7 +61,6 @@ CLASS zcl_abaplint_deps_cache DEFINITION
       END OF ty_files .
 
     CLASS-DATA go_cache TYPE REF TO zcl_abaplint_deps_cache .
-    CLASS-DATA gi_timestamp_util TYPE REF TO if_abap_timestamp_util .
     DATA:
       mt_deps TYPE HASHED TABLE OF ty_deps WITH UNIQUE KEY item minimal .
     DATA:
@@ -108,8 +107,8 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
 
     TRY.
         GET TIME STAMP FIELD lv_timestamp.
-        lv_seconds = gi_timestamp_util->tstmp_seconds_between( iv_timestamp0 = iv_timestamp
-                                                               iv_timestamp1 = lv_timestamp ).
+        lv_seconds = cl_abap_tstmp=>subtract( tstmp1 = lv_timestamp
+                                              tstmp2 = iv_timestamp ).
       CATCH cx_parameter_invalid_range.
         RETURN.
     ENDTRY.
@@ -160,7 +159,6 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
   METHOD constructor.
     mv_memory = iv_memory.
     mv_disk = iv_disk.
-    gi_timestamp_util = cl_abap_timestamp_util=>get_instance( ).
   ENDMETHOD.
 
 
