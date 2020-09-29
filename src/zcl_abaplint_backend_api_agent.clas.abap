@@ -139,6 +139,7 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
       uri     = iv_uri ).
 
     li_client->request->set_method( iv_method ).
+    li_client->request->set_compression( ).
     li_client->request->set_header_field(
       name  = 'content-type'
       value = 'application/json' ).
