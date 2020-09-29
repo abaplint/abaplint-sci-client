@@ -133,7 +133,9 @@ FORM run RAISING cx_static_check.
       ENDLOOP.
       SUMMARY.
       SKIP.
-      WRITE: / 'Total errors found', lines( lt_result ).
+      DATA lv_lines TYPE i.
+      lv_lines = lines( lt_result ).
+      WRITE: / 'Total errors found', lv_lines.
       SET PARAMETER ID '$RC' FIELD '4'.
     ENDIF.
     "Show objects
