@@ -429,6 +429,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     LOOP AT lt_strings INTO lv_string.
       IF lv_string = |   <DYNPROS>|
           OR lv_string = |   <CUA>|
+          OR lv_string = |     <DOCUMENTATION>|
           OR lv_string = |   <INCLUDES>|.
         lv_skip = abap_true.
       ENDIF.
@@ -439,6 +440,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
       IF lv_string = |   </DYNPROS>|
           OR lv_string = |   </CUA>|
+          OR lv_string = |     </DOCUMENTATION>|
           OR lv_string = |   </INCLUDES>|.
         lv_skip = abap_false.
       ENDIF.
