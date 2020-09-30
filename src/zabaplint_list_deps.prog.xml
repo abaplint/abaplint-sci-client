@@ -47,6 +47,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_DISK</KEY>
+     <ENTRY>Use cache (disk)</ENTRY>
+     <LENGTH>24</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_DOWN</KEY>
      <ENTRY>Serialize and download</ENTRY>
      <LENGTH>30</LENGTH>
@@ -56,6 +62,12 @@
      <KEY>P_LOG</KEY>
      <ENTRY>Display log</ENTRY>
      <LENGTH>19</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_MEM</KEY>
+     <ENTRY>Use cache (memory)</ENTRY>
+     <LENGTH>26</LENGTH>
     </item>
     <item>
      <ID>S</ID>

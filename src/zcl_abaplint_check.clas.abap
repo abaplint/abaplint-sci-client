@@ -29,6 +29,8 @@ CLASS zcl_abaplint_check DEFINITION
         REDEFINITION .
     METHODS run_end
         REDEFINITION .
+    METHODS run_begin
+        REDEFINITION .
   PROTECTED SECTION.
 
     TYPES:
@@ -413,8 +415,10 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD output_issues.
 
-    DATA ls_issue LIKE LINE OF it_issues.
-    DATA ls_result TYPE ty_internal.
+    DATA:
+      ls_issue  LIKE LINE OF it_issues,
+      ls_result TYPE ty_internal,
+      lv_kind   TYPE sy-msgty.
 
     LOOP AT it_issues INTO ls_issue.
 
@@ -426,13 +430,24 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         ls_issue-message = |{ ls_issue-message }, { ls_issue-filename }|.
       ENDIF.
 
+      CASE ls_issue-severity(1).
+        WHEN 'E'.
+          lv_kind = c_error.
+        WHEN 'W'.
+          lv_kind = c_warning.
+        WHEN 'I'.
+          lv_kind = c_note.
+        WHEN OTHERS.
+          lv_kind = c_error.
+      ENDCASE.
+
       inform(
         p_sub_obj_type = ls_result-sub_obj_type
         p_sub_obj_name = ls_result-sub_obj_name
         p_line         = ls_result-line
         p_column       = ls_result-column
         p_test         = myname
-        p_kind         = c_error
+        p_kind         = lv_kind
         p_param_1      = ls_issue-message
         p_param_2      = ls_issue-key
         p_code         = get_mapping( ls_issue-key ) ).
@@ -486,6 +501,17 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD run_begin.
+    DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
+
+    " todo, set iv_memory or iv_cluster to enable caching
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = abap_true
+                                                      iv_disk   = abap_true ).
+
+    super->run_begin( ).
+  ENDMETHOD.
+
+
   METHOD run_end.
 
     DATA:
@@ -493,6 +519,11 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       ls_message TYPE zcl_abaplint_backend=>ty_message.
 
     super->run_end( ).
+
+    DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
+
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( ).
+    lo_cache->save( ).
 
     " Get ping message which include abaplint backend version
     CREATE OBJECT lo_backend.

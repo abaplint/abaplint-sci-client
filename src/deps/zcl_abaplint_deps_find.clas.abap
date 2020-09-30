@@ -8,7 +8,17 @@ CLASS zcl_abaplint_deps_find DEFINITION
       BEGIN OF ty_options,
         max_level         TYPE i,
         continue_into_sap TYPE abap_bool,
+        cache_memory      TYPE abap_bool,
+        cache_disk        TYPE abap_bool,
       END OF ty_options .
+    TYPES:
+      BEGIN OF ty_tadir,
+        ref_obj_type TYPE trobjtype,
+        ref_obj_name TYPE sobj_name,
+        devclass     TYPE devclass,
+      END OF ty_tadir .
+    TYPES:
+      ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
 
     METHODS constructor
       IMPORTING
@@ -40,15 +50,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
       RETURNING
         VALUE(rv_package) TYPE devclass .
   PROTECTED SECTION.
-
-    TYPES:
-      BEGIN OF ty_tadir,
-        ref_obj_type TYPE trobjtype,
-        ref_obj_name TYPE sobj_name,
-        devclass     TYPE devclass,
-      END OF ty_tadir .
-    TYPES:
-      ty_tadir_tt TYPE SORTED TABLE OF ty_tadir WITH UNIQUE KEY ref_obj_type ref_obj_name .
 
     DATA ms_options TYPE ty_options .
 
@@ -111,7 +112,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
     DATA mt_packages TYPE tr_devclasses .
     DATA mt_results TYPE ty_tadir_tt .
     DATA ms_types TYPE envi_types .
-    DATA mi_log TYPE REF TO zif_abapgit_log.
+    DATA mi_log TYPE REF TO zif_abapgit_log .
     DATA ms_item TYPE zif_abapgit_definitions=>ty_item .
 
     METHODS get_dependencies_deep
@@ -128,9 +129,6 @@ CLASS zcl_abaplint_deps_find DEFINITION
         VALUE(rt_tadir) TYPE ty_tadir_tt
       RAISING
         zcx_abaplint_error .
-    METHODS remove_unnecessary_objects
-      CHANGING
-        !ct_tadir TYPE ty_tadir_tt .
     METHODS remove_own_package
       CHANGING
         !ct_tadir TYPE ty_tadir_tt .
@@ -817,35 +815,57 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    " Determine direct dependency
-    IF is_object-object = 'CLAS' AND iv_minimal = abap_true.
-      lt_tadir = find_clas_dependencies( iv_name  = is_object-obj_name
-                                         iv_level = iv_level ).
-    ELSEIF is_object-object = 'TABL'.
-      lt_tadir = find_tabl_dependencies( is_object-obj_name ).
-    ELSEIF is_object-object = 'DTEL'.
-      lt_tadir = find_dtel_dependencies( is_object-obj_name ).
-    ELSE.
-      lt_tadir = get_environment( is_object  = is_object
-                                  iv_minimal = iv_minimal ).
+    DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
+    DATA lv_found TYPE abap_bool.
+
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = ms_options-cache_memory
+                                                      iv_disk   = ms_options-cache_disk ).
+
+    lo_cache->read_deps(
+      EXPORTING
+        is_item    = ms_item
+        iv_minimal = iv_minimal
+      IMPORTING
+        et_tadir   = lt_tadir
+        ev_found   = lv_found ).
+
+    IF lv_found = abap_false.
+      " Determine direct dependency
+      IF is_object-object = 'CLAS' AND iv_minimal = abap_true.
+        lt_tadir = find_clas_dependencies( iv_name  = is_object-obj_name
+                                           iv_level = iv_level ).
+      ELSEIF is_object-object = 'TABL'.
+        lt_tadir = find_tabl_dependencies( is_object-obj_name ).
+      ELSEIF is_object-object = 'DTEL'.
+        lt_tadir = find_dtel_dependencies( is_object-obj_name ).
+      ELSE.
+        lt_tadir = get_environment( is_object  = is_object
+                                    iv_minimal = iv_minimal ).
+      ENDIF.
+
+      IF is_object-object = 'PROG'.
+        find_extra_prog_dependencies(
+          EXPORTING
+            iv_name  = is_object-obj_name
+          CHANGING
+            ct_tadir = lt_tadir ).
+      ENDIF.
+
+      " Remove entries from own package (or sub packages)
+      remove_own_package( CHANGING ct_tadir = lt_tadir ).
+
+      " Remove entries without TADIR or with delete flag set
+      remove_deleted_objects( CHANGING ct_tadir = lt_tadir ).
+
+      lo_cache->write_deps(
+        is_item    = ms_item
+        iv_minimal = iv_minimal
+        it_tadir   = lt_tadir
+        iv_package = ls_tadir_obj-devclass ).
     ENDIF.
 
-    IF is_object-object = 'PROG'.
-      find_extra_prog_dependencies(
-        EXPORTING
-          iv_name  = is_object-obj_name
-        CHANGING
-          ct_tadir = lt_tadir ).
-    ELSEIF is_object-object = 'FUGR'.
-      find_extra_fugr_dependencies(
-        EXPORTING
-          iv_name  = is_object-obj_name
-        CHANGING
-          ct_tadir = lt_tadir ).
-    ENDIF.
-
-    " Only some of the dependencies are necessary
-    remove_unnecessary_objects( CHANGING ct_tadir = lt_tadir ).
+    " Remove entries already in collection
+    remove_duplicates( CHANGING ct_tadir = lt_tadir ).
 
     IF lines( lt_tadir ) = 0.
       RETURN.
@@ -1164,24 +1184,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         <ls_tadir>-devclass = lv_devclass.
       ENDIF.
     ENDLOOP.
-
-  ENDMETHOD.
-
-
-  METHOD remove_unnecessary_objects.
-
-    " Remove entries already in collection
-    remove_duplicates( CHANGING ct_tadir = ct_tadir ).
-
-    IF lines( ct_tadir ) = 0.
-      RETURN.
-    ENDIF.
-
-    " Remove entries from own package (or sub packages)
-    remove_own_package( CHANGING ct_tadir = ct_tadir ).
-
-    " Remove entries without TADIR or with delete flag set
-    remove_deleted_objects( CHANGING ct_tadir = ct_tadir ).
 
   ENDMETHOD.
 
