@@ -65,7 +65,7 @@ CLASS zcl_abaplint_check DEFINITION
         rule     TYPE string,
         code     TYPE sci_errc,
         title    TYPE string,
-        severity TYPE sci_errty,
+        severity TYPE sy-msgty,
       END OF ty_map .
 
     CLASS-DATA:
@@ -78,6 +78,12 @@ CLASS zcl_abaplint_check DEFINITION
         !iv_rule         TYPE string
       RETURNING
         VALUE(rv_result) TYPE sci_errc .
+    METHODS set_message_severity
+      IMPORTING
+        !iv_rule       TYPE string
+        !iv_severity   TYPE string
+      RETURNING
+        VALUE(rv_kind) TYPE sci_errty .
 ENDCLASS.
 
 
@@ -430,16 +436,9 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         ls_issue-message = |{ ls_issue-message }, { ls_issue-filename }|.
       ENDIF.
 
-      CASE ls_issue-severity(1).
-        WHEN 'E'.
-          lv_kind = c_error.
-        WHEN 'W'.
-          lv_kind = c_warning.
-        WHEN 'I'.
-          lv_kind = c_note.
-        WHEN OTHERS.
-          lv_kind = c_error.
-      ENDCASE.
+      lv_kind = set_message_severity(
+                  iv_rule     = ls_issue-key
+                  iv_severity = ls_issue-severity ).
 
       inform(
         p_sub_obj_type = ls_result-sub_obj_type
@@ -549,6 +548,36 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       p_param_1      = ls_message-message
       p_param_2      = 'ping'
       p_code         = c_abaplint ).
+
+  ENDMETHOD.
+
+
+  METHOD set_message_severity.
+
+    FIELD-SYMBOLS:
+      <ls_map> TYPE ty_map,
+      <ls_msg> TYPE scimessage.
+
+    READ TABLE gt_map ASSIGNING <ls_map> WITH KEY rule = iv_rule.
+    IF sy-subrc = 0.
+      CASE iv_severity(1).
+        WHEN 'E'.
+          <ls_map>-severity = c_error.
+        WHEN 'W'.
+          <ls_map>-severity = c_warning.
+        WHEN 'I'.
+          <ls_map>-severity = c_note.
+        WHEN OTHERS.
+          <ls_map>-severity = c_error.
+      ENDCASE.
+
+      rv_kind = <ls_map>-severity.
+    ENDIF.
+
+    READ TABLE scimessages ASSIGNING <ls_msg> WITH KEY test = myname code = get_mapping( iv_rule ).
+    IF sy-subrc = 0.
+      <ls_msg>-kind = rv_kind.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.
