@@ -294,6 +294,14 @@ FORM init_3000.
     zabaplint_glob_data = lo_config->get_global( ).
   ENDIF.
 
+  IF zabaplint_glob_data-http_timeout IS INITIAL.
+    zabaplint_glob_data-http_timeout = 6000.
+  ENDIF.
+
+  IF zabaplint_glob_data-ssl_id IS INITIAL.
+    zabaplint_glob_data-ssl_id = 'ANONYM'.
+  ENDIF.
+
   IF gv_read_only = abap_true.
     LOOP AT SCREEN.
       screen-input = '0'.

@@ -62,3 +62,14 @@ MODULE user_command_3000 INPUT.
   ENDCASE.
 
 ENDMODULE.
+
+MODULE user_exit_command_3000 INPUT.
+
+  CASE gv_ok_code.
+    WHEN 'EXIT' OR 'CANC'.
+      " todo, dirty data check
+      CLEAR gv_ok_code.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+
+ENDMODULE.
