@@ -20,13 +20,19 @@ The integration requires two parts: The [abaplint Server](https://github.com/aba
 
 ![atc-details](docs/img/sci-ex-04.png)
 
+Clicking the 'Check' or 'Check message' links will display the documentation of the rule in a browser. Click on the object name in the overview or 'Display object' in the details to jump to the location in the code related to the finding.
+
 2. SCI
 
 ![sci](docs/img/sci-ex-01.png)
 
+Clicking the 'Info' icon next to a message will display the documentation of the rule in a browser. Double-click on a message to jump to the location in the code related to the finding.
+
 3. abapGit
 
 ![abapgit](docs/img/sci-ex-03.png)
+
+Click on the object name to jump to the location in the code related to the finding.
 
 ## Documentation
 
