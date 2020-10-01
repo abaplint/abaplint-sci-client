@@ -53,7 +53,7 @@ this server at your own risk. Your code will leave your system over a connection
 Optional parameters:
 - Dependency depth - Defines over how many levels the check will try to resolve dependencies of ABAP classes (via inheritance, interfaces, attributes, or types)
 - Continue into SAP objects - Decides if dependencies of SAP objects should be included in the check 
-- Use disk cache - Select if dependencies and serialized files shall be cache in transparent tables **WIP**
+- **TODO:** Use disk cache - Select if dependencies and serialized files shall be cache in transparent tables 
 
 4. Package Configuration
 
@@ -67,4 +67,4 @@ linked to an abapGit repository, then you can use 'Update from abapGit' to get t
 
 **Note:** General as well as package configurations will be valid for all check variants that enable the abaplint checks. They are not check variant-specific.
 
-Remember to save all changes to configuration and check variant.
+**Remember to save all changes to configuration and check variant.**
