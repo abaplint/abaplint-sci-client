@@ -14,7 +14,19 @@ The integration requires two parts: The [abaplint Server](https://github.com/aba
 
 ## Examples
 
-![sci](docs/img/sci-sample.png)
+1. ATC
+
+![atc-overview](docs/img/sci-ex-01.png)
+
+![atc-details](docs/img/sci-ex-02.png)
+
+2. SCI
+
+![sci](docs/img/sci-ex-04.png)
+
+3. abapGit
+
+![abapgit](docs/img/sci-ex-03.png)
 
 ## Documentation
 
