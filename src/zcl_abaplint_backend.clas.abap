@@ -103,7 +103,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
+CLASS zcl_abaplint_backend IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -210,7 +210,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
     DATA li_json TYPE REF TO zif_ajson_reader.
 
-    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
     li_json = lo_agent->request(
       iv_method = if_http_request=>co_request_method_post
       iv_uri    = c_uri-check_file
@@ -266,7 +266,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     DATA lo_json TYPE REF TO zcl_ajson.
     DATA lx_error TYPE REF TO zcx_ajson_error.
 
-    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
 
     li_json = lo_agent->request( c_uri-get_default_config ).
     li_json = li_json->slice( '/config' ).
@@ -298,7 +298,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     " Get a list of all abaplint rules via /api/v1/list_rules
     " https://github.com/abaplint/abaplint-sci-server/pull/223
-    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
 
     li_json = lo_agent->request( c_uri-list_rules ).
 
@@ -325,7 +325,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
     DATA li_json TYPE REF TO zif_ajson_reader.
 
-    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config-url ).
+    lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
 
     TRY.
         li_json = lo_agent->request( c_uri-ping ).
