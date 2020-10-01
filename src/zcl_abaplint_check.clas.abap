@@ -572,6 +572,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       ENDCASE.
 
       rv_kind = <ls_map>-severity.
+    ELSE.
+      rv_kind = c_error.
     ENDIF.
 
     READ TABLE scimessages ASSIGNING <ls_msg> WITH KEY test = myname code = get_mapping( iv_rule ).
