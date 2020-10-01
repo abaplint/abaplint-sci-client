@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPLINT_EXIT</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Default exit</DESCRIPT>
+    <DESCRIPT>abaplint - Default Exit</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

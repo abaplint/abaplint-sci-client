@@ -5,7 +5,7 @@
    <VSEOINTERF>
     <CLSNAME>ZIF_ABAPLINT_EXIT</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>user exit interface</DESCRIPT>
+    <DESCRIPT>abaplint - Exit</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
