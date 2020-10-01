@@ -1,0 +1,23 @@
+@startuml components
+skinparam monochrome true
+
+cloud "Cloud Server" as cf {
+  rectangle "Node Application" {
+    rectangle "abaplint-sci-server" as acf
+  }
+}
+
+rectangle "ABAP Application Server" as SAP {
+  rectangle "Code Inspector" as SCI {
+    rectangle "abaplint-sci-client" as aab
+  }
+  actor se80
+  se80 -> SCI
+}
+
+actor eclipse
+eclipse -up-> SCI
+
+aab -> acf
+
+@enduml
