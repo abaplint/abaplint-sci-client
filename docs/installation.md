@@ -68,3 +68,16 @@ linked to an abapGit repository, then you can use 'Update from abapGit' to get t
 **Note:** General as well as package configurations will be valid for all check variants that enable the abaplint checks. They are not check variant-specific.
 
 **Remember to save all changes to configuration and check variant.**
+
+## Cross-References
+
+The abaplint check depends on the cross-reference generated automatically by your SAP system (for customer objects).
+
+In case it you think there is an issue, run these reports in background:
+- SAPRSEUB for SAP objects (**Note:** This will require several GB of space in your database)
+- SAPRSEUC for Customer objects (Y*/Z*)
+
+Also to ensure that the repository is kept clean, run SAPRSEUJ which schedules the required jobs.
+
+For details, see SAP Notes [2752795 - Environment analysis progams and classes - use of BAdI definitions](https://launchpad.support.sap.com/#/notes/2752795) and
+[2243139 - REPOSITORY_ENVIRONMENT_ALL - too few hits for enhancement implementations](https://launchpad.support.sap.com/#/notes/2243139).
