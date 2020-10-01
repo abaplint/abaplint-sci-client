@@ -37,6 +37,7 @@ Click on the object name to jump to the location in the code related to the find
 ## Documentation
 
 * [Installation](docs/installation.md)
+* [Tools](docs/tools.md)
 * [Exporting Dependencies](docs/export_dependencies.md)
 
 ## Blog Posts
