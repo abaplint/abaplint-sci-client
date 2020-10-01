@@ -65,9 +65,13 @@ Select 'Add package', add the configuration, and save it.
 You can retrieve either the default configuration which includes all rules supported by your abaplint server using 'Update with Default'. If your package is
 linked to an abapGit repository, then you can use 'Update from abapGit' to get the content of the abaplint.json file as a basis for your configuration.
 
-**Note:** General as well as package configurations will be valid for all check variants that enable the abaplint checks. They are not check variant-specific.
+## Important Notes
 
-**Remember to save all changes to configuration and check variant.**
+1. General as well as package configurations will be valid for *all* check variants that enable the abaplint checks. They are not check variant-specific.
+
+2. The abaplint check configuration (json) is *independent* of the abaplint.json file in your repository. They can be different (although they probably shouldn't be). 
+
+3. **Remember to save all changes to configuration and check variant.**
 
 ## Cross-References
 
