@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_ABAPLINT_CODE_INSPECTOR</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>abapLint Code Inspector</DESCRIPT>
+    <DESCRIPT>abaplint - Code Inspector</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
