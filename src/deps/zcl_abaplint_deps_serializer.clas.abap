@@ -44,6 +44,9 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
     METHODS build_fugr
       CHANGING
         !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+    METHODS build_tabl
+      CHANGING
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
     METHODS build_clas_code
       IMPORTING
         !iv_class      TYPE clike
@@ -254,6 +257,21 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD build_tabl.
+
+    DATA lv_string TYPE string.
+
+    FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
+
+    READ TABLE cs_files-files ASSIGNING <ls_file> INDEX 1.
+    IF sy-subrc = 0.
+      lv_string = strip_xml( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
+      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD constructor.
 
     ms_options = is_options.
@@ -325,6 +343,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
                     CHANGING cs_files_item = ls_files_item ).
 
             build_prog( CHANGING cs_files = ls_files_item ).
+          WHEN 'TABL'.
+            build_tabl( CHANGING cs_files = ls_files_item ).
           WHEN OTHERS.
         ENDCASE.
 
@@ -425,6 +445,10 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
 
     SPLIT iv_string AT |\n| INTO TABLE lt_strings.
+
+    DELETE lt_strings WHERE table_line CP '<SHORT_TEXT>*</SHORT_TEXT>'.
+    DELETE lt_strings WHERE table_line CP '<STEXT>*</STEXT>'.
+    DELETE lt_strings WHERE table_line CP '<DDTEXT>*</DDTEXT>'.
 
     LOOP AT lt_strings INTO lv_string.
       IF lv_string = |   <DYNPROS>|
