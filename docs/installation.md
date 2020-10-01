@@ -39,7 +39,7 @@ Select the abaplint check and use the arrow icon to jump to the abaplint configu
 
 abaplint needs general configuration and settings that are defined per SAP package
 
-![sci05](img/sci-05.png)
+![sci08](img/sci-08.png)
 
 3. General Configuration
 
