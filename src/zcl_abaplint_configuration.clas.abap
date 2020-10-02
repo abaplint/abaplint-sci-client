@@ -133,12 +133,12 @@ CLASS zcl_abaplint_configuration IMPLEMENTATION.
       INTO CORRESPONDING FIELDS OF rs_data
       WHERE sysid = sy-sysid.
 
-    " defaults
+    " set defaults
     IF rs_data-http_timeout IS INITIAL.
       rs_data-http_timeout = c_default-http_timeout.
     ENDIF.
     IF rs_data-ssl_id IS INITIAL.
-      rs_data-http_timeout = c_default-ssl_id.
+      rs_data-ssl_id = c_default-ssl_id.
     ENDIF.
 
   ENDMETHOD.
