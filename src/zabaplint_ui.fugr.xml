@@ -102,7 +102,7 @@
       <TYPE>N</TYPE>
       <NEXTSCREEN>3000</NEXTSCREEN>
       <LINES>026</LINES>
-      <COLUMNS>205</COLUMNS>
+      <COLUMNS>207</COLUMNS>
      </HEADER>
      <CONTAINERS>
       <RPY_DYCATT>
@@ -116,12 +116,12 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>FRAME</TYPE>
        <NAME>BOX1</NAME>
-       <TEXT>Global_Configuration_____________________________________________________________________________</TEXT>
+       <TEXT>Global_Configuration____________________________________________________________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
-       <LENGTH>098</LENGTH>
-       <VISLENGTH>098</VISLENGTH>
-       <HEIGHT>013</HEIGHT>
+       <LENGTH>097</LENGTH>
+       <VISLENGTH>097</VISLENGTH>
+       <HEIGHT>019</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <REQU_ENTRY>N</REQU_ENTRY>
       </RPY_DYFATC>
@@ -145,7 +145,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-URL</NAME>
-       <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
+       <TEXT>?___________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
        <LINE>003</LINE>
        <COLUMN>013</COLUMN>
@@ -158,6 +158,7 @@
        <UP_LOWER>X</UP_LOWER>
        <INPUT_FLD>X</INPUT_FLD>
        <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>O</REQU_ENTRY>
       </RPY_DYFATC>
       <RPY_DYFATC>
        <CONT_TYPE>SCREEN</CONT_TYPE>
@@ -312,6 +313,69 @@
       <RPY_DYFATC>
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>TEXT11</NAME>
+       <TEXT>HTTP_timeout</TEXT>
+       <LINE>014</LINE>
+       <COLUMN>003</COLUMN>
+       <LENGTH>012</LENGTH>
+       <VISLENGTH>012</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>ZABAPLINT_GLOB_DATA-HTTP_TIMEOUT</NAME>
+       <TEXT>?__________</TEXT>
+       <LINE>014</LINE>
+       <COLUMN>029</COLUMN>
+       <LENGTH>011</LENGTH>
+       <VISLENGTH>011</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>INT4</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>O</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>TEXT12</NAME>
+       <TEXT>SSL_ID</TEXT>
+       <LINE>015</LINE>
+       <COLUMN>003</COLUMN>
+       <LENGTH>006</LENGTH>
+       <VISLENGTH>006</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>ZABAPLINT_GLOB_DATA-SSL_ID</NAME>
+       <TEXT>?_____</TEXT>
+       <LINE>015</LINE>
+       <COLUMN>029</COLUMN>
+       <LENGTH>006</LENGTH>
+       <VISLENGTH>006</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>O</REQU_ENTRY>
+       <MATCHCODE>F4STRUSTSSL</MATCHCODE>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>OKCODE</TYPE>
        <NAME>GV_OK_CODE</NAME>
        <TEXT>____________________</TEXT>
@@ -338,6 +402,9 @@
       </RPY_DYFLOW>
       <RPY_DYFLOW>
        <LINE>  MODULE user_command_3000.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>  MODULE user_exit_command_3000 AT EXIT-COMMAND.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
     </item>
@@ -391,6 +458,15 @@
       <FUN_TEXT>Back</FUN_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
+      <CODE>CANC</CODE>
+      <TEXTNO>001</TEXTNO>
+      <TYPE>E</TYPE>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT_NAME>ICON_CANCEL</TEXT_NAME>
+      <ICON_ID>@0W@</ICON_ID>
+      <FUN_TEXT>Cancel</FUN_TEXT>
+     </RSMPE_FUNT>
+     <RSMPE_FUNT>
       <CODE>CONFIG</CODE>
       <TEXTNO>001</TEXTNO>
       <TEXT_TYPE>S</TEXT_TYPE>
@@ -407,6 +483,13 @@
       <ICON_ID>@11@</ICON_ID>
       <FUN_TEXT>Delete pack config</FUN_TEXT>
       <ICON_TEXT>Delete pack config</ICON_TEXT>
+     </RSMPE_FUNT>
+     <RSMPE_FUNT>
+      <CODE>EXIT</CODE>
+      <TEXTNO>001</TEXTNO>
+      <TYPE>E</TYPE>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <FUN_TEXT>Exit</FUN_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
       <CODE>PICK</CODE>
@@ -560,6 +643,18 @@
       <FUNCODE>SAVE</FUNCODE>
       <FUNNO>001</FUNNO>
      </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000002</CODE>
+      <PFNO>12</PFNO>
+      <FUNCODE>CANC</FUNCODE>
+      <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000002</CODE>
+      <PFNO>15</PFNO>
+      <FUNCODE>EXIT</FUNCODE>
+      <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
     </PFK>
     <SET>
      <RSMPE_STAF>
@@ -597,6 +692,14 @@
      <RSMPE_STAF>
       <STATUS>STATUS_3000</STATUS>
       <FUNCTION>BACK</FUNCTION>
+     </RSMPE_STAF>
+     <RSMPE_STAF>
+      <STATUS>STATUS_3000</STATUS>
+      <FUNCTION>CANC</FUNCTION>
+     </RSMPE_STAF>
+     <RSMPE_STAF>
+      <STATUS>STATUS_3000</STATUS>
+      <FUNCTION>EXIT</FUNCTION>
      </RSMPE_STAF>
      <RSMPE_STAF>
       <STATUS>STATUS_3000</STATUS>

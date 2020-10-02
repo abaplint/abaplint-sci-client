@@ -7,6 +7,12 @@ CLASS zcl_abaplint_configuration DEFINITION
     TYPES:
       ty_packages TYPE STANDARD TABLE OF zabaplint_pack WITH KEY devclass .
 
+    CONSTANTS:
+      BEGIN OF c_default,
+        ssl_id       TYPE c LENGTH 6 VALUE 'ANONYM',
+        http_timeout TYPE i VALUE 6000,
+      END OF c_default.
+
     METHODS read_package
       IMPORTING
         !iv_devclass   TYPE devclass
@@ -52,7 +58,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
+CLASS zcl_abaplint_configuration IMPLEMENTATION.
 
 
   METHOD add_package.
@@ -126,6 +132,14 @@ CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
     SELECT SINGLE * FROM zabaplint_glob
       INTO CORRESPONDING FIELDS OF rs_data
       WHERE sysid = sy-sysid.
+
+    " set defaults
+    IF rs_data-http_timeout IS INITIAL.
+      rs_data-http_timeout = c_default-http_timeout.
+    ENDIF.
+    IF rs_data-ssl_id IS INITIAL.
+      rs_data-ssl_id = c_default-ssl_id.
+    ENDIF.
 
   ENDMETHOD.
 

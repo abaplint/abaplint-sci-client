@@ -7,7 +7,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
 
     CLASS-METHODS create
       IMPORTING
-        !iv_host           TYPE zabaplint_glob_data-url
+        !is_config         TYPE zabaplint_glob_data
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abaplint_backend_api_agent .
     " TODO query ?
@@ -23,7 +23,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
         zcx_abaplint_error .
   PROTECTED SECTION.
   PRIVATE SECTION.
-    DATA mv_host TYPE zabaplint_glob_data-url.
+    DATA ms_config TYPE zabaplint_glob_data.
 
     METHODS create_client
       RETURNING
@@ -46,14 +46,13 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
+CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
 
 
   METHOD create.
 
     CREATE OBJECT ro_instance.
-    ro_instance->mv_host = iv_host.
-
+    ro_instance->ms_config = is_config.
   ENDMETHOD.
 
 
@@ -61,8 +60,8 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
 
     cl_http_client=>create_by_url(
       EXPORTING
-        url                = |{ mv_host }|
-        ssl_id             = 'ANONYM'
+        url                = |{ ms_config-url }|
+        ssl_id             = ms_config-ssl_id
       IMPORTING
         client             = ri_client
       EXCEPTIONS
@@ -74,7 +73,7 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
     IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING
-          message = |Create_client error: sy-subrc={ sy-subrc }, url={ mv_host }|.
+          message = |Create_client error: sy-subrc={ sy-subrc }, url={ ms_config-url }|.
     ENDIF.
 
   ENDMETHOD.
@@ -159,7 +158,7 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
 
     ii_client->send(
       EXPORTING
-        timeout = 6000
+        timeout = ms_config-http_timeout
       EXCEPTIONS
         http_communication_failure = 1
         http_invalid_state         = 2
