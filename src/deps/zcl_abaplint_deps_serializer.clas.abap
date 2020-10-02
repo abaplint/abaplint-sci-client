@@ -448,7 +448,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     " Skip TEXT, SHORT_TEXT, STEXT, DDTEXT, etc
     DELETE lt_strings WHERE table_line CP '<*TEXT>*</*TEXT>'.
-    
     LOOP AT lt_strings INTO lv_string.
       IF lv_string = |   <DYNPROS>|
           OR lv_string = |   <CUA>|
