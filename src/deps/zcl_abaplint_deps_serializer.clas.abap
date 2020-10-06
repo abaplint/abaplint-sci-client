@@ -292,8 +292,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
     DATA lv_found TYPE abap_bool.
 
-    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = ms_options-cache_memory
-                                                      iv_disk   = ms_options-cache_disk ).
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( ms_options-cache ).
 
     CREATE OBJECT lo_longtexts.
     zcl_abapgit_injector=>set_longtexts( lo_longtexts ).

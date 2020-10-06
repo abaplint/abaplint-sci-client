@@ -69,7 +69,9 @@ CLASS zcl_abaplint_check DEFINITION
       END OF ty_map .
 
     CLASS-DATA:
-      gt_map TYPE STANDARD TABLE OF ty_map WITH DEFAULT KEY.
+      gt_map TYPE STANDARD TABLE OF ty_map WITH DEFAULT KEY .
+    DATA mo_cache TYPE REF TO zcl_abaplint_deps_cache .
+    DATA ms_config TYPE zabaplint_glob_data .
 
     METHODS add_messages .
     CLASS-METHODS init_mapping .
@@ -130,6 +132,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD constructor.
 
+    DATA lo_config TYPE REF TO zcl_abaplint_configuration.
+
     super->constructor( ).
 
     description = 'abaplint'.                               "#EC NOTEXT
@@ -148,6 +152,9 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     attributes_ok = abap_true.
 
     add_messages( ).
+
+    CREATE OBJECT lo_config.
+    ms_config = lo_config->get_global( ).
 
   ENDMETHOD.
 
@@ -302,10 +309,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       ls_map-code = 'LINT_' && lv_code.
       ls_map-rule = <ls_rule>-key.
       ls_map-title = <ls_rule>-title.
-      " todo, <ls_rule>-severity once available in API
+      " Set default severity. Actual severity is set in SET_MESSAGE_SEVERITY
       ls_map-severity = 'E'.
-      " SCI_ERRTY is using N for info (sic)
-      TRANSLATE ls_map-severity USING 'IN'.
       INSERT ls_map INTO TABLE gt_map.
     ENDLOOP.
 
@@ -460,6 +465,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
     DATA lv_config TYPE string.
+    DATA lo_backend TYPE REF TO zcl_abaplint_backend.
+    DATA lt_issues TYPE zcl_abaplint_backend=>ty_issues.
 
     TRY.
         lv_config = zcl_abaplint_configuration=>find_from_object(
@@ -477,8 +484,6 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         p_code         = c_no_config ).
     ELSE.
       TRY.
-          DATA lo_backend TYPE REF TO zcl_abaplint_backend.
-          DATA lt_issues TYPE zcl_abaplint_backend=>ty_issues.
           CREATE OBJECT lo_backend.
           lt_issues = lo_backend->check_object(
             iv_configuration = lv_config
@@ -501,11 +506,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
 
   METHOD run_begin.
-    DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
-
-    " todo, set iv_memory or iv_cluster to enable caching
-    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = abap_true
-                                                      iv_disk   = abap_true ).
+    mo_cache = zcl_abaplint_deps_cache=>get_instance( ms_config-cache ).
 
     super->run_begin( ).
   ENDMETHOD.
@@ -519,10 +520,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     super->run_end( ).
 
-    DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
-
-    lo_cache = zcl_abaplint_deps_cache=>get_instance( ).
-    lo_cache->save( ).
+    mo_cache->save( ).
 
     " Get ping message which include abaplint backend version
     CREATE OBJECT lo_backend.
