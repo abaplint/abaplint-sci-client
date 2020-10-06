@@ -102,8 +102,7 @@ FORM find CHANGING cs_data TYPE ty_data RAISING zcx_abapgit_exception zcx_abapli
 
   CREATE OBJECT lo_deps.
   cs_data-deps = lo_deps->find(
-    iv_depth       = ls_config-depth
-    iv_continue    = ls_config-conti
+    is_options     = ls_config
     iv_object_type = p_type
     iv_object_name = p_name ).
 

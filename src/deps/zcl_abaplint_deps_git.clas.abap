@@ -127,7 +127,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
 
-    ls_options-max_level = mv_depth.
+    ls_options-depth = mv_depth.
 
     CREATE OBJECT lo_dep_find
       EXPORTING

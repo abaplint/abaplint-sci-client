@@ -7,12 +7,10 @@ CLASS zcl_abaplint_deps_cache DEFINITION
 
     METHODS constructor
       IMPORTING
-        !iv_memory TYPE abap_bool DEFAULT abap_false
-        !iv_disk   TYPE abap_bool DEFAULT abap_false .
+        !iv_cache TYPE abap_bool DEFAULT abap_false.
     CLASS-METHODS get_instance
       IMPORTING
-        !iv_memory      TYPE abap_bool DEFAULT abap_false
-        !iv_disk        TYPE abap_bool DEFAULT abap_false
+        !iv_cache       TYPE abap_bool DEFAULT abap_false
       RETURNING
         VALUE(ro_cache) TYPE REF TO zcl_abaplint_deps_cache .
     METHODS clear .
@@ -157,8 +155,10 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
 
 
   METHOD constructor.
-    mv_memory = iv_memory.
-    mv_disk = iv_disk.
+    IF iv_cache = abap_true.
+      mv_memory = abap_true.
+      mv_disk = abap_true.
+    ENDIF.
   ENDMETHOD.
 
 
@@ -166,8 +166,7 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
     IF NOT go_cache IS BOUND.
       CREATE OBJECT go_cache
         EXPORTING
-          iv_memory = iv_memory
-          iv_disk   = iv_disk.
+          iv_cache = iv_cache.
     ENDIF.
 
     ro_cache = go_cache.
