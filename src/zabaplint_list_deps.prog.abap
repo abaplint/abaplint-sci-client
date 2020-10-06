@@ -23,16 +23,15 @@ SELECT-OPTIONS: s_devc FOR tdevc-devclass.
 SELECTION-SCREEN: END OF BLOCK b1.
 
 SELECTION-SCREEN: BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
-PARAMETERS p_depth TYPE i DEFAULT 10.
-PARAMETERS p_sap TYPE c AS CHECKBOX.
+PARAMETERS: p_depth TYPE i DEFAULT 10,
+            p_sap   TYPE c AS CHECKBOX,
+            p_cache TYPE c AS CHECKBOX.
 SELECTION-SCREEN SKIP.
 PARAMETERS: p_skip RADIOBUTTON GROUP g1,
             p_seri RADIOBUTTON GROUP g1,
             p_down RADIOBUTTON GROUP g1.
 SELECTION-SCREEN SKIP.
-PARAMETERS: p_log  TYPE c AS CHECKBOX,
-            p_mem  TYPE c AS CHECKBOX,
-            p_disk TYPE c AS CHECKBOX.
+PARAMETERS: p_log TYPE c AS CHECKBOX.
 SELECTION-SCREEN: END OF BLOCK b2.
 
 START-OF-SELECTION.
@@ -42,18 +41,19 @@ FORM run RAISING cx_static_check.
 
   DATA lo_find TYPE REF TO zcl_abaplint_deps_find.
   DATA lt_deps TYPE zif_abapgit_definitions=>ty_tadir_tt.
+  DATA lv_package TYPE devclass.
   DATA lt_packages TYPE tr_devclasses.
   DATA ls_deps LIKE LINE OF lt_deps.
-  DATA lv_lines TYPE n LENGTH 6.
+  DATA lv_lines TYPE i.
   DATA lx_error TYPE REF TO zcx_abaplint_error.
   DATA lx_error2 TYPE REF TO zcx_abapgit_exception.
   DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
   DATA li_log TYPE REF TO zif_abapgit_log.
+  DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
 
-  ls_options-max_level = p_depth.
-  ls_options-continue_into_sap = p_sap.
-  ls_options-cache_memory = p_mem.
-  ls_options-cache_disk = p_disk.
+  ls_options-depth = p_depth.
+  ls_options-conti = p_sap.
+  ls_options-cache = p_cache.
 
   CREATE OBJECT lo_find
     EXPORTING
@@ -92,10 +92,20 @@ FORM run RAISING cx_static_check.
 
   PERFORM serialize USING lt_deps ls_options.
 
+  lo_cache = zcl_abaplint_deps_cache=>get_instance( ls_options-cache ).
+  lo_cache->save( ).
+
   ULINE.
   lv_lines = lines( lt_deps ).
   FORMAT INTENSIFIED ON.
-  WRITE: / 'Found', lv_lines, 'dependencies for', p_type, p_name.
+  IF p_obje = abap_true.
+    WRITE: / 'Found', lv_lines, 'dependencies for', p_type, p_name.
+  ELSE.
+    WRITE: / 'Found', lv_lines, 'dependencies for the following packages:'.
+    LOOP AT lt_packages INTO lv_package.
+      WRITE: AT /5 lv_package.
+    ENDLOOP.
+  ENDIF.
   FORMAT INTENSIFIED OFF.
   ULINE.
 

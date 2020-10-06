@@ -5,12 +5,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
   PUBLIC SECTION.
 
     TYPES:
-      BEGIN OF ty_options,
-        max_level         TYPE i,
-        continue_into_sap TYPE abap_bool,
-        cache_memory      TYPE abap_bool,
-        cache_disk        TYPE abap_bool,
-      END OF ty_options .
+      ty_options TYPE zabaplint_glob_data.
     TYPES:
       BEGIN OF ty_tadir,
         ref_obj_type TYPE trobjtype,
@@ -209,8 +204,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   METHOD constructor.
 
     ms_options = is_options.
-    IF ms_options-max_level IS INITIAL.
-      ms_options-max_level = 20.
+    IF ms_options-depth IS INITIAL.
+      ms_options-depth = 20.
     ENDIF.
 
     ms_types = prepare_supported_types( ).
@@ -571,10 +566,10 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
         AND name <> iv_name.
     ENDIF.
 
-    IF iv_level < ms_options-max_level.
+    IF iv_level < ms_options-depth.
       rt_tadir = resolve( lt_wbcrossgt ).
     ELSE.
-      lv_msg = |Max depth { ms_options-max_level } reached, class { lv_clsname }, exiting|.
+      lv_msg = |Max depth { ms_options-depth } reached, class { lv_clsname }, exiting|.
       mi_log->add_error( lv_msg ).
       RAISE EXCEPTION TYPE zcx_abaplint_error
         EXPORTING
@@ -818,8 +813,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
     DATA lv_found TYPE abap_bool.
 
-    lo_cache = zcl_abaplint_deps_cache=>get_instance( iv_memory = ms_options-cache_memory
-                                                      iv_disk   = ms_options-cache_disk ).
+    lo_cache = zcl_abaplint_deps_cache=>get_instance( ms_options-cache ).
 
     lo_cache->read_deps(
       EXPORTING
@@ -876,7 +870,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
     " If SAP object, do not go deeper
     IF ( ls_tadir_obj-author = 'SAP' OR ls_tadir_obj-author = 'SAP*' ) AND ls_tadir_obj-srcsystem = 'SAP'
-        AND ms_options-continue_into_sap = abap_false.
+        AND ms_options-conti = abap_false.
       RETURN.
     ENDIF.
 

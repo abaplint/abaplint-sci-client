@@ -24,7 +24,7 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
   METHOD setup.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
 
-    ls_options-continue_into_sap = abap_true.
+    ls_options-conti = abap_true.
 
     CREATE OBJECT mo_cut
       EXPORTING

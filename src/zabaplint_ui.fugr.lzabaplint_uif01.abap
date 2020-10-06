@@ -612,7 +612,7 @@ FORM pick_3000.
 
   CASE lv_field.
     WHEN 'TEXT05'.
-      lv_url = 'https://github.com/abaplint/abaplint-cloud-foundry'.
+      lv_url = 'https://github.com/abaplint/abaplint-sci-client/blob/master/README.md'.
     WHEN 'TEXT02'.
       lv_url = 'http://sci.abaplint.org'.
   ENDCASE.

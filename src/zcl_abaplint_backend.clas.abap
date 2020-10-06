@@ -103,7 +103,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
 
   METHOD base64_encode.
@@ -125,8 +125,7 @@ CLASS zcl_abaplint_backend IMPLEMENTATION.
 
     CREATE OBJECT lo_deps.
     lt_found = lo_deps->find(
-      iv_depth       = ms_config-depth
-      iv_continue    = ms_config-conti
+      is_options     = ms_config
       iv_object_type = iv_object_type
       iv_object_name = iv_object_name ).
 

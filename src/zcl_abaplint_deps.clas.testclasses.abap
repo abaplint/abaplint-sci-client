@@ -20,10 +20,13 @@ CLASS ltcl_test IMPLEMENTATION.
   METHOD find.
 
     DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
+
+    ls_options-depth = 10.
+    ls_options-conti = abap_false.
 
     lt_files = mo_cut->find(
-      iv_depth       = 10
-      iv_continue    = abap_false
+      is_options     = ls_options
       iv_object_type = 'CLAS'
       iv_object_name = 'ZCL_ABAPGIT_BACKGROUND_PULL' ).
 
