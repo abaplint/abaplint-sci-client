@@ -11,20 +11,6 @@
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>ZCL_ABAPLINT_CHECK</CLSNAME>
-     <CMPNAME>MO_CACHE</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>abaplint - Cache dependencies and objects</DESCRIPT>
-    </SEOCOMPOTX>
-    <SEOCOMPOTX>
-     <CLSNAME>ZCL_ABAPLINT_CHECK</CLSNAME>
-     <CMPNAME>MS_CONFIG</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>abaplint - Global Configuration</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>
