@@ -54,7 +54,7 @@ Optional parameters:
 - Dependency depth - Defines over how many levels the check will try to resolve dependencies of ABAP classes (via inheritance, interfaces, attributes, or types)
 - Continue into SAP objects - Decides if dependencies of SAP objects should be included in the check 
 - Use cache - Select if dependencies and serialized files shall be cache in transparent tables 
-- HTTP timeout - Setting for HTTP connection to abaplint SCI server (in milliseconds)
+- HTTP timeout - Setting for HTTP connection to abaplint SCI server
 - SSL ID - Setting for HTTP connection (default ANONYM)
 
 4. Package Configuration
