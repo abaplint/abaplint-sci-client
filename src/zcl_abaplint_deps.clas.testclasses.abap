@@ -32,7 +32,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
     cl_abap_unit_assert=>assert_number_between(
       lower  = 10
-      upper  = 100
+      upper  = 200
       number = lines( lt_files ) ).
 
   ENDMETHOD.
