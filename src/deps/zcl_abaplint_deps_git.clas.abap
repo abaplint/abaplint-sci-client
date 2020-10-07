@@ -129,10 +129,8 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
     ls_options-depth = mv_depth.
 
-    CREATE OBJECT lo_dep_find
-      EXPORTING
-        is_options = ls_options.
-    CREATE OBJECT lo_dep_ser.
+    CREATE OBJECT lo_dep_find EXPORTING is_options = ls_options.
+    CREATE OBJECT lo_dep_ser EXPORTING is_options = ls_options.
 
     lt_tadir = lo_dep_find->find_by_packages( mt_packages ).
     APPEND LINES OF it_additional TO lt_tadir.
