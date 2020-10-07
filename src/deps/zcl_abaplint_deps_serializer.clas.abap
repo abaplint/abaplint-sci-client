@@ -112,22 +112,18 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     lv_include = cl_oo_classname_service=>get_pubsec_name( |{ iv_class }| ).
     READ REPORT lv_include INTO lt_text.
-    LOOP AT lt_text INTO lv_text.
-      IF lv_text(1) = '*'.
-        CONTINUE.
-      ENDIF.
-      APPEND lv_text TO rt_code.
-    ENDLOOP.
+    ASSERT sy-subrc = 0.
+    " Remove comments
+    DELETE lt_text WHERE table_line CP '#**'.
+    APPEND LINES OF lt_text TO rt_code.
 
     IF lv_final = abap_false.
       lv_include = cl_oo_classname_service=>get_prosec_name( |{ iv_class }| ).
       READ REPORT lv_include INTO lt_text.
-      LOOP AT lt_text INTO lv_text.
-        IF lv_text(1) = '*'.
-          CONTINUE.
-        ENDIF.
-        APPEND lv_text TO rt_code.
-      ENDLOOP.
+      ASSERT sy-subrc = 0.
+      " Remove comments
+      DELETE lt_text WHERE table_line CP '#**'.
+      APPEND LINES OF lt_text TO rt_code.
     ENDIF.
 
     APPEND 'ENDCLASS.' TO rt_code.
@@ -406,6 +402,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     SPLIT iv_string AT |\n| INTO TABLE lt_code.
 
+    " Remove comments
+    DELETE lt_code WHERE table_line CP '#**'.
+
     SCAN ABAP-SOURCE lt_code
       TOKENS INTO lt_tokens
       STRUCTURES INTO lt_structures
@@ -456,7 +455,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     SPLIT iv_string AT |\n| INTO TABLE lt_strings.
 
     " Skip TEXT, SHORT_TEXT, STEXT, DDTEXT, SCRTEXT_S/M/L etc
-    DELETE lt_strings WHERE table_line CP '<*TEXT>*</*TEXT>' OR table_line CP '<SCRTEXT*>*</SCRTEXT*>'.
+    DELETE lt_strings WHERE table_line CP '*<*TEXT*>*</*TEXT*>*'.
+
     LOOP AT lt_strings INTO lv_string.
       IF lv_string = |   <DYNPROS>|
           OR lv_string = |   <CUA>|
