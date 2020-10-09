@@ -7,6 +7,8 @@ CLASS zcl_abaplint_check DEFINITION
 
     CLASS-METHODS class_constructor .
     METHODS constructor .
+    CLASS-METHODS get_ping .
+    CLASS-METHODS get_map .
     CLASS-METHODS get_rule
       IMPORTING
         !iv_code         TYPE sci_errc
@@ -27,9 +29,9 @@ CLASS zcl_abaplint_check DEFINITION
         REDEFINITION .
     METHODS run
         REDEFINITION .
-    METHODS run_end
-        REDEFINITION .
     METHODS run_begin
+        REDEFINITION .
+    METHODS run_end
         REDEFINITION .
   PROTECTED SECTION.
 
@@ -44,6 +46,8 @@ CLASS zcl_abaplint_check DEFINITION
     CONSTANTS c_no_config TYPE sci_errc VALUE 'NO_CONFIG' ##NO_TEXT.
     CONSTANTS c_abaplint TYPE sci_errc VALUE 'ABAPLINT' ##NO_TEXT.
     CONSTANTS c_stats TYPE trobjtype VALUE '1STA' ##NO_TEXT.
+    CONSTANTS c_abaplint_ping TYPE sy-lisel VALUE 'ABAPLINT_PING' ##NO_TEXT.
+    CONSTANTS c_abaplint_map TYPE sy-lisel VALUE 'ABAPLINT_MAP' ##NO_TEXT.
 
     METHODS hash
       IMPORTING
@@ -68,13 +72,13 @@ CLASS zcl_abaplint_check DEFINITION
         severity TYPE sy-msgty,
       END OF ty_map .
 
+    CLASS-DATA gs_ping TYPE zcl_abaplint_backend=>ty_message .
     CLASS-DATA:
       gt_map TYPE STANDARD TABLE OF ty_map WITH DEFAULT KEY .
     DATA mo_cache TYPE REF TO zcl_abaplint_deps_cache .
     DATA ms_config TYPE zabaplint_glob_data .
 
     METHODS add_messages .
-    CLASS-METHODS init_mapping .
     METHODS get_mapping
       IMPORTING
         !iv_rule         TYPE string
@@ -99,6 +103,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       ls_map TYPE ty_map,
       ls_msg TYPE scimessage.
 
+    get_map( ).
+
     LOOP AT gt_map INTO ls_map.
       CLEAR ls_msg.
       ls_msg-test = myname.
@@ -115,7 +121,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD class_constructor.
 
-    init_mapping( ).
+    get_ping( ).
+    get_map( ).
 
   ENDMETHOD.
 
@@ -164,9 +171,52 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_map.
+
+    DATA:
+      lo_backend TYPE REF TO zcl_abaplint_backend,
+      lt_rules   TYPE zcl_abaplint_backend=>ty_rules,
+      lv_code    TYPE n LENGTH 4,
+      ls_map     TYPE ty_map.
+
+    FIELD-SYMBOLS <ls_rule> LIKE LINE OF lt_rules.
+
+    IF gt_map IS INITIAL.
+      IMPORT gt_map = gt_map FROM MEMORY ID c_abaplint_map.
+      IF sy-subrc <> 0 OR gt_map IS INITIAL.
+        " Get a list of available rules from server
+        CREATE OBJECT lo_backend.
+        TRY.
+            lt_rules = lo_backend->list_rules( ).
+          CATCH zcx_abaplint_error.
+            " This will fallback to hashed rule names
+            RETURN.
+        ENDTRY.
+
+        " Number rules sequentially
+        LOOP AT lt_rules ASSIGNING <ls_rule>.
+          lv_code = lv_code + 1.
+          CLEAR ls_map.
+          ls_map-code = 'LINT_' && lv_code.
+          ls_map-rule = <ls_rule>-key.
+          ls_map-title = <ls_rule>-title.
+          " Set default severity. Actual severity is set in SET_MESSAGE_SEVERITY
+          ls_map-severity = 'E'.
+          INSERT ls_map INTO TABLE gt_map.
+        ENDLOOP.
+
+        EXPORT gt_map = gt_map TO MEMORY ID c_abaplint_map.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD get_mapping.
 
     DATA ls_map TYPE ty_map.
+
+    get_map( ).
 
     READ TABLE gt_map INTO ls_map WITH KEY rule = iv_rule.
     IF sy-subrc <> 0.
@@ -204,6 +254,33 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_ping.
+
+    DATA:
+      lo_backend TYPE REF TO zcl_abaplint_backend.
+
+    IF gs_ping IS INITIAL.
+      IMPORT gs_ping = gs_ping FROM MEMORY ID c_abaplint_ping.
+      IF sy-subrc <> 0 OR gs_ping IS INITIAL.
+        " Get ping message which includes abaplint backend version
+        CREATE OBJECT lo_backend.
+        TRY.
+            gs_ping = lo_backend->ping( ).
+            IF gs_ping-error = abap_true.
+              RETURN.
+            ENDIF.
+          CATCH zcx_abaplint_error.
+            " This will fallback to hashed rule names
+            RETURN.
+        ENDTRY.
+
+        EXPORT gs_ping = gs_ping TO MEMORY ID c_abaplint_ping.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD get_result_node.
 
     CREATE OBJECT p_result TYPE zcl_abaplint_result
@@ -216,6 +293,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
   METHOD get_rule.
 
     DATA ls_map TYPE ty_map.
+
+    get_map( ).
 
     READ TABLE gt_map INTO ls_map WITH KEY code = iv_code.
     IF sy-subrc = 0.
@@ -279,40 +358,6 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
         iv_read_only = p_display.
 
     attributes_ok = abap_true.
-
-  ENDMETHOD.
-
-
-  METHOD init_mapping.
-
-    DATA:
-      lo_backend TYPE REF TO zcl_abaplint_backend,
-      lt_rules   TYPE zcl_abaplint_backend=>ty_rules,
-      lv_code    TYPE n LENGTH 4,
-      ls_map     TYPE ty_map.
-
-    FIELD-SYMBOLS <ls_rule> LIKE LINE OF lt_rules.
-
-    CREATE OBJECT lo_backend.
-
-    TRY.
-        lt_rules = lo_backend->list_rules( ).
-      CATCH zcx_abaplint_error.
-        " This will fallback to hashed rule names
-        RETURN.
-    ENDTRY.
-
-    " Number rules sequentially
-    LOOP AT lt_rules ASSIGNING <ls_rule>.
-      lv_code = lv_code + 1.
-      CLEAR ls_map.
-      ls_map-code = 'LINT_' && lv_code.
-      ls_map-rule = <ls_rule>-key.
-      ls_map-title = <ls_rule>-title.
-      " Set default severity. Actual severity is set in SET_MESSAGE_SEVERITY
-      ls_map-severity = 'E'.
-      INSERT ls_map INTO TABLE gt_map.
-    ENDLOOP.
 
   ENDMETHOD.
 
@@ -514,25 +559,11 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD run_end.
 
-    DATA:
-      lo_backend TYPE REF TO zcl_abaplint_backend,
-      ls_message TYPE zcl_abaplint_backend=>ty_message.
-
     super->run_end( ).
 
     mo_cache->save( ).
 
-    " Get ping message which include abaplint backend version
-    CREATE OBJECT lo_backend.
-
-    TRY.
-        ls_message = lo_backend->ping( ).
-        IF ls_message-error = abap_true.
-          RETURN.
-        ENDIF.
-      CATCH zcx_abaplint_error.
-        RETURN. "ignore
-    ENDTRY.
+    get_ping( ).
 
     " Output without object name
     object_type = '-'.
@@ -543,7 +574,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       p_sub_obj_name = '-'
       p_test         = myname
       p_kind         = c_note
-      p_param_1      = ls_message-message
+      p_param_1      = gs_ping-message
       p_param_2      = 'ping'
       p_code         = c_abaplint ).
 
@@ -555,6 +586,8 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     FIELD-SYMBOLS:
       <ls_map> TYPE ty_map,
       <ls_msg> TYPE scimessage.
+
+    get_map( ).
 
     READ TABLE gt_map ASSIGNING <ls_map> WITH KEY rule = iv_rule.
     IF sy-subrc = 0.
