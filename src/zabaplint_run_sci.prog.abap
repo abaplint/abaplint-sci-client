@@ -35,8 +35,7 @@ START-OF-SELECTION.
 FORM run RAISING cx_static_check.
 
   DATA: li_code_inspector TYPE REF TO zif_abaplint_code_inspector.
-  DATA: lt_result     TYPE scit_alvlist,
-        lr_inspection TYPE REF TO cl_ci_inspection.
+  DATA: lt_result     TYPE scit_alvlist.
 
   DATA: lt_items_sel TYPE zif_abapgit_definitions=>ty_items_tt,
         ls_item      TYPE zif_abapgit_definitions=>ty_item,

@@ -40,11 +40,8 @@ ENDFORM.
 
 FORM save USING iv_xstr TYPE xstring RAISING zcx_abapgit_exception.
 
-  DATA: lo_zip              TYPE REF TO cl_abap_zip,
-        lv_xstr             TYPE xstring,
-        lv_path             TYPE string,
-        lv_default_filename TYPE string,
-        lv_filename         TYPE string.
+  DATA: lv_path             TYPE string,
+        lv_default_filename TYPE string.
 
   lv_default_filename = |abaplint-sci-client-data-{ p_type }-{ p_name }.zip|.
   REPLACE ALL OCCURRENCES OF '/' IN lv_default_filename WITH '#'.
