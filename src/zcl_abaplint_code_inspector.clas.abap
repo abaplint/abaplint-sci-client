@@ -180,8 +180,7 @@ CLASS ZCL_ABAPLINT_CODE_INSPECTOR IMPLEMENTATION.
           ls_obj        TYPE scir_objs,
           lt_objs_check TYPE scit_objs,
           ls_item       TYPE zif_abapgit_definitions=>ty_item,
-          lt_packages   TYPE zif_abapgit_sap_package=>ty_devclass_tt,
-          lv_package    TYPE devclass.
+          lt_packages   TYPE zif_abapgit_sap_package=>ty_devclass_tt.
 
     FIELD-SYMBOLS: <item> LIKE ls_item.
 

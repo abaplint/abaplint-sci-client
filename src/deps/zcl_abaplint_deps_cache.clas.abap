@@ -177,7 +177,6 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
 
     DATA:
       lt_cache1 TYPE TABLE OF zabaplint_cache1,
-      ls_item   TYPE zif_abapgit_definitions=>ty_item,
       ls_tadir  TYPE zcl_abaplint_deps_find=>ty_tadir.
 
     FIELD-SYMBOLS:
@@ -228,7 +227,6 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
 
     DATA:
       lt_cache2 TYPE TABLE OF zabaplint_cache2,
-      ls_item   TYPE zif_abapgit_definitions=>ty_item,
       ls_file   TYPE zif_abapgit_definitions=>ty_file.
 
     FIELD-SYMBOLS:

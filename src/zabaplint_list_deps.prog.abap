@@ -68,7 +68,7 @@ FORM run RAISING cx_static_check.
         WHEN p_devc.
           SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE devclass IN s_devc.
           IF sy-subrc = 0.
-            lt_deps = lo_find->find_by_packages( it_packages = lt_packages ).
+            lt_deps = lo_find->find_by_packages( lt_packages ).
           ENDIF.
         WHEN OTHERS.
           ASSERT 0 = 1.

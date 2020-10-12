@@ -97,7 +97,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lv_final TYPE abap_bool.
     DATA lt_includes TYPE seop_methods_w_include.
     DATA lt_methods TYPE seo_methods.
-    DATA lv_text LIKE LINE OF lt_text.
     DATA lv_include TYPE program.
 
     TRY.
@@ -436,7 +435,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     ENDWHILE.
 
     IF lv_modified = abap_true.
-      rv_string = concat_lines_of( table = lt_code sep = |\n| ).
+      rv_string = concat_lines_of( table = lt_code
+                                   sep = |\n| ).
     ELSE.
       rv_string = iv_string.
     ENDIF.
