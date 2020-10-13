@@ -37,11 +37,7 @@ CLASS lcl_editor IMPLEMENTATION.
     go_editor->get_textmodified_status( IMPORTING status = lv_status ).
     cl_gui_cfw=>flush( ).
 
-    IF lv_status = 0.
-      rv_dirty = abap_false.
-    ELSE.
-      rv_dirty = abap_true.
-    ENDIF.
+    rv_dirty = boolc( lv_status <> 0 ).
 
   ENDMETHOD.
 

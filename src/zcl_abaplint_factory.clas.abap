@@ -16,14 +16,6 @@ CLASS zcl_abaplint_factory DEFINITION
   PRIVATE SECTION.
 
     TYPES:
-      BEGIN OF ty_sap_package,
-        package  TYPE devclass,
-        instance TYPE REF TO zif_abapgit_sap_package,
-      END OF ty_sap_package .
-    TYPES:
-      ty_sap_package_t TYPE HASHED TABLE OF ty_sap_package
-                                    WITH UNIQUE KEY package .
-    TYPES:
       BEGIN OF ty_code_inspector,
         items    TYPE zif_abapgit_definitions=>ty_items_tt,
         instance TYPE REF TO zif_abaplint_code_inspector,
@@ -31,14 +23,7 @@ CLASS zcl_abaplint_factory DEFINITION
     TYPES:
       ty_code_inspector_t TYPE TABLE OF ty_code_inspector.
 
-    CLASS-DATA gi_tadir TYPE REF TO zif_abapgit_tadir .
-    CLASS-DATA gt_sap_package TYPE ty_sap_package_t .
     CLASS-DATA gt_code_inspector TYPE ty_code_inspector_t .
-    CLASS-DATA gi_stage_logic TYPE REF TO zif_abapgit_stage_logic .
-    CLASS-DATA gi_cts_api TYPE REF TO zif_abapgit_cts_api .
-    CLASS-DATA gi_environment TYPE REF TO zif_abapgit_environment .
-    CLASS-DATA gi_longtext TYPE REF TO zif_abapgit_longtexts .
-    CLASS-DATA gi_http_agent TYPE REF TO zif_abapgit_http_agent .
 ENDCLASS.
 
 

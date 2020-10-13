@@ -271,7 +271,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     li_json = li_json->slice( '/config' ).
     lo_json ?= li_json.
     TRY.
-        rv_json = lo_json->stringify( iv_indent = 2 ).
+        rv_json = lo_json->stringify( 2 ).
       CATCH zcx_ajson_error INTO lx_error.
         RAISE EXCEPTION TYPE zcx_abaplint_error
           EXPORTING

@@ -52,6 +52,9 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
         !iv_class      TYPE clike
       RETURNING
         VALUE(rt_code) TYPE abaptxt255_tab .
+    METHODS build_intf
+      CHANGING
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -70,7 +73,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DELETE cs_files-files WHERE filename CP '*.clas.locals_def.abap'.
     DELETE cs_files-files WHERE filename CP '*.clas.locals_imp.abap'.
     DELETE cs_files-files WHERE filename CP '*.clas.macros.abap'.
-    DELETE cs_files-files WHERE filename CP '*.clas.xml'. " todo?
+    DELETE cs_files-files WHERE filename CP '*.clas.xml'.
     DELETE cs_files-files WHERE filename CP '*.clas.testclasses.abap'.
 
     DATA lt_text TYPE abaptxt255_tab.
@@ -94,7 +97,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     DATA lv_final TYPE abap_bool.
     DATA lt_includes TYPE seop_methods_w_include.
     DATA lt_methods TYPE seo_methods.
-    DATA lv_text LIKE LINE OF lt_text.
     DATA lv_include TYPE program.
 
     TRY.
@@ -109,22 +111,18 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     lv_include = cl_oo_classname_service=>get_pubsec_name( |{ iv_class }| ).
     READ REPORT lv_include INTO lt_text.
-    LOOP AT lt_text INTO lv_text.
-      IF lv_text(1) = '*'.
-        CONTINUE.
-      ENDIF.
-      APPEND lv_text TO rt_code.
-    ENDLOOP.
+    ASSERT sy-subrc = 0.
+    " Remove comments
+    DELETE lt_text WHERE table_line CP '#**'.
+    APPEND LINES OF lt_text TO rt_code.
 
     IF lv_final = abap_false.
       lv_include = cl_oo_classname_service=>get_prosec_name( |{ iv_class }| ).
       READ REPORT lv_include INTO lt_text.
-      LOOP AT lt_text INTO lv_text.
-        IF lv_text(1) = '*'.
-          CONTINUE.
-        ENDIF.
-        APPEND lv_text TO rt_code.
-      ENDLOOP.
+      ASSERT sy-subrc = 0.
+      " Remove comments
+      DELETE lt_text WHERE table_line CP '#**'.
+      APPEND LINES OF lt_text TO rt_code.
     ENDIF.
 
     APPEND 'ENDCLASS.' TO rt_code.
@@ -232,6 +230,11 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD build_intf.
+    DELETE cs_files-files WHERE filename CP '*.intf.xml'.
+  ENDMETHOD.
+
+
   METHOD build_prog.
 
     DATA lv_filename TYPE string.
@@ -333,6 +336,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
         CASE ls_tadir-object.
           WHEN 'CLAS'.
             build_clas( CHANGING cs_files = ls_files_item ).
+          WHEN 'INTF'.
+            build_intf( CHANGING cs_files = ls_files_item ).
           WHEN 'FUGR'.
             build_fugr( CHANGING cs_files = ls_files_item ).
           WHEN 'PROG'.
@@ -342,7 +347,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
                     CHANGING cs_files_item = ls_files_item ).
 
             build_prog( CHANGING cs_files = ls_files_item ).
-          WHEN 'TABL' OR 'MSAG'.
+          WHEN 'TABL' OR 'MSAG' OR 'VIEW' OR 'DTEL' OR 'TTYP'.
             build_xml( CHANGING cs_files = ls_files_item ).
           WHEN OTHERS.
         ENDCASE.
@@ -396,6 +401,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     SPLIT iv_string AT |\n| INTO TABLE lt_code.
 
+    " Remove comments
+    DELETE lt_code WHERE table_line CP '#**'.
+
     SCAN ABAP-SOURCE lt_code
       TOKENS INTO lt_tokens
       STRUCTURES INTO lt_structures
@@ -427,7 +435,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     ENDWHILE.
 
     IF lv_modified = abap_true.
-      rv_string = concat_lines_of( table = lt_code sep = |\n| ).
+      rv_string = concat_lines_of( table = lt_code
+                                   sep = |\n| ).
     ELSE.
       rv_string = iv_string.
     ENDIF.
@@ -445,8 +454,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     SPLIT iv_string AT |\n| INTO TABLE lt_strings.
 
-    " Skip TEXT, SHORT_TEXT, STEXT, DDTEXT, etc
-    DELETE lt_strings WHERE table_line CP '<*TEXT>*</*TEXT>'.
+    " Skip TEXT, SHORT_TEXT, STEXT, DDTEXT, SCRTEXT_S/M/L etc
+    DELETE lt_strings WHERE table_line CP '*<*TEXT*>*</*TEXT*>*'.
+
     LOOP AT lt_strings INTO lv_string.
       IF lv_string = |   <DYNPROS>|
           OR lv_string = |   <CUA>|

@@ -27,7 +27,6 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
 
     DATA lo_serializer TYPE REF TO zcl_abaplint_deps_serializer.
     DATA lo_find TYPE REF TO zcl_abaplint_deps_find.
-    DATA li_log TYPE REF TO zif_abapgit_log.
 
     CREATE OBJECT lo_serializer EXPORTING is_options = is_options.
 

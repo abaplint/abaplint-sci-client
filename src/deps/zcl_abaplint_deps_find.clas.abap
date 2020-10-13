@@ -627,10 +627,6 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
   METHOD find_extra_fugr_dependencies.
 
     DATA lv_progname LIKE sy-repid.
-    DATA lt_includes TYPE STANDARD TABLE OF d010inc WITH DEFAULT KEY.
-    DATA lv_devclass TYPE tadir-devclass.
-    DATA ls_tadir LIKE LINE OF ct_tadir.
-    DATA ls_include LIKE LINE OF lt_includes.
     DATA lv_group TYPE rs38l-area.
     DATA lv_pname TYPE tfdir-pname.
 
@@ -1157,8 +1153,7 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
   METHOD remove_own_package.
 
-    DATA: lv_devclass TYPE devclass,
-          lv_msg      TYPE string.
+    DATA: lv_devclass TYPE devclass.
 
     FIELD-SYMBOLS <ls_tadir> TYPE ty_tadir.
 
