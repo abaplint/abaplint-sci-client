@@ -11,7 +11,7 @@ CLASS zcl_abaplint_configuration DEFINITION
       BEGIN OF c_default,
         ssl_id       TYPE c LENGTH 6 VALUE 'ANONYM',
         http_timeout TYPE i VALUE 6000,
-      END OF c_default.
+      END OF c_default .
 
     METHODS read_package
       IMPORTING
@@ -53,12 +53,21 @@ CLASS zcl_abaplint_configuration DEFINITION
       RAISING
         zcx_abapgit_exception .
   PROTECTED SECTION.
+
   PRIVATE SECTION.
+    TYPES:
+      BEGIN OF ty_package_config,
+        package TYPE devclass,
+        config  TYPE string,
+      END OF ty_package_config.
+
+    CLASS-DATA:
+      gt_package_config TYPE HASHED TABLE OF ty_package_config WITH UNIQUE KEY package.
 ENDCLASS.
 
 
 
-CLASS zcl_abaplint_configuration IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_CONFIGURATION IMPLEMENTATION.
 
 
   METHOD add_package.
@@ -105,12 +114,19 @@ CLASS zcl_abaplint_configuration IMPLEMENTATION.
 
   METHOD find_from_package.
 
+    DATA ls_package_config TYPE ty_package_config.
     DATA lt_packages TYPE zif_abapgit_sap_package=>ty_devclass_tt.
     DATA lt_config TYPE ty_packages.
     DATA lo_abaplint_conf TYPE REF TO zcl_abaplint_configuration.
 
+    READ TABLE gt_package_config INTO ls_package_config WITH TABLE KEY package = iv_devclass.
+    IF sy-subrc = 0.
+      rv_config = ls_package_config-config.
+      RETURN.
+    ENDIF.
+
     lt_packages = zcl_abapgit_factory=>get_sap_package( iv_devclass )->list_superpackages( ).
-* todo, cache this in static variable
+
     CREATE OBJECT lo_abaplint_conf.
     lt_config = lo_abaplint_conf->list_packages( ).
 
@@ -120,6 +136,10 @@ CLASS zcl_abaplint_configuration IMPLEMENTATION.
       READ TABLE lt_config WITH KEY devclass = lv_package INTO ls_config.
       IF sy-subrc = 0.
         rv_config = ls_config-json.
+
+        ls_package_config-package = iv_devclass.
+        ls_package_config-config  = rv_config.
+        INSERT ls_package_config INTO TABLE gt_package_config.
         RETURN.
       ENDIF.
     ENDLOOP.
