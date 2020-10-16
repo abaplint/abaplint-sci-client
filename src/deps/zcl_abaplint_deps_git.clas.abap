@@ -155,7 +155,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       i_total              = 3
       i_output_immediately = abap_true ).
 
-    ls_remote = zcl_abapgit_git_porcelain=>pull(
+    ls_remote = zcl_abapgit_git_porcelain=>pull_by_branch(
       iv_url         = mv_git_url
       iv_branch_name = mv_branch ).
 
@@ -188,7 +188,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
         is_comment     = ls_stage-comment
         io_stage       = ls_stage-stage
         it_old_objects = ls_remote-objects
-        iv_parent      = ls_remote-branch
+        iv_parent      = ls_remote-commit
         iv_url         = mv_git_url
         iv_branch_name = mv_branch ).
     ENDIF.
