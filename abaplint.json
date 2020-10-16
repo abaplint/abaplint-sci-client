@@ -27,6 +27,7 @@
     "errorNamespace": "^(Z|Y)",
     "globalConstants":
     [
+        "icon_delete",
         "seoc_version_active",
         "seoc_clstype_class",
         "seoc_clstype_interface",
