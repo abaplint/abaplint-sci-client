@@ -125,6 +125,9 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
 
+    FIELD-SYMBOLS <ls_local> LIKE LINE OF rt_local.
+
+
     ls_options-depth = mv_depth.
 
     CREATE OBJECT lo_dep_find EXPORTING is_options = ls_options.
@@ -134,6 +137,13 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     APPEND LINES OF it_additional TO lt_tadir.
     lt_local = lo_dep_ser->serialize( lt_tadir ).
     APPEND LINES OF lt_local TO rt_local.
+
+* recalculate SHA1, as file contents is changed after serialization
+    LOOP AT rt_local ASSIGNING <ls_local>.
+      <ls_local>-sha1 = zcl_abapgit_hash=>sha1(
+        iv_type = zif_abapgit_definitions=>c_type-blob
+        iv_data = <ls_local>-data ).
+    ENDLOOP.
 
   ENDMETHOD.
 
