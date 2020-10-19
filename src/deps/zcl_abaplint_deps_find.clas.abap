@@ -839,6 +839,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
             iv_name  = is_object-obj_name
           CHANGING
             ct_tadir = lt_tadir ).
+      ELSEIF is_object-object = 'FUGR'.
+        find_extra_fugr_dependencies(
+          EXPORTING
+            iv_name  = is_object-obj_name
+          CHANGING
+            ct_tadir = lt_tadir ).
       ENDIF.
 
       " Remove entries from own package (or sub packages)
