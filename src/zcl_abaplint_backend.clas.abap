@@ -108,11 +108,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD base64_encode.
 
-    CALL FUNCTION 'SSFC_BASE64_ENCODE'
-      EXPORTING
-        bindata = iv_bin
-      IMPORTING
-        b64data = rv_base64.
+    rv_base64 = cl_http_utility=>encode_x_base64( iv_bin ).
 
   ENDMETHOD.
 
