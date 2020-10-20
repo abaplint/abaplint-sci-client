@@ -89,8 +89,8 @@ FORM deps.
           iv_git_email   = p_cemail
           iv_git_comment = p_ccomm
           it_packages    = ltb_devc.
-      lo_deps->run( iv_test = p_test
-                    iv_depth = p_depth
+      lo_deps->run( iv_test       = p_test
+                    iv_depth      = p_depth
                     it_additional = lt_additional ).
     CATCH zcx_abapgit_exception INTO lx_error.
       MESSAGE lx_error TYPE 'E'.
