@@ -14,6 +14,7 @@ CLASS ltcl_find_by_item DEFINITION FOR TESTING DURATION LONG RISK LEVEL HARMLESS
       upx_compare_cust FOR TESTING RAISING cx_static_check,
       zcl_abapgit_object_dtel FOR TESTING RAISING cx_static_check,
       zcl_abapgit_object_cus0 FOR TESTING RAISING cx_static_check,
+      find_tobj FOR TESTING RAISING cx_static_check,
       txmilograw FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
@@ -148,6 +149,20 @@ CLASS ltcl_find_by_item IMPLEMENTATION.
       iv_object_name = 'SWF_CATT' ).
 
     READ TABLE lt_results WITH KEY object = 'PROG' obj_name = '<CNTN01>' TRANSPORTING NO FIELDS.
+    cl_abap_unit_assert=>assert_subrc( ).
+
+  ENDMETHOD.
+
+  METHOD find_tobj.
+
+    DATA: lt_results TYPE zif_abapgit_definitions=>ty_tadir_tt.
+
+* test with https://github.com/abapGit-tests/FUGR_maintenance_view
+    lt_results = mo_cut->find_by_item(
+      iv_object_type = 'FUGR'
+      iv_object_name = 'ZABAPGIT_UNIT_TE' ).
+
+    READ TABLE lt_results WITH KEY object = 'TOBJ' TRANSPORTING NO FIELDS.
     cl_abap_unit_assert=>assert_subrc( ).
 
   ENDMETHOD.
