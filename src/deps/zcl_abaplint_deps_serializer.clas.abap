@@ -55,6 +55,11 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
     METHODS build_intf
       CHANGING
         !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+    METHODS build_tabl
+      IMPORTING
+        !is_item  TYPE zif_abapgit_definitions=>ty_item
+      CHANGING
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -260,6 +265,45 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD build_tabl.
+
+    DATA lv_string TYPE string.
+
+    FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
+
+
+    READ TABLE cs_files-files INDEX 1 ASSIGNING <ls_file>.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    lv_string = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
+    IF lv_string NP '*<DD03P_TABLE>*'.
+* Some tables, with switches, does not have any fields, abaplint assumes all TABL have fields
+* as its not possible to create a structure/table without fields
+      REPLACE FIRST OCCURRENCE OF |</DD02V>| IN lv_string WITH
+        |</DD02V>\n| &&
+        |<DD03P_TABLE>\n| &&
+        |  <DD03P>\n| &&
+        |   <TABNAME>{ is_item-obj_name }</TABNAME>\n| &&
+        |   <FIELDNAME>{ is_item-obj_name }</FIELDNAME>\n| &&
+        |   <DDLANGUAGE>E</DDLANGUAGE>\n| &&
+        |   <POSITION>0001</POSITION>\n| &&
+        |   <ADMINFIELD>0</ADMINFIELD>\n| &&
+        |   <INTTYPE>C</INTTYPE>\n| &&
+        |   <INTLEN>000020</INTLEN>\n| &&
+        |   <DATATYPE>CHAR</DATATYPE>\n| &&
+        |   <LENG>000010</LENG>\n| &&
+        |   <MASK>  CHAR</MASK>\n| &&
+        |  </DD03P>\n| &&
+        |</DD03P_TABLE>|.
+
+      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD build_xml.
 
     DATA lv_string TYPE string.
@@ -349,6 +393,11 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
             build_prog( CHANGING cs_files = ls_files_item ).
           WHEN 'TABL' OR 'MSAG' OR 'VIEW' OR 'DTEL' OR 'TTYP'.
             build_xml( CHANGING cs_files = ls_files_item ).
+            IF ls_tadir-object = 'TABL'.
+              build_tabl(
+                EXPORTING is_item = ls_item
+                CHANGING cs_files = ls_files_item ).
+            ENDIF.
           WHEN OTHERS.
         ENDCASE.
 
