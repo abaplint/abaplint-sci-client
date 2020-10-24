@@ -33,24 +33,9 @@ CLASS ZCL_ABAPLINT_FACTORY IMPLEMENTATION.
 
   METHOD get_code_inspector.
 
-    DATA: ls_code_inspector LIKE LINE OF gt_code_inspector.
-    FIELD-SYMBOLS: <ls_code_inspector> TYPE ty_code_inspector.
-
-    READ TABLE gt_code_inspector ASSIGNING <ls_code_inspector> INDEX 1.
-    IF sy-subrc <> 0.
-      ls_code_inspector-items = iv_items.
-
-      CREATE OBJECT ls_code_inspector-instance TYPE zcl_abaplint_code_inspector
-        EXPORTING
-          iv_items = iv_items.
-
-      INSERT ls_code_inspector
-             INTO TABLE gt_code_inspector
-             ASSIGNING <ls_code_inspector>.
-
-    ENDIF.
-
-    ri_code_inspector = <ls_code_inspector>-instance.
+    CREATE OBJECT ri_code_inspector TYPE zcl_abaplint_code_inspector
+      EXPORTING
+        iv_items = iv_items.
 
   ENDMETHOD.
 ENDCLASS.

@@ -524,7 +524,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       inform(
         p_sub_obj_type = c_stats
         p_test         = myname
-        p_kind         = c_note
+        p_kind         = c_warning
         p_param_1      = |{ object_type } { object_name }|
         p_code         = c_no_config ).
     ELSE.

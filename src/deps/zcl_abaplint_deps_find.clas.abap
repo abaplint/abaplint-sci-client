@@ -629,8 +629,25 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     DATA lv_progname LIKE sy-repid.
     DATA lv_group TYPE rs38l-area.
     DATA lv_pname TYPE tfdir-pname.
+    DATA lv_tabname TYPE tvdir-tabname.
+    DATA lv_devclass TYPE tadir-devclass.
+    DATA ls_tadir LIKE LINE OF ct_tadir.
+    DATA ls_objh TYPE objh.
 
     lv_group = iv_name.
+
+* Find TOBJ object, used to ignore generated function groups
+    SELECT SINGLE tabname FROM tvdir INTO lv_tabname WHERE area = iv_name.
+    IF sy-subrc = 0.
+      SELECT SINGLE * FROM objh INTO ls_objh WHERE objectname = lv_tabname.
+      IF sy-subrc = 0.
+        CLEAR ls_tadir.
+        ls_tadir-ref_obj_type = 'TOBJ'.
+        ls_tadir-ref_obj_name = |{ ls_objh-objectname }{ ls_objh-objecttype }|.
+        ls_tadir-devclass = lv_devclass.
+        INSERT ls_tadir INTO TABLE ct_tadir.
+      ENDIF.
+    ENDIF.
 
     CALL FUNCTION 'FUNCTION_INCLUDE_INFO'
       IMPORTING
@@ -835,6 +852,12 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
 
       IF is_object-object = 'PROG'.
         find_extra_prog_dependencies(
+          EXPORTING
+            iv_name  = is_object-obj_name
+          CHANGING
+            ct_tadir = lt_tadir ).
+      ELSEIF is_object-object = 'FUGR'.
+        find_extra_fugr_dependencies(
           EXPORTING
             iv_name  = is_object-obj_name
           CHANGING

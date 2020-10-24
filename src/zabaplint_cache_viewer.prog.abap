@@ -1,6 +1,6 @@
 REPORT zabaplint_cache_viewer.
 
-TABLES: tadir, zabaplint_cache1.
+TABLES: sscrfields, tadir, zabaplint_cache1.
 
 SELECT-OPTIONS:
   s_pack FOR tadir-devclass,
@@ -8,6 +8,8 @@ SELECT-OPTIONS:
   s_name FOR tadir-obj_name.
 PARAMETERS:
   p_file AS CHECKBOX.
+
+SELECTION-SCREEN FUNCTION KEY 1.
 
 DATA:
   gs_item   TYPE zif_abapgit_definitions=>ty_item,
@@ -24,6 +26,36 @@ DATA:
   END OF gs_file,
   gv_file TYPE string,
   gt_file TYPE TABLE OF string.
+
+INITIALIZATION.
+  sscrfields-functxt_01 = icon_delete && 'Clear Cache'.
+
+AT SELECTION-SCREEN.
+
+  DATA:
+    lv_answer TYPE c LENGTH 1,
+    lo_cache  TYPE REF TO zcl_abaplint_deps_cache.
+
+  IF sy-ucomm = 'FC01'.
+    CALL FUNCTION 'POPUP_TO_CONFIRM'
+      EXPORTING
+        titlebar              = sy-title
+        text_question         = 'Are you sure you want to clear the cache?'
+        text_button_1         = 'Yes'
+        text_button_2         = 'No'
+        default_button        = '2'
+        display_cancel_button = 'X'
+      IMPORTING
+        answer                = lv_answer
+      EXCEPTIONS
+        text_not_found        = 1
+        OTHERS                = 2.
+    IF sy-subrc = 0 AND lv_answer = '1'.
+      CREATE OBJECT lo_cache.
+      lo_cache->clear( ).
+      COMMIT WORK.
+    ENDIF.
+  ENDIF.
 
 START-OF-SELECTION.
 
@@ -100,3 +132,7 @@ START-OF-SELECTION.
     ULINE.
 
   ENDLOOP.
+
+  IF sy-subrc <> 0.
+    MESSAGE 'No cache entries found' TYPE 'S'.
+  ENDIF.

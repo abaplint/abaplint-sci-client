@@ -27,7 +27,6 @@ CLASS zcl_abaplint_deps_git DEFINITION
         stage   TYPE REF TO zcl_abapgit_stage,
       END OF ty_stage .
 
-    DATA mv_branch TYPE string .
     DATA mv_git_url TYPE string .
     DATA mt_packages TYPE tab_packages .
     DATA mv_git_name TYPE string .
@@ -111,7 +110,6 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
     mv_git_url = iv_git_url.
     mt_packages = it_packages.
-    mv_branch  = 'refs/heads/master'.
     mv_git_name = iv_git_name.
     mv_git_email = iv_git_email.
     mv_git_comment = iv_git_comment.
@@ -127,6 +125,9 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
 
+    FIELD-SYMBOLS <ls_local> LIKE LINE OF rt_local.
+
+
     ls_options-depth = mv_depth.
 
     CREATE OBJECT lo_dep_find EXPORTING is_options = ls_options.
@@ -137,6 +138,13 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     lt_local = lo_dep_ser->serialize( lt_tadir ).
     APPEND LINES OF lt_local TO rt_local.
 
+* recalculate SHA1, as file contents is changed after serialization
+    LOOP AT rt_local ASSIGNING <ls_local>.
+      <ls_local>-sha1 = zcl_abapgit_hash=>sha1(
+        iv_type = zif_abapgit_definitions=>c_type-blob
+        iv_data = <ls_local>-data ).
+    ENDLOOP.
+
   ENDMETHOD.
 
 
@@ -144,6 +152,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
     DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
     DATA ls_remote TYPE zcl_abapgit_git_porcelain=>ty_pull_result.
+    DATA lv_branch_name TYPE string.
     DATA ls_stage TYPE ty_stage.
 
     mv_depth = iv_depth.
@@ -155,9 +164,11 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
       i_total              = 3
       i_output_immediately = abap_true ).
 
-    ls_remote = zcl_abapgit_git_porcelain=>pull(
+    lv_branch_name = zcl_abapgit_git_transport=>branches( mv_git_url )->get_head_symref( ).
+
+    ls_remote = zcl_abapgit_git_porcelain=>pull_by_branch(
       iv_url         = mv_git_url
-      iv_branch_name = mv_branch ).
+      iv_branch_name = lv_branch_name ).
 
 * dont push to repositories containing abapgit code
 * everything will be overwritten in the remote repo
@@ -188,9 +199,9 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
         is_comment     = ls_stage-comment
         io_stage       = ls_stage-stage
         it_old_objects = ls_remote-objects
-        iv_parent      = ls_remote-branch
+        iv_parent      = ls_remote-commit
         iv_url         = mv_git_url
-        iv_branch_name = mv_branch ).
+        iv_branch_name = lv_branch_name ).
     ENDIF.
 
   ENDMETHOD.
