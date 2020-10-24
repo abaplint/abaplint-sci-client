@@ -277,28 +277,13 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    lv_string = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
-    IF lv_string NP '*<DD03P_TABLE>*'.
+    IF is_item-obj_name CP 'SI_*'.
+      lv_string = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
+      IF lv_string NP '*<DD03P_TABLE>*'.
 * Some tables, with switches, does not have any fields, abaplint assumes all TABL have fields
 * as its not possible to create a structure/table without fields
-      REPLACE FIRST OCCURRENCE OF |</DD02V>| IN lv_string WITH
-        |</DD02V>\n| &&
-        |<DD03P_TABLE>\n| &&
-        |  <DD03P>\n| &&
-        |   <TABNAME>{ is_item-obj_name }</TABNAME>\n| &&
-        |   <FIELDNAME>{ is_item-obj_name }</FIELDNAME>\n| &&
-        |   <DDLANGUAGE>E</DDLANGUAGE>\n| &&
-        |   <POSITION>0001</POSITION>\n| &&
-        |   <ADMINFIELD>0</ADMINFIELD>\n| &&
-        |   <INTTYPE>C</INTTYPE>\n| &&
-        |   <INTLEN>000020</INTLEN>\n| &&
-        |   <DATATYPE>CHAR</DATATYPE>\n| &&
-        |   <LENG>000010</LENG>\n| &&
-        |   <MASK>  CHAR</MASK>\n| &&
-        |  </DD03P>\n| &&
-        |</DD03P_TABLE>|.
-
-      <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
+        DELETE cs_files-files INDEX 1.
+      ENDIF.
     ENDIF.
 
   ENDMETHOD.
