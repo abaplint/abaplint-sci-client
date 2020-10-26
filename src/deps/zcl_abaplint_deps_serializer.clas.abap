@@ -55,6 +55,11 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
     METHODS build_intf
       CHANGING
         !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+    METHODS build_tabl
+      IMPORTING
+        !is_item  TYPE zif_abapgit_definitions=>ty_item
+      CHANGING
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -260,6 +265,30 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD build_tabl.
+
+    DATA lv_string TYPE string.
+
+    FIELD-SYMBOLS <ls_file> LIKE LINE OF cs_files-files.
+
+
+    READ TABLE cs_files-files INDEX 1 ASSIGNING <ls_file>.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    IF is_item-obj_name CP 'SI_*'.
+      lv_string = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ).
+      IF lv_string NP '*<DD03P_TABLE>*'.
+* Some tables, with switches, does not have any fields, abaplint assumes all TABL have fields
+* as its not possible to create a structure/table without fields
+        DELETE cs_files-files INDEX 1.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD build_xml.
 
     DATA lv_string TYPE string.
@@ -349,6 +378,11 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
             build_prog( CHANGING cs_files = ls_files_item ).
           WHEN 'TABL' OR 'MSAG' OR 'VIEW' OR 'DTEL' OR 'TTYP'.
             build_xml( CHANGING cs_files = ls_files_item ).
+            IF ls_tadir-object = 'TABL'.
+              build_tabl(
+                EXPORTING is_item = ls_item
+                CHANGING cs_files = ls_files_item ).
+            ENDIF.
           WHEN OTHERS.
         ENDCASE.
 
