@@ -33,6 +33,8 @@ CLASS zcl_abaplint_check DEFINITION
         REDEFINITION .
     METHODS run_end
         REDEFINITION .
+    METHODS put_attributes
+        REDEFINITION .
   PROTECTED SECTION.
 
     TYPES:
@@ -618,4 +620,10 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
+
+
+  METHOD put_attributes.
+    RETURN.
+  ENDMETHOD.
+
 ENDCLASS.
