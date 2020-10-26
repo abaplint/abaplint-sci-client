@@ -94,7 +94,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
+CLASS zcl_abaplint_check IMPLEMENTATION.
 
 
   METHOD add_messages.
@@ -510,6 +510,7 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
     DATA lv_config TYPE string.
+    DATA lv_kind TYPE sci_errty.
     DATA lo_backend TYPE REF TO zcl_abaplint_backend.
     DATA lt_issues TYPE zcl_abaplint_backend=>ty_issues.
 
@@ -521,12 +522,16 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
     ENDTRY.
 
     IF lv_config IS INITIAL.
-      inform(
-        p_sub_obj_type = c_stats
-        p_test         = myname
-        p_kind         = c_warning
-        p_param_1      = |{ object_type } { object_name }|
-        p_code         = c_no_config ).
+      lv_kind = ms_config-no_config.
+      TRANSLATE lv_kind USING ' N'. " default = info
+      IF lv_kind <> 'O'. " no message
+        inform(
+          p_sub_obj_type = c_stats
+          p_test         = myname
+          p_kind         = lv_kind
+          p_param_1      = |{ object_type } { object_name }|
+          p_code         = c_no_config ).
+      ENDIF.
     ELSE.
       TRY.
           CREATE OBJECT lo_backend.
