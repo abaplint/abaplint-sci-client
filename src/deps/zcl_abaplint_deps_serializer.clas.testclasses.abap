@@ -8,6 +8,7 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
       setup,
       cl_ci_tests FOR TESTING RAISING cx_static_check,
       svrs FOR TESTING RAISING cx_static_check,
+      si_rq_appl_name FOR TESTING RAISING cx_static_check,
       zabaplint_dependencies FOR TESTING RAISING cx_static_check,
       cx_iac_helper_check_7bit_acsii FOR TESTING RAISING cx_static_check,
       zabaplint_ui FOR TESTING RAISING cx_static_check.
@@ -67,7 +68,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
   METHOD cx_iac_helper_check_7bit_acsii.
 
-    DATA: ls_item TYPE zif_abapgit_definitions=>ty_item.
+    DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
     DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
     DATA ls_file LIKE LINE OF lt_files.
 
@@ -80,6 +81,20 @@ CLASS ltcl_test IMPLEMENTATION.
     LOOP AT lt_files INTO ls_file.
       cl_abap_unit_assert=>assert_not_initial( ls_file-data ).
     ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD si_rq_appl_name.
+
+    DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
+    DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA ls_file LIKE LINE OF lt_files.
+
+
+    ls_item-obj_type = 'TABL'.
+    ls_item-obj_name = 'SI_RQ_APPL_NAME'.
+
+    lt_files = mo_cut->serialize_item( ls_item ).
 
   ENDMETHOD.
 
