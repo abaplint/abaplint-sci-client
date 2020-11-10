@@ -96,7 +96,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_check IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
 
   METHOD add_messages.
@@ -153,6 +153,7 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
     add_obj_type( 'FUGR' ).
     add_obj_type( 'CLAS' ).
     add_obj_type( 'INTF' ).
+    add_obj_type( 'TABL' ).
 * todo, add all types that are supported by abapGit
 
     has_display_consolidation = abap_true.
@@ -508,6 +509,11 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD put_attributes.
+    RETURN.
+  ENDMETHOD.
+
+
   METHOD run.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
@@ -620,10 +626,4 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
-
-
-  METHOD put_attributes.
-    RETURN.
-  ENDMETHOD.
-
 ENDCLASS.
