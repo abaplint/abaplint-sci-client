@@ -29,7 +29,7 @@ CLASS ZCL_ABAPLINT_ABAPGIT IMPLEMENTATION.
   METHOD fetch_config.
 
     TRY.
-        DATA lt_repos TYPE zif_abapgit_definitions=>ty_repo_ref_tt.
+        DATA lt_repos TYPE zif_abapgit_repo_srv=>ty_repo_list.
         lt_repos = zcl_abapgit_repo_srv=>get_instance( )->list( ).
       CATCH zcx_abapgit_exception.
         RETURN.
@@ -64,7 +64,7 @@ CLASS ZCL_ABAPLINT_ABAPGIT IMPLEMENTATION.
   METHOD list_online.
 
     TRY.
-        DATA lt_repos TYPE zif_abapgit_definitions=>ty_repo_ref_tt.
+        DATA lt_repos TYPE zif_abapgit_repo_srv=>ty_repo_list.
         lt_repos = zcl_abapgit_repo_srv=>get_instance( )->list( ).
       CATCH zcx_abapgit_exception.
         RETURN.
