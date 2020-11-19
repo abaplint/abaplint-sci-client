@@ -1,7 +1,7 @@
 # abaplint SCI client
 
 This project enables [abaplint](https://abaplint.org) to be run in the context of SAP Code Inspector (SCI), allowing immediate feedback to the ABAP developers in their standard editor, SE24 / SE80 / SE38 / ABAP in Eclipse. And also works seamlessly with other places where the code inspector is triggered like ABAP Test Cockpit (ATC).
-
+ 
 ## Overview
 
 The integration requires two parts: The [abaplint Server](https://github.com/abaplint/abaplint-sci-client) and the abaplint Client (this project). When performing code checks through one of the supported editors or transactions, the abaplint Client will collect the necessary objects and dependencies and send them to the abaplint Server to be processed. The server responds with all of the abaplint findings, which are displayed like any other check results in the SAP tools.
