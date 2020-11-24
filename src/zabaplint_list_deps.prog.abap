@@ -80,9 +80,9 @@ FORM run RAISING cx_static_check.
   ENDTRY.
 
   li_log = lo_find->get_log( ).
+  li_log->set_title( sy-title ).
   IF li_log->count( ) > 0 AND p_log = abap_true.
-    zcl_abapgit_log_viewer=>show_log( iv_header_text = sy-title
-                                      ii_log         = li_log ).
+    zcl_abapgit_log_viewer=>show_log( li_log ).
   ENDIF.
 
   FORMAT INTENSIFIED OFF.
