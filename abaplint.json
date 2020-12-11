@@ -39,6 +39,10 @@
     "globalMacros": []
   },
   "rules": {
+    "intf_referencing_clas": false,
+    "method_implemented_twice": true,
+    "parser_702_chaining": false,
+    "uncaught_exception": true,
     "call_transaction_authority_check": true,
     "function_module_recommendations": false,
     "identical_contents": false,
