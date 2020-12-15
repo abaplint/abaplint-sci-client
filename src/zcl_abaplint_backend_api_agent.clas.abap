@@ -46,7 +46,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
 
 
   METHOD create.
@@ -139,13 +139,14 @@ CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
 
     li_client->request->set_method( iv_method ).
     li_client->request->set_compression( ).
-    li_client->request->set_header_field(
-      name  = 'content-type'
-      value = 'application/json' ).
 
     IF iv_method = 'POST' AND iv_payload IS NOT INITIAL. " OR PUT ... maybe in future
-      li_client->request->set_cdata( iv_payload ).
+      li_client->request->set_data( zcl_abapgit_convert=>string_to_xstring_utf8( iv_payload ) ).
     ENDIF.
+
+    li_client->request->set_header_field(
+      name  = 'content-type'
+      value = 'application/json; charset=utf-8' ).
 
     send_receive( li_client ).
     ro_json = parse_response( li_client->response ).
