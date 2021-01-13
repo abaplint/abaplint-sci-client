@@ -464,9 +464,21 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
           rs_result-line = ls_position-start_line.
         ENDIF.
 
+      WHEN 'PROG'.
+        READ TABLE lt_tabl INDEX 1 INTO lv_name.
+        SELECT SINGLE subc FROM trdir INTO lv_subc WHERE name = lv_name.
+        IF sy-subrc = 0 AND lv_subc = 'I'.
+          rs_result-sub_obj_type = 'PROG'.
+          rs_result-sub_obj_name = lv_name.
+        ELSE.
+          rs_result-sub_obj_type = object_type.
+          rs_result-sub_obj_name = object_name.
+        ENDIF.
+
       WHEN OTHERS.
         rs_result-sub_obj_type = object_type.
         rs_result-sub_obj_name = object_name.
+
     ENDCASE.
 
   ENDMETHOD.
