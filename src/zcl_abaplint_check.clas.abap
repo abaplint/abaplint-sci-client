@@ -485,13 +485,13 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
       TRANSLATE ls_issue-filename TO UPPER CASE.
       TRANSLATE ls_issue-filename USING '#/'.
-      IF NOT ls_issue-filename CP |*{ object_name }*|.
+      IF NOT ls_issue-filename CP |*{ object_name }.*|.
         ls_issue-message = |{ ls_issue-message }, { ls_issue-filename }|.
       ENDIF.
 
       lv_kind = set_message_severity(
-                  iv_rule     = ls_issue-key
-                  iv_severity = ls_issue-severity ).
+        iv_rule     = ls_issue-key
+        iv_severity = ls_issue-severity ).
 
       inform(
         p_sub_obj_type = ls_result-sub_obj_type
