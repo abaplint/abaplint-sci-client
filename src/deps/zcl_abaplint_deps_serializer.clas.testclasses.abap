@@ -88,8 +88,6 @@ CLASS ltcl_test IMPLEMENTATION.
 
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
     DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
-    DATA ls_file LIKE LINE OF lt_files.
-
 
     ls_item-obj_type = 'TABL'.
     ls_item-obj_name = 'SI_RQ_APPL_NAME'.
