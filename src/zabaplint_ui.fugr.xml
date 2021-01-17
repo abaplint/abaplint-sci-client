@@ -173,7 +173,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-URL</NAME>
-       <TEXT>?___________________________________________________________________________________________________________________________________</TEXT>
+       <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
        <LINE>005</LINE>
        <COLUMN>013</COLUMN>
@@ -222,10 +222,10 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>TEXT02</NAME>
-       <TEXT>http://sci.abaplint.org</TEXT>
+       <TEXT>https://sci.abaplint.app</TEXT>
        <LINE>008</LINE>
        <COLUMN>004</COLUMN>
-       <LENGTH>023</LENGTH>
+       <LENGTH>024</LENGTH>
        <VISLENGTH>056</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
@@ -237,10 +237,10 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>TEXT06</NAME>
-       <TEXT>CAUTION:_Your_code_will_leave_your_system_over_an_unencrypted_connection._Use_at_your_own_risk!_</TEXT>
+       <TEXT>CAUTION:_Your_code_will_leave_your_system._Use_at_your_own_risk!_</TEXT>
        <LINE>009</LINE>
        <COLUMN>004</COLUMN>
-       <LENGTH>096</LENGTH>
+       <LENGTH>065</LENGTH>
        <VISLENGTH>096</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
@@ -251,11 +251,11 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>TEXT20</NAME>
-       <TEXT>Documenation:</TEXT>
+       <TEXT>Documentation:</TEXT>
        <LINE>011</LINE>
        <COLUMN>004</COLUMN>
-       <LENGTH>013</LENGTH>
-       <VISLENGTH>013</VISLENGTH>
+       <LENGTH>014</LENGTH>
+       <VISLENGTH>014</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <REQU_ENTRY>N</REQU_ENTRY>
@@ -401,7 +401,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-HTTP_TIMEOUT</NAME>
-       <TEXT>?__________</TEXT>
+       <TEXT>___________</TEXT>
        <LINE>020</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>011</LENGTH>
@@ -432,7 +432,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-SSL_ID</NAME>
-       <TEXT>?_____</TEXT>
+       <TEXT>______</TEXT>
        <LINE>021</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>006</LENGTH>
