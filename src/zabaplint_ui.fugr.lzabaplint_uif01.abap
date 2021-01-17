@@ -610,7 +610,7 @@ FORM pick_3000.
     WHEN 'TEXT05'.
       lv_url = 'https://github.com/abaplint/abaplint-sci-client/blob/master/README.md'.
     WHEN 'TEXT02'.
-      lv_url = 'http://sci.abaplint.org'.
+      lv_url = 'https://sci.abaplint.app'.
   ENDCASE.
 
   IF NOT lv_url IS INITIAL.
