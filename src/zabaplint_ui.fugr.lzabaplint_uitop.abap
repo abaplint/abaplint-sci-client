@@ -2,6 +2,12 @@ FUNCTION-POOL zabaplint_ui.
 
 TABLES: zabaplint_glob_data.
 
+CONSTANTS:
+  BEGIN OF c_compare_type,
+    git     TYPE c VALUE 'G',
+    default TYPE c VALUE 'D',
+  END OF c_compare_type.
+
 TYPES: BEGIN OF ty_node.
     INCLUDE STRUCTURE treev_node.
 TYPES: text TYPE text50,
