@@ -8,7 +8,7 @@ The integration requires two parts: The [abaplint Server](https://github.com/aba
 
 ![Components](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/abaplint/abaplint-sci-client/master/docs/components.iuml)
 
-**Important:** The code under test leaves your ABAP system! Be sure to use a secure and controllable abaplint Server. For a test, you might use the common server at [http://sci.abaplint.org/](http://sci.abaplint.org/) (but please don't post any proprietary code).
+**Important:** The code under test leaves your ABAP system! Be sure to use a secure and controllable abaplint Server. For a test, you might use the common server at [https://sci.abaplint.app](https://sci.abaplint.app) (but please don't post any proprietary code).
 
 **Note:** Dependencies maintained in `abaplint.json` (in your repository) are ignored when running via SCI. Instead the dependencies are taken from the running ABAP system.
 
