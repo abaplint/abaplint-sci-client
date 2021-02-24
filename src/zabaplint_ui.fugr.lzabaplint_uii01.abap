@@ -2,11 +2,6 @@
 ***INCLUDE LZABAPLINT_UII01.
 *----------------------------------------------------------------------*
 
-*&---------------------------------------------------------------------*
-*&      Module  USER_COMMAND_2000  INPUT
-*&---------------------------------------------------------------------*
-*       text
-*----------------------------------------------------------------------*
 MODULE user_command_2000 INPUT.
 
   CASE gv_ok_code.
@@ -31,6 +26,12 @@ MODULE user_command_2000 INPUT.
     WHEN 'UPDATE_DEF'.
       PERFORM update_with_default_conf.
       CLEAR gv_ok_code.
+    WHEN 'DIFF_GIT'.
+      PERFORM show_diff USING c_compare_type-git.
+      CLEAR gv_ok_code.
+    WHEN 'DIFF_DEF'.
+      PERFORM show_diff USING c_compare_type-default.
+      CLEAR gv_ok_code.
     WHEN 'BACK'.
       CLEAR gv_ok_code.
       LEAVE TO SCREEN 0.
@@ -38,11 +39,6 @@ MODULE user_command_2000 INPUT.
 
 ENDMODULE.
 
-*&---------------------------------------------------------------------*
-*&      Module  USER_COMMAND_3000  INPUT
-*&---------------------------------------------------------------------*
-*       text
-*----------------------------------------------------------------------*
 MODULE user_command_3000 INPUT.
 
   CASE gv_ok_code.
@@ -56,7 +52,7 @@ MODULE user_command_3000 INPUT.
       PERFORM save_config.
       CLEAR gv_ok_code.
     WHEN 'BACK'.
-* todo, dirty data check
+      " todo, dirty data check
       CLEAR gv_ok_code.
       LEAVE TO SCREEN 0.
   ENDCASE.

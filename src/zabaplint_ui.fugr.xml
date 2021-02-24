@@ -98,7 +98,7 @@
       <PROGRAM>SAPLZABAPLINT_UI</PROGRAM>
       <SCREEN>3000</SCREEN>
       <LANGUAGE>E</LANGUAGE>
-      <DESCRIPT>Settings</DESCRIPT>
+      <DESCRIPT>abaplint Settings</DESCRIPT>
       <TYPE>N</TYPE>
       <NEXTSCREEN>3000</NEXTSCREEN>
       <LINES>026</LINES>
@@ -588,6 +588,24 @@
       <ICON_TEXT>Delete pack config</ICON_TEXT>
      </RSMPE_FUNT>
      <RSMPE_FUNT>
+      <CODE>DIFF_DEF</CODE>
+      <TEXTNO>001</TEXTNO>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT_NAME>ICON_COMPARE</TEXT_NAME>
+      <ICON_ID>@46@</ICON_ID>
+      <FUN_TEXT>Diff to Default</FUN_TEXT>
+      <ICON_TEXT>Diff to Default</ICON_TEXT>
+     </RSMPE_FUNT>
+     <RSMPE_FUNT>
+      <CODE>DIFF_GIT</CODE>
+      <TEXTNO>001</TEXTNO>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT_NAME>ICON_COMPARE</TEXT_NAME>
+      <ICON_ID>@46@</ICON_ID>
+      <FUN_TEXT>Diff to abapGit</FUN_TEXT>
+      <ICON_TEXT>Diff to abapGit</ICON_TEXT>
+     </RSMPE_FUNT>
+     <RSMPE_FUNT>
       <CODE>EXIT</CODE>
       <TEXTNO>001</TEXTNO>
       <TYPE>E</TYPE>
@@ -671,12 +689,19 @@
       <PFK_CODE>000001</PFK_CODE>
       <CODE>0001</CODE>
       <NO>07</NO>
-      <PFNO>18</PFNO>
+      <PFNO>31</PFNO>
      </RSMPE_BUT>
      <RSMPE_BUT>
       <PFK_CODE>000001</PFK_CODE>
       <CODE>0001</CODE>
       <NO>08</NO>
+      <PFNO>29</PFNO>
+     </RSMPE_BUT>
+     <RSMPE_BUT>
+      <PFK_CODE>000001</PFK_CODE>
+      <CODE>0001</CODE>
+      <NO>09</NO>
+      <PFNO>18</PFNO>
      </RSMPE_BUT>
     </BUT>
     <PFK>
@@ -726,6 +751,18 @@
       <CODE>000001</CODE>
       <PFNO>19</PFNO>
       <FUNCODE>UPDATE_DEF</FUNCODE>
+      <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000001</CODE>
+      <PFNO>29</PFNO>
+      <FUNCODE>DIFF_GIT</FUNCODE>
+      <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
+     <RSMPE_PFK>
+      <CODE>000001</CODE>
+      <PFNO>31</PFNO>
+      <FUNCODE>DIFF_DEF</FUNCODE>
       <FUNNO>001</FUNNO>
      </RSMPE_PFK>
      <RSMPE_PFK>
@@ -779,6 +816,14 @@
      <RSMPE_STAF>
       <STATUS>STATUS_2000</STATUS>
       <FUNCTION>DELETE</FUNCTION>
+     </RSMPE_STAF>
+     <RSMPE_STAF>
+      <STATUS>STATUS_2000</STATUS>
+      <FUNCTION>DIFF_DEF</FUNCTION>
+     </RSMPE_STAF>
+     <RSMPE_STAF>
+      <STATUS>STATUS_2000</STATUS>
+      <FUNCTION>DIFF_GIT</FUNCTION>
      </RSMPE_STAF>
      <RSMPE_STAF>
       <STATUS>STATUS_2000</STATUS>

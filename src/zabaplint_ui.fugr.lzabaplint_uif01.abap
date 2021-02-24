@@ -1,5 +1,6 @@
 *----------------------------------------------------------------------*
 ***INCLUDE LZABAPLINT_UIF01.
+*
 *----------------------------------------------------------------------*
 
 CLASS lcl_editor DEFINITION FINAL.
@@ -7,6 +8,7 @@ CLASS lcl_editor DEFINITION FINAL.
   PUBLIC SECTION.
     CLASS-METHODS:
       save,
+      get RETURNING VALUE(rv_json) TYPE string,
       is_dirty RETURNING VALUE(rv_dirty) TYPE abap_bool,
       get_devclass RETURNING VALUE(rv_devclass) TYPE devclass,
       update IMPORTING iv_json TYPE string,
@@ -41,6 +43,13 @@ CLASS lcl_editor IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get.
+
+    go_editor->get_textstream( IMPORTING text = rv_json ).
+    cl_gui_cfw=>flush( ).
+
+  ENDMETHOD.
+
   METHOD update.
 
     go_editor->set_textstream( iv_json ).
@@ -53,6 +62,9 @@ CLASS lcl_editor IMPLEMENTATION.
 
     DATA: lv_string TYPE string.
 
+    IF gv_read_only = abap_true.
+      RETURN.
+    ENDIF.
 
     IF is_dirty( ) = abap_false.
       MESSAGE 'Nothing changed' TYPE 'S'.
@@ -245,14 +257,6 @@ CLASS lcl_handler IMPLEMENTATION.
 
 ENDCLASS.
 
-*&---------------------------------------------------------------------*
-*& Form INIT_2000
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM init_2000.
 
   IF NOT go_container IS BOUND.
@@ -299,14 +303,6 @@ FORM init_3000.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form ADD_RAW
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM add_raw.
 
   DATA: lv_answer TYPE c LENGTH 1,
@@ -348,14 +344,6 @@ FORM add_raw.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form TEST
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM test.
 
   DATA lx_cx TYPE REF TO zcx_abaplint_error.
@@ -377,14 +365,6 @@ FORM test.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form SAVE_CONFIG
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM save_config.
 
   DATA lo_config TYPE REF TO zcl_abaplint_configuration.
@@ -396,14 +376,6 @@ FORM save_config.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form CALL_3000
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM call_3000.
 
   DATA lo_config TYPE REF TO zcl_abaplint_configuration.
@@ -415,14 +387,6 @@ FORM call_3000.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form ADD_GIT
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM add_git.
 
   DATA lo_abaplint TYPE REF TO zcl_abaplint_abapgit.
@@ -441,26 +405,10 @@ FORM add_git.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form SAVE
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM save.
   lcl_editor=>save( ).
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form UPDATE_GIT
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM update_git.
 
   DATA lv_devclass TYPE devclass.
@@ -509,14 +457,150 @@ FORM update_with_default_conf.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form STATUS_2000
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
+FORM show_diff USING iv_type TYPE c.
+
+  TYPES:
+    BEGIN OF ty_alv,
+      new_num TYPE c LENGTH 6,
+      new     TYPE string,
+      result  TYPE c LENGTH 1,
+      old_num TYPE c LENGTH 6,
+      old     TYPE string,
+      scol    TYPE lvc_t_scol,
+    END OF ty_alv.
+
+  DATA:
+    lv_devclass            TYPE devclass,
+    lo_abaplint            TYPE REF TO zcl_abaplint_abapgit,
+    lo_backend             TYPE REF TO zcl_abaplint_backend,
+    lo_ajson_util          TYPE REF TO zcl_ajson_utilities,
+    lv_json_comp           TYPE string,
+    lv_json_curr           TYPE string,
+    lo_diff                TYPE REF TO zcl_abapgit_diff,
+    lt_diff                TYPE zif_abapgit_definitions=>ty_diffs_tt,
+    lt_alv                 TYPE STANDARD TABLE OF ty_alv WITH DEFAULT KEY,
+    lo_alv                 TYPE REF TO cl_salv_table,
+    lo_display_settings    TYPE REF TO cl_salv_display_settings,
+    lo_functions           TYPE REF TO cl_salv_functions,
+    lo_functional_settings TYPE REF TO cl_salv_functional_settings,
+    lo_selections          TYPE REF TO cl_salv_selections,
+    lo_columns             TYPE REF TO cl_salv_columns_table,
+    lo_column              TYPE REF TO cl_salv_column,
+    lx_error               TYPE REF TO cx_static_check.
+
+  FIELD-SYMBOLS:
+    <ls_diff>  LIKE LINE OF lt_diff,
+    <ls_alv>   LIKE LINE OF lt_alv,
+    <ls_color> TYPE lvc_s_scol.
+
+  lv_devclass = lcl_editor=>get_devclass( ).
+  IF lv_devclass IS INITIAL.
+    MESSAGE 'No package selected' TYPE 'W' DISPLAY LIKE 'S'.
+    RETURN.
+  ENDIF.
+
+  TRY.
+      " Get current and comparison JSON
+      lv_json_curr = lcl_editor=>get( ).
+
+      CASE iv_type.
+        WHEN c_compare_type-git.
+          CREATE OBJECT lo_abaplint.
+          lv_json_comp = lo_abaplint->fetch_config( lv_devclass ).
+        WHEN c_compare_type-default.
+          CREATE OBJECT lo_backend.
+          lv_json_comp = lo_backend->get_default_config( ).
+      ENDCASE.
+
+      " Prepare for and get JSON diff
+      CREATE OBJECT lo_ajson_util.
+
+      lv_json_comp = lo_ajson_util->sort( iv_json = lv_json_comp ).
+      lv_json_curr = lo_ajson_util->sort( iv_json = lv_json_curr ).
+
+      CREATE OBJECT lo_diff
+        EXPORTING
+          iv_new = zcl_abapgit_convert=>string_to_xstring( lv_json_curr )
+          iv_old = zcl_abapgit_convert=>string_to_xstring( lv_json_comp ).
+
+      lt_diff = lo_diff->get( ).
+
+      " Colorize diffs
+      LOOP AT lt_diff ASSIGNING <ls_diff>.
+        APPEND INITIAL LINE TO lt_alv ASSIGNING <ls_alv>.
+        MOVE-CORRESPONDING <ls_diff> TO <ls_alv>.
+        TRANSLATE <ls_alv>-result USING 'I+D-U~'.
+        APPEND INITIAL LINE TO <ls_alv>-scol ASSIGNING <ls_color>.
+
+        CASE <ls_alv>-result.
+          WHEN '+'.
+            <ls_color>-color-col = 5.
+          WHEN '-'.
+            <ls_color>-color-col = 6.
+          WHEN '~'.
+            <ls_color>-color-col = 3.
+        ENDCASE.
+      ENDLOOP.
+
+      " Output as ALV
+      cl_salv_table=>factory(
+        IMPORTING
+          r_salv_table = lo_alv
+        CHANGING
+          t_table      = lt_alv ).
+
+      lo_functions = lo_alv->get_functions( ).
+      lo_functions->set_all( ).
+
+      lo_functional_settings = lo_alv->get_functional_settings( ).
+
+      lo_selections = lo_alv->get_selections( ).
+      lo_selections->set_selection_mode( if_salv_c_selection_mode=>cell ).
+
+      lo_columns = lo_alv->get_columns( ).
+      lo_columns->set_optimize( ).
+      lo_columns->set_color_column( 'SCOL' ).
+
+      lo_column = lo_columns->get_column( 'RESULT' ).
+      lo_column->set_medium_text( 'Diff' ).
+      lo_column->set_output_length( 5 ).
+
+      lo_column = lo_columns->get_column( 'NEW_NUM' ).
+      lo_column->set_medium_text( 'Line' ).
+      lo_column->set_output_length( 5 ).
+
+      lo_column = lo_columns->get_column( 'NEW' ).
+      lo_column->set_long_text( 'Local: abaplint.json' ).
+      lo_column->set_output_length( 60 ).
+      lo_column->set_leading_spaces( abap_true ).
+
+      lo_column = lo_columns->get_column( 'OLD_NUM' ).
+      lo_column->set_medium_text( 'Line' ).
+      lo_column->set_output_length( 5 ).
+
+      lo_column = lo_columns->get_column( 'OLD' ).
+      lo_column->set_output_length( 60 ).
+      lo_column->set_leading_spaces( abap_true ).
+
+      CASE iv_type.
+        WHEN c_compare_type-git.
+          lo_column->set_long_text( 'abapGit: abaplint.json' ).
+        WHEN c_compare_type-default.
+          lo_column->set_long_text( 'Default: abaplint.json' ).
+      ENDCASE.
+
+      lo_display_settings = lo_alv->get_display_settings( ).
+      lo_display_settings->set_list_header( sy-title ).
+      lo_display_settings->set_fit_column_to_table_size( ).
+
+      lo_alv->display( ).
+
+    CATCH zcx_abapgit_exception zcx_abaplint_error zcx_ajson_error cx_salv_error INTO lx_error.
+      MESSAGE lx_error TYPE 'E' DISPLAY LIKE 'S'.
+  ENDTRY.
+
+ENDFORM.
+
 FORM status_2000.
 
   DATA: lt_exclude TYPE TABLE OF sy-ucomm.
@@ -548,14 +632,6 @@ FORM status_3000.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form DELETE
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM delete.
 
   DATA: lv_answer TYPE c LENGTH 1,
@@ -591,14 +667,6 @@ FORM delete.
 
 ENDFORM.
 
-*&---------------------------------------------------------------------*
-*& Form PICK_3000
-*&---------------------------------------------------------------------*
-*& text
-*&---------------------------------------------------------------------*
-*& -->  p1        text
-*& <--  p2        text
-*&---------------------------------------------------------------------*
 FORM pick_3000.
 
   DATA: lv_field TYPE string,
