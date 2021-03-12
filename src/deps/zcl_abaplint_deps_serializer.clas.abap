@@ -323,6 +323,8 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     DATA lo_cache TYPE REF TO zcl_abaplint_deps_cache.
     DATA lv_found TYPE abap_bool.
+    DATA lx_error TYPE REF TO zcx_abapgit_exception.
+    DATA li_log   TYPE REF TO zif_abapgit_log.
 
     lo_cache = zcl_abaplint_deps_cache=>get_instance( ms_options-cache ).
 
@@ -357,11 +359,17 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
           ev_found   = lv_found ).
 
       IF lv_found = abap_false.
-        ls_files_item = zcl_abapgit_objects=>serialize(
-          is_item                       = ls_item
-          iv_serialize_master_lang_only = abap_true
-          iv_language                   = sy-langu ).
+        TRY.
+            ls_files_item = zcl_abapgit_objects=>serialize(
+              is_item                       = ls_item
+              iv_serialize_master_lang_only = abap_true
+              iv_language                   = sy-langu ).
 
+          CATCH zcx_abapgit_exception INTO lx_error.
+            MESSAGE lx_error TYPE 'S'.
+            "Finish serialization
+            CONTINUE.
+        ENDTRY.
         CASE ls_tadir-object.
           WHEN 'CLAS'.
             build_clas( CHANGING cs_files = ls_files_item ).
@@ -399,7 +407,6 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
         APPEND <ls_file> TO rt_files.
       ENDLOOP.
     ENDLOOP.
-
   ENDMETHOD.
 
 
