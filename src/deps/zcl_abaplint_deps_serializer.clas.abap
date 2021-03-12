@@ -367,7 +367,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
           CATCH zcx_abapgit_exception INTO lx_error.
             MESSAGE lx_error TYPE 'S'.
-            "Finish serialization
+            "Continue serialization
             CONTINUE.
         ENDTRY.
         CASE ls_tadir-object.
