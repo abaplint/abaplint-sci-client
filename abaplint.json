@@ -15,11 +15,6 @@
       "url": "https://github.com/larshp/abapGit",
       "folder": "/deps2",
       "files": "/src/**/*.*"
-    },
-    {
-      "url": "https://github.com/sbcgua/ajson",
-      "folder": "/deps3",
-      "files": "/src/**/*.*"
     }
   ],
   "syntax": {
