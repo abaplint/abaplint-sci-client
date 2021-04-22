@@ -203,7 +203,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       |\}|.
 
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_ajson_reader.
+    DATA li_json TYPE REF TO zif_abapgit_ajson_reader.
 
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
     li_json = lo_agent->request(
@@ -257,9 +257,9 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
   METHOD get_default_config.
 
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_ajson_reader.
-    DATA lo_json TYPE REF TO zcl_ajson.
-    DATA lx_error TYPE REF TO zcx_ajson_error.
+    DATA li_json TYPE REF TO zif_abapgit_ajson_reader.
+    DATA lo_json TYPE REF TO zcl_abapgit_ajson.
+    DATA lx_error TYPE REF TO zcx_abapgit_ajson_error.
 
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
 
@@ -268,7 +268,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
     lo_json ?= li_json.
     TRY.
         rv_json = lo_json->stringify( 2 ).
-      CATCH zcx_ajson_error INTO lx_error.
+      CATCH zcx_abapgit_ajson_error INTO lx_error.
         RAISE EXCEPTION TYPE zcx_abaplint_error
           EXPORTING
             message = lx_error->message.
@@ -288,8 +288,8 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     DATA:
       lo_agent TYPE REF TO zcl_abaplint_backend_api_agent,
-      li_json  TYPE REF TO zif_ajson_reader,
-      lx_error TYPE REF TO zcx_ajson_error.
+      li_json  TYPE REF TO zif_abapgit_ajson_reader,
+      lx_error TYPE REF TO zcx_abapgit_ajson_error.
 
     " Get a list of all abaplint rules via /api/v1/list_rules
     " https://github.com/abaplint/abaplint-sci-server/pull/223
@@ -305,7 +305,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     TRY.
         li_json->to_abap( IMPORTING ev_container = rt_rules ).
-      CATCH zcx_ajson_error INTO lx_error.
+      CATCH zcx_abapgit_ajson_error INTO lx_error.
         RAISE EXCEPTION TYPE zcx_abaplint_error
           EXPORTING
             message = lx_error->message.
@@ -318,7 +318,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_ajson_reader.
+    DATA li_json TYPE REF TO zif_abapgit_ajson_reader.
 
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
 
