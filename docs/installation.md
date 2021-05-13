@@ -12,7 +12,6 @@ The following repositories must be installed in this order:
 
 * [abapGit developer version](https://docs.abapgit.org/guide-install.html#install-developer-version) 
 (with all the separate classes, not a simple file version)
-* [ajson](https://github.com/sbcgua/ajson) 
 * [abaplint Client](https://github.com/abaplint/abaplint-sci-client) (this repo)
 
 ## Initial Setup

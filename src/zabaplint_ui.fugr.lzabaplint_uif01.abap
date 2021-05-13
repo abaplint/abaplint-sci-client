@@ -473,7 +473,7 @@ FORM show_diff USING iv_type TYPE c.
     lv_devclass            TYPE devclass,
     lo_abaplint            TYPE REF TO zcl_abaplint_abapgit,
     lo_backend             TYPE REF TO zcl_abaplint_backend,
-    lo_ajson_util          TYPE REF TO zcl_ajson_utilities,
+    lo_ajson_util          TYPE REF TO zcl_abapgit_ajson_utilities,
     lv_json_comp           TYPE string,
     lv_json_curr           TYPE string,
     lo_diff                TYPE REF TO zcl_abapgit_diff,
@@ -595,7 +595,7 @@ FORM show_diff USING iv_type TYPE c.
 
       lo_alv->display( ).
 
-    CATCH zcx_abapgit_exception zcx_abaplint_error zcx_ajson_error cx_salv_error INTO lx_error.
+    CATCH zcx_abapgit_exception zcx_abaplint_error zcx_abapgit_ajson_error cx_salv_error INTO lx_error.
       MESSAGE lx_error TYPE 'E' DISPLAY LIKE 'S'.
   ENDTRY.
 
