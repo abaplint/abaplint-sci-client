@@ -361,9 +361,9 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
       IF lv_found = abap_false.
         TRY.
             ls_files_item = zcl_abapgit_objects=>serialize(
-              is_item                       = ls_item
-              iv_serialize_master_lang_only = abap_true
-              iv_language                   = sy-langu ).
+              is_item               = ls_item
+              iv_main_language_only = abap_true
+              iv_language           = sy-langu ).
 
           CATCH zcx_abapgit_exception INTO lx_error.
             MESSAGE lx_error TYPE 'S'.
