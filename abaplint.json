@@ -22,7 +22,6 @@
     "errorNamespace": "^(Z|Y)",
     "globalConstants":
     [
-        "icon_delete",
         "seoc_version_active",
         "seoc_clstype_class",
         "seoc_clstype_interface",
@@ -34,6 +33,16 @@
     "globalMacros": []
   },
   "rules": {
+    "dangerous_statement": true,
+    "db_operation_in_loop": false,
+    "identical_descriptions": true,
+    "max_one_method_parameter_per_line": true,
+    "modify_only_own_db_tables": true,
+    "no_yoda_conditions": false,
+    "prefer_raise_exception_new": true,
+    "select_add_order_by": false,
+    "select_performance": false,
+    "unsecure_fae": false,
     "use_class_based_exceptions": true,
     "intf_referencing_clas": false,
     "method_implemented_twice": true,
@@ -77,15 +86,10 @@
     "ambiguous_statement": true,
     "avoid_use": {
       "define": true,
-      "endselect": true,
       "describeLines": true,
       "defaultKey": false,
-      "execSQL": true,
       "break": true,
-      "kernelCall": true,
-      "communication": true,
-      "statics": true,
-      "systemCall": true
+      "statics": true
     },
     "begin_end_names": true,
     "chain_mainly_declarations": true,
@@ -232,6 +236,13 @@
       "refresh": true,
       "compute": true,
       "typePools": true,
+      "communication": true,
+      "exitFromSQL": true,
+      "freeMemory": true,
+      "pack": true,
+      "parameter": true,
+      "ranges": true,
+      "selectWithoutInto": true,
       "add": true,
       "load": true,
       "withHeaderLine": true,
