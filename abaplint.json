@@ -47,6 +47,7 @@
     "intf_referencing_clas": false,
     "method_implemented_twice": true,
     "parser_702_chaining": false,
+    "unused_ddic": true,
     "uncaught_exception": true,
     "call_transaction_authority_check": true,
     "function_module_recommendations": true,
