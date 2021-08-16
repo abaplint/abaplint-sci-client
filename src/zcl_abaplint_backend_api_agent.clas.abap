@@ -18,7 +18,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
         !iv_method     TYPE string DEFAULT if_http_request=>co_request_method_get
         !iv_payload    TYPE string OPTIONAL
       RETURNING
-        VALUE(ro_json) TYPE REF TO zif_abapgit_ajson_reader
+        VALUE(ro_json) TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abaplint_error .
   PROTECTED SECTION.
@@ -34,7 +34,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
       IMPORTING
         ii_response    TYPE REF TO if_http_response
       RETURNING
-        VALUE(ro_json) TYPE REF TO zif_abapgit_ajson_reader
+        VALUE(ro_json) TYPE REF TO zif_abapgit_ajson
       RAISING
         zcx_abaplint_error .
     METHODS send_receive
@@ -97,7 +97,7 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
           message = |API request failed [{ lv_scode }]|.
     ENDIF.
 
-    DATA li_reader TYPE REF TO zif_abapgit_ajson_reader.
+    DATA li_reader TYPE REF TO zif_abapgit_ajson.
     DATA lo_ajson_err TYPE REF TO zcx_abapgit_ajson_error.
     TRY.
         li_reader = zcl_abapgit_ajson=>parse( lv_response ).
