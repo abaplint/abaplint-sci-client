@@ -203,7 +203,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       |\}|.
 
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_abapgit_ajson_reader.
+    DATA li_json TYPE REF TO zif_abapgit_ajson.
 
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
     li_json = lo_agent->request(
@@ -257,7 +257,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
   METHOD get_default_config.
 
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_abapgit_ajson_reader.
+    DATA li_json TYPE REF TO zif_abapgit_ajson.
     DATA lo_json TYPE REF TO zcl_abapgit_ajson.
     DATA lx_error TYPE REF TO zcx_abapgit_ajson_error.
 
@@ -288,7 +288,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     DATA:
       lo_agent TYPE REF TO zcl_abaplint_backend_api_agent,
-      li_json  TYPE REF TO zif_abapgit_ajson_reader,
+      li_json  TYPE REF TO zif_abapgit_ajson,
       lx_error TYPE REF TO zcx_abapgit_ajson_error.
 
     " Get a list of all abaplint rules via /api/v1/list_rules
@@ -318,7 +318,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     DATA lx_error TYPE REF TO zcx_abaplint_error.
     DATA lo_agent TYPE REF TO zcl_abaplint_backend_api_agent.
-    DATA li_json TYPE REF TO zif_abapgit_ajson_reader.
+    DATA li_json TYPE REF TO zif_abapgit_ajson.
 
     lo_agent = zcl_abaplint_backend_api_agent=>create( ms_config ).
 
