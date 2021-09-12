@@ -48,6 +48,8 @@ CLASS ZCL_ABAPLINT_ABAPGIT IMPLEMENTATION.
       IF lo_repo->get_package( ) = iv_devclass.
         DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
         DATA ls_file LIKE LINE OF lt_files.
+        " Get most recent files
+        lo_repo->refresh( ).
         lt_files = lo_repo->get_files_remote( ).
         READ TABLE lt_files WITH KEY path = '/' filename = 'abaplint.json' INTO ls_file.
         IF sy-subrc = 0.
