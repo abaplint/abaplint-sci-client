@@ -162,7 +162,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
+CLASS zcl_abaplint_deps_find IMPLEMENTATION.
 
 
   METHOD add_subpackages.
@@ -278,10 +278,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
           rs_object-object = 'FUGR'.
           rs_object-obj_name = lv_area.
         ENDIF.
-      WHEN 'PARA' OR 'SUSO' OR 'TABL' OR 'CLAS' OR 'INTF' OR 'ENHS' OR 'ENHO' OR 'DTEL'.
-        rs_object-object = iv_object_type.
-        rs_object-obj_name = iv_object_name.
-      WHEN 'TTYP' OR 'XSLT' OR 'VIEW' OR 'TRAN' OR 'MSAG'.
+      WHEN 'PARA' OR 'SUSO' OR 'TABL' OR 'CLAS' OR 'INTF' OR 'ENHS' OR 'ENHO' OR 'DTEL' OR
+           'TTYP' OR 'XSLT' OR 'VIEW' OR 'TRAN' OR 'MSAG' OR 'TYPE'.
         rs_object-object = iv_object_type.
         rs_object-obj_name = iv_object_name.
       WHEN 'STRU'.
@@ -1027,11 +1025,8 @@ CLASS ZCL_ABAPLINT_DEPS_FIND IMPLEMENTATION.
     rs_types-conv = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'SUSO'.
     rs_types-suso = zcl_abapgit_objects=>is_supported( ls_type ).
-
-* TYPE are not handled properly in abaplint right now, so skip
-*    ls_type-obj_type = 'TYPE'
-*    rs_types-type = zcl_abapgit_objects=>is_supported( ls_type )
-
+    ls_type-obj_type = 'TYPE'.
+    rs_types-type = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'TTYP'.
     rs_types-ttyp = zcl_abapgit_objects=>is_supported( ls_type ).
     ls_type-obj_type = 'PROG'.
