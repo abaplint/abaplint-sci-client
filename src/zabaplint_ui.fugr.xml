@@ -173,7 +173,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-URL</NAME>
-       <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
        <LINE>005</LINE>
        <COLUMN>013</COLUMN>
@@ -309,7 +308,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-DEPTH</NAME>
-       <TEXT>_______.___</TEXT>
        <LINE>015</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>011</LENGTH>
@@ -463,7 +461,6 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-NO_CONFIG</NAME>
-       <TEXT>_</TEXT>
        <LINE>023</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>001</LENGTH>
