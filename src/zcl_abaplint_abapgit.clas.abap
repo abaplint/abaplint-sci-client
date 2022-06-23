@@ -23,7 +23,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_ABAPGIT IMPLEMENTATION.
+CLASS zcl_abaplint_abapgit IMPLEMENTATION.
 
 
   METHOD fetch_config.
@@ -51,7 +51,7 @@ CLASS ZCL_ABAPLINT_ABAPGIT IMPLEMENTATION.
         " Get most recent files
         lo_repo->refresh( ).
         lt_files = lo_repo->get_files_remote( ).
-        READ TABLE lt_files WITH KEY path = '/' filename = 'abaplint.json' INTO ls_file.
+        READ TABLE lt_files WITH KEY file_path COMPONENTS path = '/' filename = 'abaplint.json' INTO ls_file.
         IF sy-subrc = 0.
           rv_json = zcl_abapgit_convert=>xstring_to_string_utf8( ls_file-data ).
         ENDIF.

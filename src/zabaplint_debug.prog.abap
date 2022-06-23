@@ -56,7 +56,7 @@ FORM save USING iv_xstr TYPE xstring RAISING zcx_abapgit_exception.
 
 ENDFORM.
 
-FORM zip USING is_data TYPE ty_data CHANGING cv_xstr TYPE xstring.
+FORM zip USING is_data TYPE ty_data CHANGING cv_xstr TYPE xstring RAISING zcx_abapgit_exception.
 
   DATA lo_zip TYPE REF TO cl_abap_zip.
   DATA ls_file LIKE LINE OF is_data-deps.

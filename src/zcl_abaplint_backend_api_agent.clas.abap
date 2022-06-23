@@ -46,7 +46,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
+CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
 
 
   METHOD create.
@@ -130,6 +130,7 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
 
   METHOD request.
 
+    DATA lx_error TYPE REF TO zcx_abapgit_exception.
     DATA li_client TYPE REF TO if_http_client.
     li_client = create_client( ).
 
@@ -141,7 +142,11 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
     li_client->request->set_compression( ).
 
     IF iv_method = 'POST' AND iv_payload IS NOT INITIAL. " OR PUT ... maybe in future
-      li_client->request->set_data( zcl_abapgit_convert=>string_to_xstring_utf8( iv_payload ) ).
+      TRY.
+          li_client->request->set_data( zcl_abapgit_convert=>string_to_xstring_utf8( iv_payload ) ).
+        CATCH zcx_abapgit_exception INTO lx_error.
+          zcx_abaplint_error=>raise( lx_error->get_text( ) ).
+      ENDTRY.
     ENDIF.
 
     li_client->request->set_header_field(
