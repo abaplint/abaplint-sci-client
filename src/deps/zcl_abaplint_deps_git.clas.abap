@@ -56,7 +56,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
+CLASS zcl_abaplint_deps_git IMPLEMENTATION.
 
 
   METHOD build_stage.
@@ -72,7 +72,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     CREATE OBJECT rs_stage-stage.
 
     LOOP AT it_local INTO ls_local.
-      READ TABLE it_remote WITH KEY
+      READ TABLE it_remote WITH KEY file_path COMPONENTS
         path = ls_local-path
         filename = ls_local-filename
         ASSIGNING <r>.
@@ -92,7 +92,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
     ENDLOOP.
 
     LOOP AT it_remote INTO ls_remote.
-      READ TABLE it_local WITH KEY
+      READ TABLE it_local WITH KEY file_path COMPONENTS
         path = ls_remote-path
         filename = ls_remote-filename TRANSPORTING NO FIELDS.
       IF sy-subrc <> 0.
@@ -172,7 +172,7 @@ CLASS ZCL_ABAPLINT_DEPS_GIT IMPLEMENTATION.
 
 * dont push to repositories containing abapgit code
 * everything will be overwritten in the remote repo
-    READ TABLE ls_remote-files WITH KEY path = '/' filename = '.abapgit.xml'
+    READ TABLE ls_remote-files WITH KEY file_path COMPONENTS path = '/' filename = '.abapgit.xml'
       TRANSPORTING NO FIELDS.
     ASSERT sy-subrc <> 0.
 

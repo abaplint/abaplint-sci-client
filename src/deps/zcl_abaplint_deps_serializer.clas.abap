@@ -37,16 +37,24 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
         VALUE(rv_string) TYPE string .
     METHODS build_clas
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+      RAISING
+        zcx_abapgit_exception .
     METHODS build_prog
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+      RAISING
+        zcx_abapgit_exception .
     METHODS build_fugr
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+      RAISING
+        zcx_abapgit_exception .
     METHODS build_xml
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+      RAISING
+        zcx_abapgit_exception .
     METHODS build_clas_code
       IMPORTING
         !iv_class      TYPE clike
@@ -54,18 +62,22 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
         VALUE(rt_code) TYPE abaptxt255_tab .
     METHODS build_intf
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+      RAISING
+        zcx_abapgit_exception .
     METHODS build_tabl
       IMPORTING
         !is_item  TYPE zif_abapgit_definitions=>ty_item
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization .
+        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+      RAISING
+        zcx_abapgit_exception .
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
+CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
 
 
   METHOD build_clas.
@@ -212,7 +224,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
     LOOP AT lt_functab INTO ls_functab.
       lv_filename = |{ to_lower( cs_files-item-obj_name ) }.fugr.{ to_lower( ls_functab-funcname ) }.abap|.
-      READ TABLE lt_files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+      READ TABLE lt_files ASSIGNING <ls_file> WITH KEY file COMPONENTS filename = lv_filename.
       IF sy-subrc <> 0.
         CONTINUE.
       ENDIF.
@@ -224,7 +236,7 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
     ENDLOOP.
 
     lv_filename = |{ to_lower( cs_files-item-obj_name ) }.fugr.xml|.
-    READ TABLE lt_files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+    READ TABLE lt_files ASSIGNING <ls_file> WITH KEY file COMPONENTS filename = lv_filename.
     IF sy-subrc = 0.
       lv_string = strip_xml( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
@@ -249,14 +261,14 @@ CLASS ZCL_ABAPLINT_DEPS_SERIALIZER IMPLEMENTATION.
 
 
     lv_filename = |{ to_lower( translate( val = cs_files-item-obj_name from = '/' to = '#' ) ) }.prog.xml|.
-    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY file COMPONENTS filename = lv_filename.
     IF sy-subrc = 0.
       lv_string = strip_xml( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
     ENDIF.
 
     lv_filename = |{ to_lower( translate( val = cs_files-item-obj_name from = '/' to = '#' ) ) }.prog.abap|.
-    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY filename = lv_filename.
+    READ TABLE cs_files-files ASSIGNING <ls_file> WITH KEY file COMPONENTS filename = lv_filename.
     IF sy-subrc = 0.
       lv_string = strip_form_body( zcl_abapgit_convert=>xstring_to_string_utf8( <ls_file>-data ) ).
       <ls_file>-data = zcl_abapgit_convert=>string_to_xstring_utf8( lv_string ).
