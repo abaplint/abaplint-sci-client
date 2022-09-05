@@ -1,44 +1,44 @@
-CLASS zcl_abaplint_dao DEFINITION
-  PUBLIC
-  CREATE PRIVATE .
+class zcl_abaplint_dao definition
+  public
+  create private .
 
-  PUBLIC SECTION.
+  public section.
 
-    TYPES: rfcdes_tt TYPE STANDARD TABLE OF rfcdes WITH DEFAULT KEY.
+    types: rfcdes_tt type standard table of rfcdes with default key.
 
-    METHODS: get_rfcs IMPORTING i_rfc_type TYPE rfctype_d RETURNING VALUE(r_rfcs) TYPE rfcdes_tt.
+    methods: get_rfcs importing i_rfc_type type rfctype_d returning value(r_rfcs) type rfcdes_tt.
 
-    CLASS-METHODS get_instance RETURNING VALUE(r_instance) TYPE REF TO zcl_abaplint_dao.
+    class-methods get_instance returning value(r_instance) type ref to zcl_abaplint_dao.
 
-    DATA rfc_type TYPE rfctype_d VALUE 'G'.
+    data rfc_type type rfctype_d value 'G'.
 
-  PROTECTED SECTION.
+  protected section.
 
-  PRIVATE SECTION.
+  private section.
 
-    CLASS-DATA instance TYPE REF TO zcl_abaplint_dao.
+    class-data instance type ref to zcl_abaplint_dao.
 
-ENDCLASS.
-
-
-
-CLASS ZCL_ABAPLINT_DAO IMPLEMENTATION.
+endclass.
 
 
-  METHOD get_instance.
-    IF instance IS NOT BOUND.
-      instance = NEW #(  ).
-    ENDIF.
+
+class ZCL_ABAPLINT_DAO implementation.
+
+
+  method get_instance.
+    if instance is not bound.
+      instance = new #(  ).
+    endif.
     r_instance = instance.
-  ENDMETHOD.
+  endmethod.
 
 
-  METHOD get_rfcs.
+  method get_rfcs.
 
-    SELECT rfcdest
-               FROM rfcdes
-               INTO TABLE @DATA(it_cols)
-               WHERE rfctype EQ @i_rfc_type.
+    select rfcdest
+               from rfcdes
+               into table @data(it_cols)
+               where rfctype eq @i_rfc_type.
     r_rfcs = it_cols.
-  ENDMETHOD.
-ENDCLASS.
+  endmethod.
+endclass.

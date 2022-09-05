@@ -4,6 +4,10 @@ CLASS zcl_abaplint_backend DEFINITION
 
   PUBLIC SECTION.
 
+   types: begin of ty_rfcdest,
+            rfcdest type rfcdest,
+          end of ty_rfcdest.
+
     TYPES:
       BEGIN OF ty_position,
         row TYPE token_row,
@@ -45,11 +49,11 @@ CLASS zcl_abaplint_backend DEFINITION
         zcx_abaplint_error
         zcx_abapgit_exception .
 
-    CLASS-METHODS display_value_help
-      IMPORTING
-        !i_dropdown  TYPE char5
-      CHANGING
-        !c_glob_data TYPE zabaplint_glob_data.
+    class-methods display_value_help
+      importing
+        !i_dropdown  type char5
+      changing
+        !c_glob_data type zabaplint_glob_data.
 
     METHODS ping
       RETURNING
@@ -100,9 +104,9 @@ CLASS zcl_abaplint_backend DEFINITION
         VALUE(rv_files) TYPE string .
   PRIVATE SECTION.
 
-    CONSTANTS c_rfctype   TYPE rfctype_d VALUE 'G'.
-    CONSTANTS c_rfc       TYPE char5     VALUE 'RFC'.
-    CONSTANTS c_retfield  TYPE fieldname VALUE 'RFCDEST'.
+    constants c_rfctype   type rfctype_d value 'G'.
+    constants c_rfc       type char5     value 'RFC'.
+    constants c_retfield  type fieldname value 'RFCDEST'.
 
     CONSTANTS:
       BEGIN OF c_uri,
@@ -260,37 +264,41 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD display_value_help.
+  method display_value_help.
 
-    IF i_dropdown EQ c_rfc.
+   data lt_rfcdest type table of ty_rfcdest.
 
-    DATA(it_cols) =  zcl_abaplint_dao=>get_instance( )->get_rfcs( c_rfctype ).
+    if i_dropdown eq c_rfc.
 
+      data(it_cols) =  zcl_abaplint_dao=>get_instance( )->get_rfcs( c_rfctype ).
 
-      CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
-        EXPORTING
-          retfield        = c_retfield
+      move-corresponding it_cols to lt_rfcdest.
+
+      call function 'F4IF_INT_TABLE_VALUE_REQUEST'
+        exporting
+          retfield        = 'RFCDEST'
           dynpprog        = sy-repid
           dynpnr          = sy-dynnr
           value_org       = 'S'
-        TABLES
-          value_tab       = it_cols
+          dynprofield     = 'RFCDEST'
+        tables
+          value_tab       = lt_rfcdest
           return_tab      = it_return
-        EXCEPTIONS
+        exceptions
           parameter_error = 1
           no_values_found = 2
-          OTHERS          = 3.
+        others            = 3.
 
-      IF sy-subrc = 0.
-        IF lines( it_return ) > 0.
+      if sy-subrc = 0.
+        if lines( it_return ) > 0.
           c_glob_data-url = it_return[ 1 ]-fieldval.
-        ENDIF.
+        endif.
 
-      ENDIF.
+      endif.
 
-    ENDIF.
+    endif.
 
-  ENDMETHOD.
+  endmethod.
 
 
   METHOD escape.
