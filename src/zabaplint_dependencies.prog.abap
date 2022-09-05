@@ -1,5 +1,7 @@
 REPORT zabaplint_dependencies.
 
+/USI/CL_AUTH=>CHECK_TCODE( ).
+
 TABLES: sscrfields, tdevc, tadir.
 
 TYPES ty_names TYPE RANGE OF tadir-obj_name.

@@ -10,7 +10,7 @@
     <DDTEXT>abaplint - Global Configuration</DDTEXT>
     <MAINFLAG>X</MAINFLAG>
     <CONTFLAG>A</CONTFLAG>
-    <EXCLASS>1</EXCLASS>
+    <EXCLASS>3</EXCLASS>
    </DD02V>
    <DD09L>
     <TABNAME>ZABAPLINT_GLOB</TABNAME>
@@ -37,6 +37,12 @@
      <COMPTYPE>S</COMPTYPE>
     </DD03P>
    </DD03P_TABLE>
+   <TABL_EXTRAS>
+    <TDDAT>
+     <TABNAME>ZABAPLINT_GLOB</TABNAME>
+     <CCLASS>ZNC</CCLASS>
+    </TDDAT>
+   </TABL_EXTRAS>
   </asx:values>
  </asx:abap>
 </abapGit>

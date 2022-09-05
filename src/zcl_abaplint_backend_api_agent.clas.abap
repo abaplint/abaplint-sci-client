@@ -23,6 +23,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
         zcx_abaplint_error .
   PROTECTED SECTION.
   PRIVATE SECTION.
+    CONSTANTS c_url TYPE char5 VALUE 'URL'.
     DATA ms_config TYPE zabaplint_glob_data.
 
     METHODS create_client
@@ -46,7 +47,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
 
 
   METHOD create.
@@ -58,22 +59,48 @@ CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
 
   METHOD create_client.
 
-    cl_http_client=>create_by_url(
-      EXPORTING
-        url                = |{ ms_config-url }|
-        ssl_id             = ms_config-ssl_id
-      IMPORTING
-        client             = ri_client
-      EXCEPTIONS
-        argument_not_found = 1
-        plugin_not_active  = 2
-        internal_error     = 3
-        OTHERS             = 4 ).
+    IF ms_config-destination = c_url.
 
-    IF sy-subrc <> 0.
-      RAISE EXCEPTION TYPE zcx_abaplint_error
+      cl_http_client=>create_by_url(
         EXPORTING
-          message = |Create_client error: sy-subrc={ sy-subrc }, url={ ms_config-url }|.
+          url                = |{ ms_config-url }|
+          ssl_id             = ms_config-ssl_id
+        IMPORTING
+          client             = ri_client
+        EXCEPTIONS
+          argument_not_found = 1
+          plugin_not_active  = 2
+          internal_error     = 3
+          OTHERS             = 4 ).
+
+      IF sy-subrc <> 0.
+        RAISE EXCEPTION TYPE zcx_abaplint_error
+          EXPORTING
+            message = |Create_client error: sy-subrc={ sy-subrc }, url={ ms_config-url }|.
+      ENDIF.
+
+    else.
+
+      cl_http_client=>create_by_destination(
+        exporting
+          destination              = |{ ms_config-url }|      " Logical destination (specified in function call)
+        importing
+          client                   = ri_client                " HTTP Client Abstraction
+        exceptions
+          argument_not_found       = 1                " Connection Parameter (Destination) Not Available
+          destination_not_found    = 2                " Destination not found
+          destination_no_authority = 3                " No Authorization to Use HTTP Destination
+          plugin_not_active        = 4                " HTTP/HTTPS communication not available
+          internal_error           = 5                " Internal error (e.g. name too long)
+          others                   = 6
+      ).
+
+      IF sy-subrc <> 0.
+        RAISE EXCEPTION TYPE zcx_abaplint_error
+          EXPORTING
+            message = |Create_client error: sy-subrc={ sy-subrc }, rfc={ ms_config-url }|.
+      ENDIF.
+
     ENDIF.
 
   ENDMETHOD.

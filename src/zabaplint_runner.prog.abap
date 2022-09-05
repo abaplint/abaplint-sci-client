@@ -1,5 +1,7 @@
 REPORT zabaplint_runner.
 
+/USI/CL_AUTH=>CHECK_TCODE( ).
+
 PARAMETERS: p_devc TYPE devclass OBLIGATORY,
             p_max  TYPE i DEFAULT 10 OBLIGATORY,
             p_inc  TYPE c AS CHECKBOX DEFAULT abap_true.

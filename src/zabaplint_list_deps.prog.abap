@@ -1,4 +1,6 @@
 REPORT zabaplint_list_deps.
+
+/USI/CL_AUTH=>CHECK_TCODE( ).
 * This report depends on the cross reference generated automatically in SAP
 *
 * In case it you think there is an issue, run these reports in background:

@@ -1,5 +1,7 @@
 REPORT zabaplint_debug.
 
+/USI/CL_AUTH=>CHECK_TCODE( ).
+
 TYPES: BEGIN OF ty_data,
          config TYPE string,
          deps   TYPE zif_abapgit_definitions=>ty_files_tt,

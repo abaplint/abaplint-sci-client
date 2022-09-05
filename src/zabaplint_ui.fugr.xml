@@ -102,7 +102,7 @@
       <TYPE>N</TYPE>
       <NEXTSCREEN>3000</NEXTSCREEN>
       <LINES>026</LINES>
-      <COLUMNS>210</COLUMNS>
+      <COLUMNS>211</COLUMNS>
      </HEADER>
      <CONTAINERS>
       <RPY_DYCATT>
@@ -156,24 +156,27 @@
       <RPY_DYFATC>
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEXT</TYPE>
-       <NAME>TEXT01</NAME>
-       <TEXT>URL</TEXT>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>DEST_DROPDOWN</NAME>
+       <TEXT>?_____</TEXT>
+       <DROPDOWN>L</DROPDOWN>
        <LINE>005</LINE>
        <COLUMN>004</COLUMN>
-       <LENGTH>003</LENGTH>
-       <VISLENGTH>003</VISLENGTH>
+       <LENGTH>006</LENGTH>
+       <VISLENGTH>008</VISLENGTH>
        <HEIGHT>001</HEIGHT>
+       <PUSH_FCODE>DROP</PUSH_FCODE>
        <FORMAT>CHAR</FORMAT>
-       <REQU_ENTRY>N</REQU_ENTRY>
-       <LABELLEFT>X</LABELLEFT>
+       <INPUT_FLD>X</INPUT_FLD>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>O</REQU_ENTRY>
       </RPY_DYFATC>
       <RPY_DYFATC>
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-URL</NAME>
-       <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
+       <TEXT>?___________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
        <LINE>005</LINE>
        <COLUMN>013</COLUMN>
@@ -400,7 +403,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-HTTP_TIMEOUT</NAME>
-       <TEXT>___________</TEXT>
+       <TEXT>?__________</TEXT>
        <LINE>020</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>011</LENGTH>
@@ -431,7 +434,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-SSL_ID</NAME>
-       <TEXT>______</TEXT>
+       <TEXT>?_____</TEXT>
        <LINE>021</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>006</LENGTH>

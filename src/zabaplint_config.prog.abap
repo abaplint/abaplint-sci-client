@@ -1,5 +1,7 @@
 REPORT zabaplint_config.
 
+/USI/CL_AUTH=>CHECK_TCODE( ).
+
 TABLES sscrfields.
 
 INCLUDE zabapgit_password_dialog.

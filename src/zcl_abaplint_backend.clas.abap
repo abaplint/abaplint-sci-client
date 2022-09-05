@@ -44,6 +44,13 @@ CLASS zcl_abaplint_backend DEFINITION
       RAISING
         zcx_abaplint_error
         zcx_abapgit_exception .
+
+    CLASS-METHODS display_value_help
+      IMPORTING
+        !i_dropdown  TYPE char5
+      CHANGING
+        !c_glob_data TYPE zabaplint_glob_data.
+
     METHODS ping
       RETURNING
         VALUE(rs_message) TYPE ty_message
@@ -92,6 +99,11 @@ CLASS zcl_abaplint_backend DEFINITION
       RETURNING
         VALUE(rv_files) TYPE string .
   PRIVATE SECTION.
+
+    CONSTANTS c_rfctype   TYPE rfctype_d VALUE 'G'.
+    CONSTANTS c_rfc       TYPE char5     VALUE 'RFC'.
+    CONSTANTS c_retfield  TYPE fieldname VALUE 'RFCDEST'.
+
     CONSTANTS:
       BEGIN OF c_uri,
         ping               TYPE string VALUE '/api/v1/ping',
@@ -99,6 +111,9 @@ CLASS zcl_abaplint_backend DEFINITION
         get_default_config TYPE string VALUE '/api/v1/default_config',
         list_rules         TYPE string VALUE '/api/v1/list_rules',
       END OF c_uri.
+
+    CLASS-DATA: it_return TYPE TABLE OF ddshretval.
+
 ENDCLASS.
 
 
@@ -240,6 +255,39 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
       DATA lo_config TYPE REF TO zcl_abaplint_configuration.
       CREATE OBJECT lo_config.
       ms_config = lo_config->get_global( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD display_value_help.
+
+    IF i_dropdown EQ c_rfc.
+
+    DATA(it_cols) =  zcl_abaplint_dao=>get_instance( )->get_rfcs( c_rfctype ).
+
+
+      CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+        EXPORTING
+          retfield        = c_retfield
+          dynpprog        = sy-repid
+          dynpnr          = sy-dynnr
+          value_org       = 'S'
+        TABLES
+          value_tab       = it_cols
+          return_tab      = it_return
+        EXCEPTIONS
+          parameter_error = 1
+          no_values_found = 2
+          OTHERS          = 3.
+
+      IF sy-subrc = 0.
+        IF lines( it_return ) > 0.
+          c_glob_data-url = it_return[ 1 ]-fieldval.
+        ENDIF.
+
+      ENDIF.
+
     ENDIF.
 
   ENDMETHOD.

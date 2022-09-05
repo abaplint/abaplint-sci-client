@@ -5,6 +5,7 @@ CLASS zcl_abaplint_check DEFINITION
 
   PUBLIC SECTION.
 
+    CLASS-METHODS class_constructor .
     METHODS constructor .
     CLASS-METHODS get_ping .
     CLASS-METHODS get_map .
@@ -116,6 +117,14 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
       ls_msg-pcom_alt = ''. "Pragma
       INSERT ls_msg INTO TABLE scimessages.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD class_constructor.
+
+    get_ping( ).
+    get_map( ).
 
   ENDMETHOD.
 

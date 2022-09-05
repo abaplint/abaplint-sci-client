@@ -287,6 +287,12 @@ ENDFORM.
 
 FORM init_3000.
 
+  call function 'VRM_SET_VALUES'
+    exporting
+      id     = 'DEST_DROPDOWN'
+      values = value vrm_values( for domaval in idd07v ( key  = domaval-domvalue_l
+                                                         text = domaval-ddtext ) ).
+
   IF zabaplint_glob_data IS INITIAL.
     DATA lo_config TYPE REF TO zcl_abaplint_configuration.
 
@@ -382,6 +388,15 @@ FORM call_3000.
 
   CREATE OBJECT lo_config.
   lo_config->get_global( ).
+
+  call function 'DD_DOMVALUES_GET'
+    exporting
+      domname        = 'ZABAPLINT_ADDRESS_D'
+    tables
+      dd07v_tab      = idd07v
+    exceptions
+      wrong_textflag = 1
+      others         = 2.
 
   CALL SCREEN 3000.
 

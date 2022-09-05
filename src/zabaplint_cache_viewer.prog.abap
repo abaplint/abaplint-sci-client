@@ -1,5 +1,7 @@
 REPORT zabaplint_cache_viewer.
 
+/USI/CL_AUTH=>CHECK_TCODE( ).
+
 TABLES: sscrfields, tadir, zabaplint_cache1.
 
 SELECT-OPTIONS:

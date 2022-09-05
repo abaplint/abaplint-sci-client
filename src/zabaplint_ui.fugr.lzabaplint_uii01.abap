@@ -42,6 +42,9 @@ ENDMODULE.
 MODULE user_command_3000 INPUT.
 
   CASE gv_ok_code.
+    WHEN c_drop.
+      zcl_abaplint_backend=>display_value_help( EXPORTING i_dropdown = dest_dropdown
+                                                CHANGING c_glob_data = zabaplint_glob_data ).
     WHEN 'TEST'.
       PERFORM test.
       CLEAR gv_ok_code.
