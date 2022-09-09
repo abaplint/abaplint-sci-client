@@ -56,6 +56,18 @@
      <MSGNR>007</MSGNR>
      <TEXT>Object &amp;2 (&amp;1) is flagged for deletion in TADIR</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPLINT</ARBGB>
+     <MSGNR>008</MSGNR>
+     <TEXT>Error displaying destination types!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZABAPLINT</ARBGB>
+     <MSGNR>009</MSGNR>
+     <TEXT>Error fetching destination values!</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

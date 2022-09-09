@@ -79,20 +79,20 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
             message = |Create_client error: sy-subrc={ sy-subrc }, url={ ms_config-url }|.
       ENDIF.
 
-    else.
+    ELSE.
 
       cl_http_client=>create_by_destination(
-        exporting
+        EXPORTING
           destination              = |{ ms_config-url }|      " Logical destination (specified in function call)
-        importing
+        IMPORTING
           client                   = ri_client                " HTTP Client Abstraction
-        exceptions
+        EXCEPTIONS
           argument_not_found       = 1                " Connection Parameter (Destination) Not Available
           destination_not_found    = 2                " Destination not found
           destination_no_authority = 3                " No Authorization to Use HTTP Destination
           plugin_not_active        = 4                " HTTP/HTTPS communication not available
           internal_error           = 5                " Internal error (e.g. name too long)
-          others                   = 6
+          OTHERS                   = 6
       ).
 
       IF sy-subrc <> 0.

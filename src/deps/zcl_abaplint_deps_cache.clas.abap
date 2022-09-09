@@ -238,7 +238,7 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
 
     CLEAR: es_files, ev_found.
 
-    SELECT * FROM zabaplint_cache2 INTO TABLE lt_cache2
+    SELECT * FROM zabaplint_cache2 INTO TABLE lt_cache2 "#EC CI_SORTED
       WHERE obj_type = is_item-obj_type AND obj_name = is_item-obj_name.
     IF sy-subrc = 0.
       " Check if cache entry is still valid
@@ -249,7 +249,7 @@ CLASS ZCL_ABAPLINT_DEPS_CACHE IMPLEMENTATION.
       ENDIF.
 
       " Build memory cache from persisted data
-      LOOP AT lt_cache2 ASSIGNING <ls_cache2>.
+      LOOP AT lt_cache2 ASSIGNING <ls_cache2>. "#EC CI_SORTED
         AT NEW obj_name.
           CLEAR es_files.
           es_files-item-obj_type = <ls_cache2>-obj_type.

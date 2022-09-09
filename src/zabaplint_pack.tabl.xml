@@ -37,6 +37,12 @@
      <MASK>  STRG</MASK>
     </DD03P>
    </DD03P_TABLE>
+   <TABL_EXTRAS>
+    <TDDAT>
+     <TABNAME>ZABAPLINT_PACK</TABNAME>
+     <CCLASS>ZNC</CCLASS>
+    </TDDAT>
+   </TABL_EXTRAS>
   </asx:values>
  </asx:abap>
 </abapGit>
