@@ -26,4 +26,4 @@ DATA: gv_read_only TYPE abap_bool,
       go_tree      TYPE REF TO cl_gui_simple_tree.
 
 DATA: dest_dropdown TYPE char5,
-      idd07v        TYPE TABLE OF  dd07v WITH header line.
+      idd07v        TYPE TABLE OF  dd07v WITH HEADER line.
