@@ -1,6 +1,6 @@
 REPORT zabaplint_run_sci NO STANDARD PAGE HEADING.
 
-/USI/CL_AUTH=>CHECK_TCODE( ).
+/usi/cl_auth=>check_tcode( ).
 * This report depends on the cross reference generated automatically in SAP
 *
 * In case it you think there is an issue, run these reports in background:
