@@ -1,6 +1,6 @@
 REPORT zabaplint_config.
 
-/USI/CL_AUTH=>CHECK_TCODE( ).
+/usi/cl_auth=>check_tcode( ).
 
 TABLES sscrfields.
 
