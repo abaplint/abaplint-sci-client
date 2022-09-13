@@ -25,5 +25,5 @@ DATA: gv_read_only TYPE abap_bool,
       go_splitter  TYPE REF TO cl_gui_easy_splitter_container,
       go_tree      TYPE REF TO cl_gui_simple_tree.
 
-data: dest_dropdown type char5,
+DATA: dest_dropdown type char5,
       idd07v        type table of  dd07v with header line.
