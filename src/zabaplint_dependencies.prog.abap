@@ -1,6 +1,6 @@
 REPORT zabaplint_dependencies.
 
-/USI/CL_AUTH=>CHECK_TCODE( ).
+/usi/cl_auth=>check_tcode( ).
 
 TABLES: sscrfields, tdevc, tadir.
 
