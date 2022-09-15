@@ -8,7 +8,7 @@ CLASS zcl_abaplint_backend DEFINITION
             rfcdest TYPE rfcdest,
           END OF ty_rfcdest.
 
-   TYPES: gtt_struct TYPE STANDARD TABLE OF ty_rfcdest WITH DEFAULT KEY.
+    TYPES: gtt_struct TYPE STANDARD TABLE OF ty_rfcdest WITH DEFAULT KEY.
 
     TYPES:
       BEGIN OF ty_position,
