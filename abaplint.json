@@ -33,6 +33,15 @@
     "globalMacros": []
   },
   "rules": {
+    "cds_parser_error": true,
+    "constant_classes": true,
+    "classic_exceptions_overlap": true,
+    "superfluous_value": true,
+    "many_parentheses": true,
+    "unnecessary_pragma": true,
+    "unnecessary_chaining": false,
+    "cds_legacy_view": true,
+    "change_if_to_case": false,
     "dangerous_statement": true,
     "db_operation_in_loop": false,
     "identical_descriptions": true,
@@ -52,7 +61,6 @@
     "call_transaction_authority_check": true,
     "function_module_recommendations": true,
     "identical_contents": true,
-    "many_parenthesis": true,
     "method_overwrites_builtin": false,
     "omit_parameter_name": true,
     "omit_receiving": true,
@@ -75,7 +83,9 @@
     "definitions_top": false,
     "downport": true,
     "forbidden_identifier": true,
-    "forbidden_void_type": true,
+    "forbidden_void_type": {
+      "check": ["/usi/"]
+    },
     "line_break_multiple_parameters": false,
     "prefer_inline": true,
     "try_without_catch": true,
@@ -89,6 +99,7 @@
       "define": true,
       "describeLines": true,
       "defaultKey": false,
+      "testSeams": true,
       "break": true,
       "statics": true
     },
@@ -98,7 +109,6 @@
     "check_comments": false,
     "check_ddic": true,
     "check_include": true,
-    "check_no_handler_pragma": true,
     "check_syntax": true,
     "check_text_elements": true,
     "check_transformation_exists": true,
@@ -123,6 +133,7 @@
       "loop": true,
       "try": true,
       "if": true,
+      "when": false,
       "while": true,
       "case": true,
       "select": true,
@@ -143,12 +154,14 @@
     "if_in_if": true,
     "implement_methods": true,
     "in_statement_indentation": {
-      "ignoreExceptions": true
+      "ignoreExceptions": true,
+      "blockStatements": 0
     },
     "indentation": {
       "ignoreExceptions": true,
       "alignTryCatch": false,
       "globalClassSkipFirst": false,
+      "selectionScreenBlockIndentation": false,
       "ignoreGlobalClassDefinition": false,
       "ignoreGlobalInterface": false
     },
@@ -171,7 +184,6 @@
       "exception": "^LCX_.+$",
       "test": "^LTCL_.+$"
     },
-    "local_testclass_location": true,
     "local_variable_names": {
       "patternKind": "required",
       "ignoreNames": [],
@@ -186,6 +198,7 @@
     "method_length": {
       "statements": 100,
       "errorWhenEmpty": true,
+      "checkForms": true,
       "ignoreTestClasses": false
     },
     "method_parameter_names": {
@@ -208,7 +221,8 @@
       "logic": "less"
     },
     "no_public_attributes": {
-      "allowReadOnly": false
+      "allowReadOnly": false,
+      "ignoreTestClasses": true
     },
     "object_naming": {
       "patternKind": "required",
@@ -233,29 +247,7 @@
       "shlp": "^Z",
       "xslt": "^Z"
     },
-    "obsolete_statement": {
-      "refresh": true,
-      "compute": true,
-      "typePools": true,
-      "communication": true,
-      "exitFromSQL": true,
-      "freeMemory": true,
-      "pack": true,
-      "parameter": true,
-      "ranges": true,
-      "selectWithoutInto": true,
-      "add": true,
-      "load": true,
-      "withHeaderLine": true,
-      "fieldSymbolStructure": true,
-      "subtract": true,
-      "multiply": true,
-      "move": true,
-      "divide": true,
-      "requested": true,
-      "setExtended": true,
-      "occurs": true
-    },
+    "obsolete_statement": true,
     "parser_error": true,
     "prefer_returning_to_exporting": true,
     "preferred_compare_operator": {
@@ -277,13 +269,7 @@
       "exclude": ["zcx_abaplint_error"]
     },
     "rfc_error_handling": true,
-    "selection_screen_naming": {
-      "patternKind": "required",
-      "ignoreNames": [],
-      "ignorePatterns": [],
-      "parameter": "^P_.+$",
-      "selectOption": "^S_.+$"
-    },
+    "selection_screen_naming": false,
     "sequential_blank": {
       "lines": 4
     },
