@@ -268,7 +268,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD display_value_help.
 
-    IF i_dropdown EQ c_rfc.
+    IF i_dropdown = c_rfc.
 
       data(it_cols) = zcl_abaplint_dao=>get_instance( )->get_rfcs( c_rfctype ).
 
