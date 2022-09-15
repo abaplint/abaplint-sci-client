@@ -4,7 +4,7 @@ CLASS zcl_abaplint_backend DEFINITION
 
   PUBLIC SECTION.
 
-   TYPES: BEGIN OF ty_rfcdest,
+    TYPES: BEGIN OF ty_rfcdest,
             rfcdest TYPE rfcdest,
           END OF ty_rfcdest.
 
