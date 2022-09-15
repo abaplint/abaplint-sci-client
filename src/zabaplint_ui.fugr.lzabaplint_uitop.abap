@@ -13,7 +13,7 @@ CONSTANTS c_drop type char25 value 'DROP'.
 
 TYPES: BEGIN OF ty_node.
          INCLUDE STRUCTURE treev_node.
-         TYPES: text TYPE text50,
+TYPES: text TYPE text50,
            END OF ty_node.
 
 TYPES: ty_nodes TYPE STANDARD TABLE OF ty_node WITH DEFAULT KEY.
