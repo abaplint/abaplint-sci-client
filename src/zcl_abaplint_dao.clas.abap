@@ -25,7 +25,7 @@ CLASS ZCL_ABAPLINT_DAO IMPLEMENTATION.
 
   METHOD get_instance.
     IF instance IS NOT BOUND.
-      CREATE OBJECT instance.
+      instance = NEW #(  ).
     ENDIF.
     r_instance = instance.
   ENDMETHOD.

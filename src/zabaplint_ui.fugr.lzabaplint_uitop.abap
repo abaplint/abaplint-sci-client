@@ -8,13 +8,13 @@ CONSTANTS:
     default TYPE c VALUE 'D',
   END OF c_compare_type.
 
-CONSTANTS c_drop TYPE char25 VALUE 'DROP'.
+ CONSTANTS c_drop type char25 value 'DROP'.
 
 
 TYPES: BEGIN OF ty_node.
          INCLUDE STRUCTURE treev_node.
-TYPES: text TYPE text50,
-           END OF ty_node.
+         TYPES: text TYPE text50,
+       END OF ty_node.
 
 TYPES: ty_nodes TYPE STANDARD TABLE OF ty_node WITH DEFAULT KEY.
 
@@ -25,5 +25,5 @@ DATA: gv_read_only TYPE abap_bool,
       go_splitter  TYPE REF TO cl_gui_easy_splitter_container,
       go_tree      TYPE REF TO cl_gui_simple_tree.
 
-DATA: dest_dropdown TYPE char5,
-      idd07v        TYPE TABLE OF  dd07v WITH HEADER LINE.
+DATA: dest_dropdown type char5,
+      idd07v        type table of  dd07v with header line.

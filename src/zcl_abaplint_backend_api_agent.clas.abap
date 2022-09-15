@@ -93,7 +93,7 @@ CLASS ZCL_ABAPLINT_BACKEND_API_AGENT IMPLEMENTATION.
           plugin_not_active        = 4                " HTTP/HTTPS communication not available
           internal_error           = 5                " Internal error (e.g. name too long)
           OTHERS                   = 6
-        ).
+      ).
 
       IF sy-subrc <> 0.
         RAISE EXCEPTION TYPE zcx_abaplint_error

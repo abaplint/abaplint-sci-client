@@ -4,11 +4,11 @@ CLASS zcl_abaplint_backend DEFINITION
 
   PUBLIC SECTION.
 
-    TYPES: BEGIN OF ty_rfcdest,
+   TYPES: BEGIN OF ty_rfcdest,
             rfcdest TYPE rfcdest,
           END OF ty_rfcdest.
 
-    TYPES: gtt_struct TYPE STANDARD TABLE OF ty_rfcdest WITH DEFAULT KEY.
+   TYPES: gtt_struct TYPE STANDARD TABLE OF ty_rfcdest WITH DEFAULT KEY.
 
     TYPES:
       BEGIN OF ty_position,
@@ -268,9 +268,9 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
   METHOD display_value_help.
 
-    IF i_dropdown = c_rfc.
+    IF i_dropdown EQ c_rfc.
 
-      data(it_cols) = zcl_abaplint_dao=>get_instance( )->get_rfcs( c_rfctype ).
+      DATA(it_cols) =  zcl_abaplint_dao=>get_instance( )->get_rfcs( c_rfctype ).
 
       DATA(lt_cols) = VALUE gtt_struct( FOR lwa_cols IN it_cols ( CORRESPONDING #( lwa_cols ) ) ).
 
