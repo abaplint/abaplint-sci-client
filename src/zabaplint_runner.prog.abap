@@ -1,6 +1,5 @@
 REPORT zabaplint_runner.
 
-*/usi/cl_auth=>check_tcode( ).
 
 PARAMETERS: p_devc TYPE devclass OBLIGATORY,
             p_max  TYPE i DEFAULT 10 OBLIGATORY,
