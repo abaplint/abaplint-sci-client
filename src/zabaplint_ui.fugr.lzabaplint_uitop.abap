@@ -8,7 +8,7 @@ CONSTANTS:
     default TYPE c VALUE 'D',
   END OF c_compare_type.
 
-CONSTANTS c_drop TYPE char25 value 'DROP'.
+CONSTANTS c_drop TYPE char25 VALUE 'DROP'.
 
 
 TYPES: BEGIN OF ty_node.
