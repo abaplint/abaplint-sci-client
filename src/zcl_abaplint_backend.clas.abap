@@ -270,7 +270,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     IF i_dropdown EQ c_rfc.
 
-      DATA(it_cols) = zcl_abaplint_dao=>get_instance( )->get_rfcs( c_rfctype ).
+      data(it_cols) = zcl_abaplint_dao=>get_instance( )->get_rfcs( c_rfctype ).
 
       DATA(lt_cols) = VALUE gtt_struct( FOR lwa_cols IN it_cols ( CORRESPONDING #( lwa_cols ) ) ).
 
