@@ -1,6 +1,6 @@
 REPORT zabaplint_debug.
 
-/usi/cl_auth=>check_tcode( ).
+*/usi/cl_auth=>check_tcode( ).
 
 TYPES: BEGIN OF ty_data,
          config TYPE string,
