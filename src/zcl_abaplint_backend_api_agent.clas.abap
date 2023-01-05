@@ -51,7 +51,6 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
 ENDCLASS.
 
 
-
 CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
 
 
