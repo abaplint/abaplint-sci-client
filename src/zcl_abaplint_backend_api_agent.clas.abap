@@ -54,7 +54,7 @@ ENDCLASS.
 CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
 
 
-METHOD check_http_status.
+  METHOD check_http_status.
 
     CASE iv_code.
       WHEN 200.
