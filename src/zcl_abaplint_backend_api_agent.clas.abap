@@ -43,7 +43,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
       RAISING
         zcx_abaplint_error .
     methods CHECK_HTTP_STATUS
-    importing
+      importing
       !IV_CODE type I
       !IV_REASON type STRING
     raising
