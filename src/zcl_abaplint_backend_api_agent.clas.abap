@@ -46,7 +46,7 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
       importing
       !IV_CODE type I
       !IV_REASON type STRING
-    raising
+      raising
       ZCX_ABAPLINT_ERROR .
 ENDCLASS.
 
