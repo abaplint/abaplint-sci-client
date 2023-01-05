@@ -42,12 +42,12 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
         ii_client TYPE REF TO if_http_client
       RAISING
         zcx_abaplint_error .
-    methods CHECK_HTTP_STATUS
-      importing
-      !IV_CODE type I
-      !IV_REASON type STRING
-      raising
-      ZCX_ABAPLINT_ERROR .
+    METHODS check_http_status
+      IMPORTING
+        !iv_code TYPE i
+        !iv_reason TYPE string
+      RAISING
+        zcx_abaplint_error .
 ENDCLASS.
 
 
