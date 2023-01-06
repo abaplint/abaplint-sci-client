@@ -42,34 +42,11 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
         ii_client TYPE REF TO if_http_client
       RAISING
         zcx_abaplint_error .
-    METHODS check_http_status
-      IMPORTING
-        !iv_code TYPE i
-        !iv_reason TYPE string
-      RAISING
-        zcx_abaplint_error .
 ENDCLASS.
 
 
 CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
 
-
-  METHOD check_http_status.
-
-    CASE iv_code.
-      WHEN 200.
-        RETURN. " Success, OK
-      WHEN 302.
-        zcx_abaplint_error=>raise( 'API access temporarily redirected (HTTP 302). Check the URL' ).
-      WHEN 404.
-        zcx_abaplint_error=>raise( 'API not found (HTTP 404). Check the URL' ).
-      WHEN 408.
-        zcx_abaplint_error=>raise( 'API request timeout (HTTP 408)' ).
-      WHEN OTHERS.
-        zcx_abaplint_error=>raise( |API request failed: (HTTP { iv_code }) { iv_reason }| ).
-    ENDCASE.
-
-  ENDMETHOD.
 
   METHOD create.
 
@@ -113,9 +90,12 @@ CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
         reason = lv_sreason ).
     lv_response = ii_response->get_cdata( ).
 
-    check_http_status(
-        iv_code   = lv_scode
-        iv_reason = lv_sreason ).
+    IF lv_scode <> 200. "OK
+      "server not reachable
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |API request failed: (HTTP { lv_scode }) { lv_sreason }|.
+    ENDIF.
 
     IF lv_response IS INITIAL.
       RAISE EXCEPTION TYPE zcx_abaplint_error
