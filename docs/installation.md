@@ -2,25 +2,27 @@
 
 ## Prerequisites
 
-* ABAP Application Server 7.31 or higher 
-(Potentially works with 702 though downported json xml parser should be available)
-* [abaplint Server](https://github.com/abaplint/abaplint-sci-server) 
+- ABAP Application Server 7.31 or higher
+  (Potentially works with 702 though downported json xml parser should be available)
+- [abaplint Server](https://github.com/abaplint/abaplint-sci-server)
 
 ## Dependencies
 
 The following repositories must be installed in this order:
 
-* [abapGit developer version](https://docs.abapgit.org/guide-install.html#install-developer-version) 
-(with all the separate classes, not a simple file version)
-* [abaplint Client](https://github.com/abaplint/abaplint-sci-client) (this repo)
+- [abapGit developer version](https://docs.abapgit.org/guide-install.html#install-developer-version)
+  (with all the separate classes, not a simple file version)
+- [abaplint Client](https://github.com/abaplint/abaplint-sci-client) (this repo)
 
 ## Initial Setup
 
 1. Test Management
 
-Activate the abaplint check in transaction `SCI` -> Management of -> Tests
+Activate the abaplint check in transaction `SCI`
 
 ![sci01](img/sci-01.png)
+
+From the main menu choose Code Inspector -> Management of -> Tests
 
 ![sci01](img/sci-02.png)
 
@@ -42,17 +44,18 @@ abaplint needs general configuration and settings that are defined per SAP packa
 
 3. General Configuration
 
-Select 'Configuration' and maintain the connection to your [abaplint Server](https://github.com/abaplint/abaplint-sci-server). 
+Select 'Configuration' and maintain the connection to your [abaplint Server](https://github.com/abaplint/abaplint-sci-server).
 
 ![sci06](img/sci-06.png)
 
-If you do not have your own abaplint Server, you might want to use https://sci.abaplint.app which is currently provided for free. **Caution:** Use 
+If you do not have your own abaplint Server, you might want to use https://sci.abaplint.app which is currently provided for free. **Caution:** Use
 this server at your own risk, your code will leave your system.
 
 Optional parameters:
+
 - Dependency depth - Defines over how many levels the check will try to resolve dependencies of ABAP classes (via inheritance, interfaces, attributes, or types)
-- Continue into SAP objects - Decides if dependencies of SAP objects should be included in the check 
-- Use cache - Select if dependencies and serialized files shall be cache in transparent tables 
+- Continue into SAP objects - Decides if dependencies of SAP objects should be included in the check
+- Use cache - Select if dependencies and serialized files shall be cache in transparent tables
 - HTTP timeout - Setting for HTTP connection to abaplint SCI server
 - SSL ID - Setting for HTTP connection (default ANONYM)
 
@@ -68,9 +71,9 @@ linked to an abapGit repository, then you can use 'Update from abapGit' to get t
 
 ## Important Notes
 
-1. General as well as package configurations will be valid for *all* check variants that enable the abaplint checks. They are not check variant-specific.
+1. General as well as package configurations will be valid for _all_ check variants that enable the abaplint checks. They are not check variant-specific.
 
-2. The abaplint check configuration (json) is *independent* of the abaplint.json file in your repository. They can be different (although they probably shouldn't be). 
+2. The abaplint check configuration (json) is _independent_ of the abaplint.json file in your repository. They can be different (although they probably shouldn't be).
 
 3. **Remember to save all changes to configuration and check variant.**
 
@@ -79,6 +82,7 @@ linked to an abapGit repository, then you can use 'Update from abapGit' to get t
 The abaplint check depends on the cross-reference generated automatically by your SAP system (for customer objects).
 
 In case it you think there is an issue, run these reports in background:
+
 - SAPRSEUB for SAP objects (**Note:** This will require several GB of space in your database)
 - SAPRSEUC for Customer objects (Y*/Z*)
 
