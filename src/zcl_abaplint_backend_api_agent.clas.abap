@@ -45,7 +45,6 @@ CLASS zcl_abaplint_backend_api_agent DEFINITION
 ENDCLASS.
 
 
-
 CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
 
 
@@ -90,6 +89,13 @@ CLASS zcl_abaplint_backend_api_agent IMPLEMENTATION.
         code   = lv_scode
         reason = lv_sreason ).
     lv_response = ii_response->get_cdata( ).
+
+    IF lv_scode <> 200. "OK
+      "server not reachable
+      RAISE EXCEPTION TYPE zcx_abaplint_error
+        EXPORTING
+          message = |API request failed: (HTTP { lv_scode }) { lv_sreason }|.
+    ENDIF.
 
     IF lv_response IS INITIAL.
       RAISE EXCEPTION TYPE zcx_abaplint_error
