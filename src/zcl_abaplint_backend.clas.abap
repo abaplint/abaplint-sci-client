@@ -117,7 +117,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     DATA lt_files TYPE string_table.
     DATA lo_deps TYPE REF TO zcl_abaplint_deps.
-    DATA lt_found TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA lt_found TYPE zif_abapgit_git_definitions=>ty_files_tt.
 
     CREATE OBJECT lo_deps.
     lt_found = lo_deps->find(

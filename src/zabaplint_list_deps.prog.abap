@@ -116,7 +116,7 @@ FORM serialize USING
     ps_options TYPE zcl_abaplint_deps_find=>ty_options
     RAISING zcx_abapgit_exception.
 
-  DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
+  DATA lt_local TYPE zif_abapgit_git_definitions=>ty_files_tt.
   DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
   DATA lx_error2 TYPE REF TO zcx_abapgit_exception.
 
@@ -141,7 +141,7 @@ FORM serialize USING
 
 ENDFORM.
 
-FORM download USING pt_local TYPE zif_abapgit_definitions=>ty_files_tt RAISING zcx_abapgit_exception.
+FORM download USING pt_local TYPE zif_abapgit_git_definitions=>ty_files_tt RAISING zcx_abapgit_exception.
 
   DATA: lo_zip      TYPE REF TO cl_abap_zip,
         lv_xstr     TYPE xstring,
