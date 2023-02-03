@@ -579,21 +579,6 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
     mo_cache->save( ).
 
-    get_ping( ).
-
-    " Output without object name
-    object_type = '-'.
-    object_name = '-'.
-
-    inform(
-      p_sub_obj_type = '-'
-      p_sub_obj_name = '-'
-      p_test         = myname
-      p_kind         = c_note
-      p_param_1      = gs_ping-message
-      p_param_2      = 'ping'
-      p_code         = c_abaplint ).
-
   ENDMETHOD.
 
 
