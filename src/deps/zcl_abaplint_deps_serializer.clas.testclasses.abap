@@ -69,7 +69,7 @@ CLASS ltcl_test IMPLEMENTATION.
   METHOD cx_iac_helper_check_7bit_acsii.
 
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
-    DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA lt_files TYPE zif_abapgit_git_definitions=>ty_files_tt.
     DATA ls_file LIKE LINE OF lt_files.
 
 
@@ -87,7 +87,7 @@ CLASS ltcl_test IMPLEMENTATION.
   METHOD si_rq_appl_name.
 
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
-    DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA lt_files TYPE zif_abapgit_git_definitions=>ty_files_tt.
 
     ls_item-obj_type = 'TABL'.
     ls_item-obj_name = 'SI_RQ_APPL_NAME'.

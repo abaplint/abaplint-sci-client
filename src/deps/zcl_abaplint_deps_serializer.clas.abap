@@ -11,14 +11,14 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
       IMPORTING
         !is_item        TYPE zif_abapgit_definitions=>ty_item
       RETURNING
-        VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt
+        VALUE(rt_files) TYPE zif_abapgit_git_definitions=>ty_files_tt
       RAISING
         zcx_abapgit_exception .
     METHODS serialize
       IMPORTING
         !it_tadir       TYPE zif_abapgit_definitions=>ty_tadir_tt
       RETURNING
-        VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt
+        VALUE(rt_files) TYPE zif_abapgit_git_definitions=>ty_files_tt
       RAISING
         zcx_abapgit_exception .
   PROTECTED SECTION.

@@ -23,7 +23,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
 
     TYPES:
       BEGIN OF ty_stage,
-        comment TYPE zif_abapgit_definitions=>ty_comment,
+        comment TYPE zif_abapgit_git_definitions=>ty_comment,
         stage   TYPE REF TO zcl_abapgit_stage,
       END OF ty_stage .
 
@@ -35,8 +35,8 @@ CLASS zcl_abaplint_deps_git DEFINITION
 
     METHODS build_stage
       IMPORTING
-        !it_local       TYPE zif_abapgit_definitions=>ty_files_tt
-        !it_remote      TYPE zif_abapgit_definitions=>ty_files_tt
+        !it_local       TYPE zif_abapgit_git_definitions=>ty_files_tt
+        !it_remote      TYPE zif_abapgit_git_definitions=>ty_files_tt
       RETURNING
         VALUE(rs_stage) TYPE ty_stage
       RAISING
@@ -45,7 +45,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
       IMPORTING
         !it_additional  TYPE zif_abapgit_definitions=>ty_tadir_tt
       RETURNING
-        VALUE(rt_local) TYPE zif_abapgit_definitions=>ty_files_tt
+        VALUE(rt_local) TYPE zif_abapgit_git_definitions=>ty_files_tt
       RAISING
         zcx_abapgit_exception
         zcx_abaplint_error .
@@ -122,7 +122,7 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
     DATA lo_dep_find TYPE REF TO zcl_abaplint_deps_find.
     DATA lo_dep_ser TYPE REF TO zcl_abaplint_deps_serializer.
     DATA lt_tadir TYPE zif_abapgit_definitions=>ty_tadir_tt.
-    DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA lt_local TYPE zif_abapgit_git_definitions=>ty_files_tt.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
 
     FIELD-SYMBOLS <ls_local> LIKE LINE OF rt_local.
@@ -150,7 +150,7 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
 
   METHOD run.
 
-    DATA lt_local TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA lt_local TYPE zif_abapgit_git_definitions=>ty_files_tt.
     DATA ls_remote TYPE zcl_abapgit_git_porcelain=>ty_pull_result.
     DATA lv_branch_name TYPE string.
     DATA ls_stage TYPE ty_stage.

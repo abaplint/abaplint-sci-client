@@ -19,7 +19,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
   METHOD find.
 
-    DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
+    DATA lt_files TYPE zif_abapgit_git_definitions=>ty_files_tt.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
 
     ls_options-depth = 10.

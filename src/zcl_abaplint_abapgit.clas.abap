@@ -46,7 +46,7 @@ CLASS zcl_abaplint_abapgit IMPLEMENTATION.
       ENDTRY.
 
       IF lo_repo->get_package( ) = iv_devclass.
-        DATA lt_files TYPE zif_abapgit_definitions=>ty_files_tt.
+        DATA lt_files TYPE zif_abapgit_git_definitions=>ty_files_tt.
         DATA ls_file LIKE LINE OF lt_files.
         " Get most recent files
         lo_repo->refresh( ).

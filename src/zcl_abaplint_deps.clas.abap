@@ -10,7 +10,7 @@ CLASS zcl_abaplint_deps DEFINITION
         !iv_object_name TYPE sobj_name
         !is_options     TYPE zcl_abaplint_deps_find=>ty_options
       RETURNING
-        VALUE(rt_files) TYPE zif_abapgit_definitions=>ty_files_tt
+        VALUE(rt_files) TYPE zif_abapgit_git_definitions=>ty_files_tt
       RAISING
         zcx_abapgit_exception
         zcx_abaplint_error .
