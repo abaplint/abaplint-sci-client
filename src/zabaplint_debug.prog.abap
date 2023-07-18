@@ -109,6 +109,8 @@ FORM find CHANGING cs_data TYPE ty_data RAISING zcx_abapgit_exception zcx_abapli
 
   cs_data-object = zcl_abapgit_objects=>serialize(
     is_item     = cs_data-object-item
-    iv_language = sy-langu ).
+    io_i18n_params = zcl_abapgit_i18n_params=>new(
+      iv_main_language_only = abap_true
+      iv_main_language      = sy-langu ) ).
 
 ENDFORM.

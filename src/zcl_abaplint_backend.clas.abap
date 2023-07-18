@@ -152,8 +152,10 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 
     TRY.
         ls_files_item = zcl_abapgit_objects=>serialize(
-          is_item     = ls_files_item-item
-          iv_language = sy-langu ).
+          is_item        = ls_files_item-item
+          io_i18n_params = zcl_abapgit_i18n_params=>new(
+            iv_main_language_only = abap_true
+            iv_main_language      = sy-langu ) ).
       CATCH zcx_abapgit_exception.
         ASSERT 0 = 1.
     ENDTRY.
