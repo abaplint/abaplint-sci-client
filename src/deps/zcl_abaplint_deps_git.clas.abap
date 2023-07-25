@@ -141,7 +141,7 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
 * recalculate SHA1, as file contents is changed after serialization
     LOOP AT rt_local ASSIGNING <ls_local>.
       <ls_local>-sha1 = zcl_abapgit_hash=>sha1(
-        iv_type = zif_abapgit_definitions=>c_type-blob
+        iv_type = zif_abapgit_git_definitions=>c_type-blob
         iv_data = <ls_local>-data ).
     ENDLOOP.
 
