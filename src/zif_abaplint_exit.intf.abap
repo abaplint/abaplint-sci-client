@@ -6,5 +6,5 @@ INTERFACE zif_abaplint_exit
     IMPORTING
       !iv_program_name TYPE programm
     CHANGING
-      !cs_files_item   TYPE zcl_abapgit_objects=>ty_serialization .
+      !cs_files_item   TYPE zif_abapgit_objects=>ty_serialization .
 ENDINTERFACE.
