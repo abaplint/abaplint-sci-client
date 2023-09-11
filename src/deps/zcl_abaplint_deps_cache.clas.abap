@@ -33,12 +33,12 @@ CLASS zcl_abaplint_deps_cache DEFINITION
       IMPORTING
         !is_item  TYPE zif_abapgit_definitions=>ty_item
       EXPORTING
-        !es_files TYPE zcl_abapgit_objects=>ty_serialization
+        !es_files TYPE zif_abapgit_objects=>ty_serialization
         !ev_found TYPE abap_bool .
     METHODS write_files
       IMPORTING
         !is_item    TYPE zif_abapgit_definitions=>ty_item
-        !is_files   TYPE zcl_abapgit_objects=>ty_serialization
+        !is_files   TYPE zif_abapgit_objects=>ty_serialization
         !iv_package TYPE devclass .
     METHODS reset_files .
   PROTECTED SECTION.
@@ -54,7 +54,7 @@ CLASS zcl_abaplint_deps_cache DEFINITION
     TYPES:
       BEGIN OF ty_files,
         item    TYPE zif_abapgit_definitions=>ty_item,
-        files   TYPE zcl_abapgit_objects=>ty_serialization,
+        files   TYPE zif_abapgit_objects=>ty_serialization,
         package TYPE devclass,
       END OF ty_files .
 

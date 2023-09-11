@@ -37,22 +37,22 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
         VALUE(rv_string) TYPE string .
     METHODS build_clas
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+        !cs_files TYPE zif_abapgit_objects=>ty_serialization
       RAISING
         zcx_abapgit_exception .
     METHODS build_prog
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+        !cs_files TYPE zif_abapgit_objects=>ty_serialization
       RAISING
         zcx_abapgit_exception .
     METHODS build_fugr
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+        !cs_files TYPE zif_abapgit_objects=>ty_serialization
       RAISING
         zcx_abapgit_exception .
     METHODS build_xml
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+        !cs_files TYPE zif_abapgit_objects=>ty_serialization
       RAISING
         zcx_abapgit_exception .
     METHODS build_clas_code
@@ -62,14 +62,14 @@ CLASS zcl_abaplint_deps_serializer DEFINITION
         VALUE(rt_code) TYPE abaptxt255_tab .
     METHODS build_intf
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+        !cs_files TYPE zif_abapgit_objects=>ty_serialization
       RAISING
         zcx_abapgit_exception .
     METHODS build_tabl
       IMPORTING
         !is_item  TYPE zif_abapgit_definitions=>ty_item
       CHANGING
-        !cs_files TYPE zcl_abapgit_objects=>ty_serialization
+        !cs_files TYPE zif_abapgit_objects=>ty_serialization
       RAISING
         zcx_abapgit_exception .
   PRIVATE SECTION.
@@ -328,7 +328,7 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
     DATA ls_tadir LIKE LINE OF it_tadir.
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
     DATA lo_longtexts TYPE REF TO lcl_longtexts.
-    DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
+    DATA ls_files_item TYPE zif_abapgit_objects=>ty_serialization.
     DATA ls_path TYPE string.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF rt_files.

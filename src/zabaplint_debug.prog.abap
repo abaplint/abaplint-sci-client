@@ -3,7 +3,7 @@ REPORT zabaplint_debug.
 TYPES: BEGIN OF ty_data,
          config TYPE string,
          deps   TYPE zif_abapgit_git_definitions=>ty_files_tt,
-         object TYPE zcl_abapgit_objects=>ty_serialization,
+         object TYPE zif_abapgit_objects=>ty_serialization,
        END OF ty_data.
 
 PARAMETERS: p_type TYPE tadir-object OBLIGATORY,

@@ -39,7 +39,7 @@ CLASS ZCL_ABAPLINT_DEPS IMPLEMENTATION.
       iv_object_name = iv_object_name ).
 
     DATA ls_dep LIKE LINE OF lt_deps.
-    DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
+    DATA ls_files_item TYPE zif_abapgit_objects=>ty_serialization.
     LOOP AT lt_deps INTO ls_dep.
       ls_files_item-item-obj_type = ls_dep-object.
       ls_files_item-item-obj_name = ls_dep-obj_name.

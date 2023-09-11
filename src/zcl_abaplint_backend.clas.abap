@@ -145,7 +145,7 @@ CLASS ZCL_ABAPLINT_BACKEND IMPLEMENTATION.
 * also take settings into account, but not super important?
 
     DATA lt_files TYPE string_table.
-    DATA ls_files_item TYPE zcl_abapgit_objects=>ty_serialization.
+    DATA ls_files_item TYPE zif_abapgit_objects=>ty_serialization.
 
     ls_files_item-item-obj_type = iv_object_type.
     ls_files_item-item-obj_name = iv_object_name.
