@@ -134,7 +134,13 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
     CREATE OBJECT lo_dep_ser EXPORTING is_options = ls_options.
 
     lt_tadir = lo_dep_find->find_by_packages( mt_packages ).
-    APPEND LINES OF it_additional TO lt_tadir.
+    LOOP AT it_additional ASSIGNING FIELD-SYMBOL(<ls_additional>).
+      APPEND LINES OF lo_dep_find->find_by_item( iv_object_type = <ls_additional>-object
+                                                 iv_object_name = <ls_additional>-obj_name ) TO lt_tadir.
+    ENDLOOP.
+    SORT lt_tadir.
+    DELETE ADJACENT DUPLICATES FROM lt_tadir.
+
     lt_local = lo_dep_ser->serialize( lt_tadir ).
     APPEND LINES OF lt_local TO rt_local.
 
