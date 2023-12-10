@@ -328,6 +328,8 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
     DATA ls_tadir LIKE LINE OF it_tadir.
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
     DATA lo_longtexts TYPE REF TO lcl_longtexts.
+    DATA lo_dot_abapgit TYPE REF TO zcl_abapgit_dot_abapgit.
+    DATA lo_abap_language_version TYPE REF TO zcl_abapgit_abap_language_vers.
     DATA ls_files_item TYPE zif_abapgit_objects=>ty_serialization.
     DATA ls_path TYPE string.
 
@@ -342,6 +344,10 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
 
     CREATE OBJECT lo_longtexts.
     zcl_abapgit_injector=>set_longtexts( lo_longtexts ).
+
+    CREATE OBJECT lo_abap_language_version
+      EXPORTING
+        io_dot_abapgit = lo_dot_abapgit.
 
     LOOP AT it_tadir INTO ls_tadir.
       IF ls_tadir-object = 'DOMA' AND ls_tadir-obj_name = 'DATA'.
@@ -360,15 +366,18 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
           i_output_immediately = abap_true ).
       ENDIF.
 
-      ls_item-obj_type = ls_tadir-object.
-      ls_item-obj_name = ls_tadir-obj_name.
+      ls_item-obj_type              = ls_tadir-object.
+      ls_item-obj_name              = ls_tadir-obj_name.
+      ls_item-devclass              = ls_tadir-devclass.
+      ls_item-srcsystem             = ls_tadir-srcsystem.
+      ls_item-abap_language_version = lo_abap_language_version->get_repo_abap_language_version( ).
 
       lo_cache->read_files(
         EXPORTING
-          is_item    = ls_item
+          is_item  = ls_item
         IMPORTING
-          es_files   = ls_files_item
-          ev_found   = lv_found ).
+          es_files = ls_files_item
+          ev_found = lv_found ).
 
       IF lv_found = abap_false.
         TRY.
@@ -394,15 +403,15 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
             "Exit call
             zcl_abaplint_exit=>get_instance( )->handle_special_abaps(
                     EXPORTING iv_program_name = ls_tadir-obj_name
-                    CHANGING cs_files_item = ls_files_item ).
+                    CHANGING  cs_files_item   = ls_files_item ).
 
             build_prog( CHANGING cs_files = ls_files_item ).
           WHEN 'TABL' OR 'MSAG' OR 'VIEW' OR 'DTEL' OR 'TTYP'.
             build_xml( CHANGING cs_files = ls_files_item ).
             IF ls_tadir-object = 'TABL'.
               build_tabl(
-                EXPORTING is_item = ls_item
-                CHANGING cs_files = ls_files_item ).
+                EXPORTING is_item  = ls_item
+                CHANGING  cs_files = ls_files_item ).
             ENDIF.
           WHEN OTHERS.
         ENDCASE.
@@ -490,7 +499,7 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
 
     IF lv_modified = abap_true.
       rv_string = concat_lines_of( table = lt_code
-                                   sep = |\n| ).
+                                   sep   = |\n| ).
     ELSE.
       rv_string = iv_string.
     ENDIF.
