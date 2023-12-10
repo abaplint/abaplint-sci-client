@@ -961,9 +961,8 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
         OR ref_obj_type = 'MSAG'
         OR ref_obj_type = 'FUGR'.
     ELSEIF lv_obj_type EQ 'TTYP'.
-      ls_tadir-devclass     = ms_item-devclass.
-      ls_tadir-ref_obj_name = ms_item-obj_name.
-      ls_tadir-ref_obj_type = ms_item-obj_type.
+      ls_tadir-ref_obj_name = is_object-obj_name.
+      ls_tadir-ref_obj_type = is_object-object.
       APPEND ls_tadir TO rt_tadir.
     ENDIF.
 
