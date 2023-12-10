@@ -226,7 +226,7 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
           ls_object      TYPE zif_abapgit_definitions=>ty_tadir.
 
     LOOP AT it_senvi INTO ls_senvi.
-      lv_object = ls_senvi-type.
+      lv_object      = ls_senvi-type.
       lv_object_name = ls_senvi-object.
 
       ls_object = convert_type_to_r3tr(
@@ -245,6 +245,7 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
           MESSAGE s004(zabaplint) WITH ls_object-object ls_object-obj_name.
         ENDIF.
       ENDIF.
+
     ENDLOOP.
 
   ENDMETHOD.
@@ -891,8 +892,8 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
 
     " Find dependend objects
     get_dependencies_deep(
-      it_tadir   = lt_tadir
-      iv_level   = iv_level ).
+      it_tadir = lt_tadir
+      iv_level = iv_level ).
 
   ENDMETHOD.
 
@@ -924,7 +925,8 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
 
     DATA:
       lv_obj_type    TYPE euobj-id,
-      lt_environment TYPE senvi_tab.
+      lt_environment TYPE senvi_tab,
+      ls_tadir       LIKE LINE OF rt_tadir.
 
     lv_obj_type = is_object-object.
 
@@ -958,6 +960,10 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
         OR ref_obj_type = 'TRAN'
         OR ref_obj_type = 'MSAG'
         OR ref_obj_type = 'FUGR'.
+    ELSEIF lv_obj_type = 'TTYP'.
+      ls_tadir-ref_obj_name = is_object-obj_name.
+      ls_tadir-ref_obj_type = is_object-object.
+      APPEND ls_tadir TO rt_tadir.
     ENDIF.
 
   ENDMETHOD.
