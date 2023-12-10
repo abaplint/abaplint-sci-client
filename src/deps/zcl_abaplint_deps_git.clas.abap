@@ -125,7 +125,8 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
     DATA lt_local TYPE zif_abapgit_git_definitions=>ty_files_tt.
     DATA ls_options TYPE zcl_abaplint_deps_find=>ty_options.
 
-    FIELD-SYMBOLS <ls_local> LIKE LINE OF rt_local.
+    FIELD-SYMBOLS: <ls_local>      LIKE LINE OF rt_local,
+                   <ls_additional> TYPE zif_abapgit_definitions=>ty_tadir.
 
 
     ls_options-depth = mv_depth.
@@ -134,7 +135,20 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
     CREATE OBJECT lo_dep_ser EXPORTING is_options = ls_options.
 
     lt_tadir = lo_dep_find->find_by_packages( mt_packages ).
-    APPEND LINES OF it_additional TO lt_tadir.
+    LOOP AT it_additional ASSIGNING <ls_additional>.
+      " In case additional item already exists, we assume that find_by_packages
+      " already resolved all dependencies related to that additional item.
+      READ TABLE lt_tadir TRANSPORTING NO FIELDS
+        WITH KEY object   = <ls_additional>-object
+                 obj_name = <ls_additional>-obj_name.
+      IF sy-subrc <> 0.
+        APPEND LINES OF lo_dep_find->find_by_item( iv_object_type = <ls_additional>-object
+                                                   iv_object_name = <ls_additional>-obj_name ) TO lt_tadir.
+      ENDIF.
+    ENDLOOP.
+    SORT lt_tadir.
+    DELETE ADJACENT DUPLICATES FROM lt_tadir.
+
     lt_local = lo_dep_ser->serialize( lt_tadir ).
     APPEND LINES OF lt_local TO rt_local.
 
