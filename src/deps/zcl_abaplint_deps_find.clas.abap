@@ -84,7 +84,7 @@ CLASS zcl_abaplint_deps_find DEFINITION
         zcx_abaplint_error .
     METHODS find_dtel_dependencies
       IMPORTING
-        !iv_name        TYPE tadir-obj_name
+        !is_object      TYPE zif_abapgit_definitions=>ty_tadir
       RETURNING
         VALUE(rt_tadir) TYPE ty_tadir_tt .
     METHODS get_dependencies
@@ -585,7 +585,7 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
     DATA ls_tadir LIKE LINE OF rt_tadir.
     DATA lv_clstype TYPE seoclass-clstype.
 
-    lv_tabname = iv_name.
+    lv_tabname = is_object-obj_name.
 
 * black magic, read the nametab to get the domain for the data element
 * this is faster as it runs only on application server
@@ -617,6 +617,10 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
       ls_tadir-ref_obj_name = ls_x030l-refname.
       INSERT ls_tadir INTO TABLE rt_tadir.
     ENDIF.
+
+    ls_tadir-ref_obj_name = is_object-obj_name.
+    ls_tadir-ref_obj_type = is_object-object.
+    INSERT ls_tadir INTO TABLE rt_tadir.
 
   ENDMETHOD.
 
@@ -841,7 +845,7 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
       ELSEIF is_object-object = 'TABL'.
         lt_tadir = find_tabl_dependencies( is_object-obj_name ).
       ELSEIF is_object-object = 'DTEL'.
-        lt_tadir = find_dtel_dependencies( is_object-obj_name ).
+        lt_tadir = find_dtel_dependencies( is_object ).
       ELSE.
         lt_tadir = get_environment( is_object  = is_object
                                     iv_minimal = iv_minimal ).
