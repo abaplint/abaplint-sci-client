@@ -138,10 +138,13 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
     LOOP AT it_additional ASSIGNING <ls_additional>.
       " In case additional item already exists, we assume that find_by_packages
       " already resolved all dependencies related to that additional item.
-      CHECK NOT line_exists( lt_tadir[ object   = <ls_additional>-object
-                                       obj_name = <ls_additional>-obj_name ] ).
-      APPEND LINES OF lo_dep_find->find_by_item( iv_object_type = <ls_additional>-object
-                                                 iv_object_name = <ls_additional>-obj_name ) TO lt_tadir.
+      READ TABLE lt_tadir TRANSPORTING NO FIELDS
+        WITH KEY object   = <ls_additional>-object
+                 obj_name = <ls_additional>-obj_name.
+      IF sy-subrc <> 0.
+        APPEND LINES OF lo_dep_find->find_by_item( iv_object_type = <ls_additional>-object
+                                                   iv_object_name = <ls_additional>-obj_name ) TO lt_tadir.
+      ENDIF.
     ENDLOOP.
     SORT lt_tadir.
     DELETE ADJACENT DUPLICATES FROM lt_tadir.
