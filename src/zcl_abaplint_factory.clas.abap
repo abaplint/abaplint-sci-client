@@ -1,7 +1,6 @@
 CLASS zcl_abaplint_factory DEFINITION
   PUBLIC
-  CREATE PRIVATE
-  GLOBAL FRIENDS zcl_abapgit_injector .
+  CREATE PRIVATE.
 
   PUBLIC SECTION.
 
@@ -28,7 +27,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPLINT_FACTORY IMPLEMENTATION.
+CLASS zcl_abaplint_factory IMPLEMENTATION.
 
 
   METHOD get_code_inspector.

@@ -327,7 +327,6 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
 
     DATA ls_tadir LIKE LINE OF it_tadir.
     DATA ls_item TYPE zif_abapgit_definitions=>ty_item.
-    DATA lo_longtexts TYPE REF TO lcl_longtexts.
     DATA lo_dot_abapgit TYPE REF TO zcl_abapgit_dot_abapgit.
     DATA lo_abap_language_version TYPE REF TO zcl_abapgit_abap_language_vers.
     DATA ls_files_item TYPE zif_abapgit_objects=>ty_serialization.
@@ -341,9 +340,6 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
     DATA li_log   TYPE REF TO zif_abapgit_log.
 
     lo_cache = zcl_abaplint_deps_cache=>get_instance( ms_options-cache ).
-
-    CREATE OBJECT lo_longtexts.
-    zcl_abapgit_injector=>set_longtexts( lo_longtexts ).
 
     CREATE OBJECT lo_abap_language_version
       EXPORTING
