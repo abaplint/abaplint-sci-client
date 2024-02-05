@@ -967,7 +967,7 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
     ELSEIF lv_obj_type = 'TTYP' OR lv_obj_type = 'DOMA'.
       ls_tadir-ref_obj_name = is_object-obj_name.
       ls_tadir-ref_obj_type = is_object-object.
-      APPEND ls_tadir TO rt_tadir.
+      INSERT ls_tadir INTO TABLE rt_tadir.
     ENDIF.
 
   ENDMETHOD.
