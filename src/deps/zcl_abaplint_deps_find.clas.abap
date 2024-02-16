@@ -463,6 +463,9 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
       iv_minimal = abap_false
       iv_level   = 1 ).
 
+    " Remove reference to self in case of circular references
+    DELETE mt_results WHERE ref_obj_type = iv_object_type AND ref_obj_name = iv_object_name.
+
     LOOP AT mt_results INTO ls_result.
       APPEND INITIAL LINE TO rt_tadir ASSIGNING <ls_tadir>.
       <ls_tadir>-object = ls_result-ref_obj_type.
