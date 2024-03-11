@@ -14,24 +14,25 @@ REPORT zabaplint_list_deps.
 TABLES: tdevc.
 
 SELECTION-SCREEN: BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
-PARAMETERS: p_obje RADIOBUTTON GROUP g2.
-PARAMETERS: p_type TYPE tadir-object,
-            p_name TYPE tadir-obj_name.
+  PARAMETERS: p_obje RADIOBUTTON GROUP g2.
+  PARAMETERS: p_type TYPE tadir-object,
+              p_name TYPE tadir-obj_name.
 
-PARAMETERS: p_devc RADIOBUTTON GROUP g2.
-SELECT-OPTIONS: s_devc FOR tdevc-devclass.
+  PARAMETERS: p_devc RADIOBUTTON GROUP g2.
+  SELECT-OPTIONS: s_devc FOR tdevc-devclass.
 SELECTION-SCREEN: END OF BLOCK b1.
 
 SELECTION-SCREEN: BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
-PARAMETERS: p_depth TYPE i DEFAULT 10,
-            p_sap   TYPE c AS CHECKBOX,
-            p_cache TYPE c AS CHECKBOX.
-SELECTION-SCREEN SKIP.
-PARAMETERS: p_skip RADIOBUTTON GROUP g1,
-            p_seri RADIOBUTTON GROUP g1,
-            p_down RADIOBUTTON GROUP g1.
-SELECTION-SCREEN SKIP.
-PARAMETERS: p_log TYPE c AS CHECKBOX.
+  PARAMETERS: p_depth TYPE i DEFAULT 10,
+              p_incl  TYPE c AS CHECKBOX,
+              p_sap   TYPE c AS CHECKBOX,
+              p_cache TYPE c AS CHECKBOX.
+  SELECTION-SCREEN SKIP.
+  PARAMETERS: p_skip RADIOBUTTON GROUP g1,
+              p_seri RADIOBUTTON GROUP g1,
+              p_down RADIOBUTTON GROUP g1.
+  SELECTION-SCREEN SKIP.
+  PARAMETERS: p_log TYPE c AS CHECKBOX.
 SELECTION-SCREEN: END OF BLOCK b2.
 
 START-OF-SELECTION.
@@ -65,10 +66,26 @@ FORM run RAISING cx_static_check.
           lt_deps = lo_find->find_by_item(
             iv_object_type = p_type
             iv_object_name = p_name ).
+
+          IF p_incl = abap_true.
+            ls_deps-object   = p_type.
+            ls_deps-obj_name = p_name.
+            ls_deps-devclass = '$$$'.
+            INSERT ls_deps INTO TABLE lt_deps.
+          ENDIF.
         WHEN p_devc.
           SELECT devclass FROM tdevc INTO TABLE lt_packages WHERE devclass IN s_devc.
           IF sy-subrc = 0.
             lt_deps = lo_find->find_by_packages( lt_packages ).
+          ENDIF.
+
+          IF p_incl = abap_true.
+            LOOP AT lt_packages INTO lv_package.
+              ls_deps-object   = 'DEVC'.
+              ls_deps-obj_name = lv_package.
+              ls_deps-devclass = '$$$'.
+              INSERT ls_deps INTO TABLE lt_deps.
+            ENDLOOP.
           ENDIF.
         WHEN OTHERS.
           ASSERT 0 = 1.
