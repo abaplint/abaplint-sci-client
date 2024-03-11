@@ -5,7 +5,6 @@ CLASS zcl_abaplint_check DEFINITION
 
   PUBLIC SECTION.
 
-    CLASS-METHODS class_constructor .
     METHODS constructor .
     CLASS-METHODS get_ping .
     CLASS-METHODS get_map .
@@ -96,7 +95,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abaplint_check IMPLEMENTATION.
+CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
 
   METHOD add_messages.
@@ -117,14 +116,6 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
       ls_msg-pcom_alt = ''. "Pragma
       INSERT ls_msg INTO TABLE scimessages.
     ENDLOOP.
-
-  ENDMETHOD.
-
-
-  METHOD class_constructor.
-
-    get_ping( ).
-    get_map( ).
 
   ENDMETHOD.
 
@@ -185,7 +176,7 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
     FIELD-SYMBOLS <ls_rule> LIKE LINE OF lt_rules.
 
     IF gt_map IS INITIAL.
-      IMPORT gt_map = gt_map FROM SHARED BUFFER eudb(zz) ID c_abaplint_map.
+      IMPORT gt_map = gt_map FROM MEMORY ID c_abaplint_map.
       IF sy-subrc <> 0 OR gt_map IS INITIAL.
         " Get a list of available rules from server
         CREATE OBJECT lo_backend.
@@ -208,7 +199,7 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
           INSERT ls_map INTO TABLE gt_map.
         ENDLOOP.
 
-        EXPORT gt_map = gt_map TO SHARED BUFFER eudb(zz) ID c_abaplint_map.
+        EXPORT gt_map = gt_map TO MEMORY ID c_abaplint_map.
       ENDIF.
     ENDIF.
 
@@ -263,7 +254,7 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
       lo_backend TYPE REF TO zcl_abaplint_backend.
 
     IF gs_ping IS INITIAL.
-      IMPORT gs_ping = gs_ping FROM SHARED BUFFER eudb(zz) ID c_abaplint_ping.
+      IMPORT gs_ping = gs_ping FROM MEMORY ID c_abaplint_ping.
       IF sy-subrc <> 0 OR gs_ping IS INITIAL.
         " Get ping message which includes abaplint backend version
         CREATE OBJECT lo_backend.
@@ -277,7 +268,7 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
             RETURN.
         ENDTRY.
 
-        EXPORT gs_ping = gs_ping TO SHARED BUFFER eudb(zz) ID c_abaplint_ping.
+        EXPORT gs_ping = gs_ping TO MEMORY ID c_abaplint_ping.
       ENDIF.
     ENDIF.
 
@@ -587,21 +578,6 @@ CLASS zcl_abaplint_check IMPLEMENTATION.
     super->run_end( ).
 
     mo_cache->save( ).
-
-    get_ping( ).
-
-    " Output without object name
-    object_type = '-'.
-    object_name = '-'.
-
-    inform(
-      p_sub_obj_type = '-'
-      p_sub_obj_name = '-'
-      p_test         = myname
-      p_kind         = c_note
-      p_param_1      = gs_ping-message
-      p_param_2      = 'ping'
-      p_code         = c_abaplint ).
 
   ENDMETHOD.
 

@@ -14,25 +14,26 @@ REPORT zabaplint_list_deps.
 TABLES: tdevc.
 
 SELECTION-SCREEN: BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
-  PARAMETERS: p_obje RADIOBUTTON GROUP g2.
-  PARAMETERS: p_type TYPE tadir-object,
-              p_name TYPE tadir-obj_name.
+PARAMETERS: p_obje RADIOBUTTON GROUP g2.
+PARAMETERS: p_type TYPE tadir-object,
+            p_name TYPE tadir-obj_name.
 
-  PARAMETERS: p_devc RADIOBUTTON GROUP g2.
-  SELECT-OPTIONS: s_devc FOR tdevc-devclass.
+PARAMETERS: p_devc RADIOBUTTON GROUP g2.
+SELECT-OPTIONS: s_devc FOR tdevc-devclass.
 SELECTION-SCREEN: END OF BLOCK b1.
 
 SELECTION-SCREEN: BEGIN OF BLOCK b2 WITH FRAME TITLE TEXT-002.
-  PARAMETERS: p_depth TYPE i DEFAULT 10,
-              p_incl  TYPE c AS CHECKBOX,
-              p_sap   TYPE c AS CHECKBOX,
-              p_cache TYPE c AS CHECKBOX.
-  SELECTION-SCREEN SKIP.
-  PARAMETERS: p_skip RADIOBUTTON GROUP g1,
-              p_seri RADIOBUTTON GROUP g1,
-              p_down RADIOBUTTON GROUP g1.
-  SELECTION-SCREEN SKIP.
-  PARAMETERS: p_log TYPE c AS CHECKBOX.
+PARAMETERS: p_depth TYPE i DEFAULT 10,
+            p_incl  TYPE c AS CHECKBOX,
+            p_sap   TYPE c AS CHECKBOX,
+            p_cache TYPE c AS CHECKBOX.
+SELECTION-SCREEN SKIP.
+PARAMETERS: p_skip RADIOBUTTON GROUP g1,
+            p_seri RADIOBUTTON GROUP g1,
+            p_down RADIOBUTTON GROUP g1.
+SELECTION-SCREEN SKIP.
+PARAMETERS: p_log TYPE c AS CHECKBOX.
+
 SELECTION-SCREEN: END OF BLOCK b2.
 
 START-OF-SELECTION.
