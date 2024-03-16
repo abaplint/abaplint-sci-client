@@ -329,7 +329,7 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
     IF iv_encl_object IS NOT INITIAL AND sy-subrc = 1.
       SELECT SINGLE object FROM tadir INTO lv_object
         WHERE pgmid = 'R3TR'
-        AND object IN ('CLAS','ENHS','CUS0','CUS1','CUS2')
+        AND object IN ('CLAS','ENHS','CUS0','CUS1','CUS2','TYPE')
         AND obj_name = iv_encl_object.
     ENDIF.
     IF sy-subrc <> 0.
@@ -338,7 +338,7 @@ CLASS zcl_abaplint_deps_find IMPLEMENTATION.
       RETURN.
     ENDIF.
     IF lv_object <> 'CLAS' AND lv_object <> 'ENHS'
-        AND lv_object <> 'CUS0' AND lv_object <> 'CUS1' AND lv_object <> 'CUS2'.
+        AND lv_object <> 'CUS0' AND lv_object <> 'CUS1' AND lv_object <> 'CUS2' AND lv_object <> 'TYPE'.
       mi_log->add_error( iv_msg  = |Unexpected mapping to { lv_object } for { iv_object_type } { iv_object_name }|
                          is_item = ms_item ).
       RETURN.
