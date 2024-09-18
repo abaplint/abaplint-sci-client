@@ -48,8 +48,7 @@ Select 'Configuration' and maintain the connection to your [abaplint Server](htt
 
 ![sci06](img/sci-06.png)
 
-If you do not have your own abaplint Server, you might want to use https://sci.abaplint.app which is currently provided for free. **Caution:** Use
-this server at your own risk, your code will leave your system.
+**Important:** The code under test leaves your ABAP system! Be sure to use a secure and controllable abaplint Server.
 
 Optional parameters:
 

@@ -674,12 +674,9 @@ FORM pick_3000.
 
   GET CURSOR FIELD lv_field.
 
-  CASE lv_field.
-    WHEN 'TEXT05'.
-      lv_url = 'https://github.com/abaplint/abaplint-sci-client/blob/master/README.md'.
-    WHEN 'TEXT02'.
-      lv_url = 'https://sci.abaplint.app'.
-  ENDCASE.
+  IF lv_field = 'TEXT05'.
+    lv_url = 'https://github.com/abaplint/abaplint-sci-client/blob/master/README.md'.
+  ENDIF.
 
   IF NOT lv_url IS INITIAL.
     cl_gui_frontend_services=>execute(
