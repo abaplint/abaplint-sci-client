@@ -48,9 +48,6 @@ Select 'Configuration' and maintain the connection to your [abaplint Server](htt
 
 ![sci06](img/sci-06.png)
 
-If you do not have your own abaplint Server, you might want to use https://sci.abaplint.app which is currently provided for free. **Caution:** Use
-this server at your own risk, your code will leave your system.
-
 Optional parameters:
 
 - Dependency depth - Defines over how many levels the check will try to resolve dependencies of ABAP classes (via inheritance, interfaces, attributes, or types)
