@@ -677,8 +677,6 @@ FORM pick_3000.
   CASE lv_field.
     WHEN 'TEXT05'.
       lv_url = 'https://github.com/abaplint/abaplint-sci-client/blob/master/README.md'.
-    WHEN 'TEXT02'.
-      lv_url = 'https://sci.abaplint.app'.
   ENDCASE.
 
   IF NOT lv_url IS INITIAL.

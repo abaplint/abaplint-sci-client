@@ -101,8 +101,8 @@
       <DESCRIPT>abaplint Settings</DESCRIPT>
       <TYPE>N</TYPE>
       <NEXTSCREEN>3000</NEXTSCREEN>
-      <LINES>026</LINES>
-      <COLUMNS>210</COLUMNS>
+      <LINES>023</LINES>
+      <COLUMNS>211</COLUMNS>
      </HEADER>
      <CONTAINERS>
       <RPY_DYCATT>
@@ -121,7 +121,7 @@
        <COLUMN>001</COLUMN>
        <LENGTH>124</LENGTH>
        <VISLENGTH>124</VISLENGTH>
-       <HEIGHT>025</HEIGHT>
+       <HEIGHT>023</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <REQU_ENTRY>N</REQU_ENTRY>
       </RPY_DYFATC>
@@ -173,7 +173,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-URL</NAME>
-       <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
+       <TEXT>?___________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
        <LINE>005</LINE>
        <COLUMN>013</COLUMN>
@@ -207,38 +207,9 @@
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
-       <NAME>TEXT21</NAME>
-       <TEXT>For_testing,_you_can_use_the_following_server:</TEXT>
-       <LINE>007</LINE>
-       <COLUMN>004</COLUMN>
-       <LENGTH>046</LENGTH>
-       <VISLENGTH>046</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <REQU_ENTRY>N</REQU_ENTRY>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEXT</TYPE>
-       <NAME>TEXT02</NAME>
-       <TEXT>https://sci.abaplint.app</TEXT>
-       <LINE>008</LINE>
-       <COLUMN>004</COLUMN>
-       <LENGTH>024</LENGTH>
-       <VISLENGTH>056</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <REQU_ENTRY>N</REQU_ENTRY>
-       <DBLCLICK>X</DBLCLICK>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEXT</TYPE>
        <NAME>TEXT06</NAME>
        <TEXT>CAUTION:_Your_code_will_leave_your_system._Use_at_your_own_risk!_</TEXT>
-       <LINE>009</LINE>
+       <LINE>007</LINE>
        <COLUMN>004</COLUMN>
        <LENGTH>065</LENGTH>
        <VISLENGTH>096</VISLENGTH>
@@ -252,7 +223,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT20</NAME>
        <TEXT>Documentation:</TEXT>
-       <LINE>011</LINE>
+       <LINE>009</LINE>
        <COLUMN>004</COLUMN>
        <LENGTH>014</LENGTH>
        <VISLENGTH>014</VISLENGTH>
@@ -266,7 +237,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT05</NAME>
        <TEXT>https://github.com/abaplint/abaplint-sci-server</TEXT>
-       <LINE>012</LINE>
+       <LINE>010</LINE>
        <COLUMN>004</COLUMN>
        <LENGTH>047</LENGTH>
        <VISLENGTH>050</VISLENGTH>
@@ -281,7 +252,7 @@
        <TYPE>FRAME</TYPE>
        <NAME>OPTIONS</NAME>
        <TEXT>Options________________________________________________________________________________________________________________</TEXT>
-       <LINE>014</LINE>
+       <LINE>012</LINE>
        <COLUMN>003</COLUMN>
        <LENGTH>120</LENGTH>
        <VISLENGTH>120</VISLENGTH>
@@ -295,7 +266,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT09</NAME>
        <TEXT>Dependency_Depth</TEXT>
-       <LINE>015</LINE>
+       <LINE>013</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>016</LENGTH>
        <VISLENGTH>016</VISLENGTH>
@@ -309,7 +280,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-DEPTH</NAME>
-       <LINE>015</LINE>
+       <LINE>013</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>011</LENGTH>
        <VISLENGTH>011</VISLENGTH>
@@ -326,7 +297,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT10</NAME>
        <TEXT>Continue_Into_SAP_Objects</TEXT>
-       <LINE>016</LINE>
+       <LINE>014</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>025</LENGTH>
        <VISLENGTH>025</VISLENGTH>
@@ -339,7 +310,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>CHECK</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-CONTI</NAME>
-       <LINE>016</LINE>
+       <LINE>014</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>001</VISLENGTH>
@@ -356,7 +327,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT13</NAME>
        <TEXT>Use_Cache</TEXT>
-       <LINE>018</LINE>
+       <LINE>016</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>009</LENGTH>
        <VISLENGTH>009</VISLENGTH>
@@ -369,7 +340,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>CHECK</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-CACHE</NAME>
-       <LINE>018</LINE>
+       <LINE>016</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>001</VISLENGTH>
@@ -386,7 +357,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT11</NAME>
        <TEXT>HTTP_Timeout</TEXT>
-       <LINE>020</LINE>
+       <LINE>018</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>012</LENGTH>
        <VISLENGTH>012</VISLENGTH>
@@ -400,8 +371,8 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-HTTP_TIMEOUT</NAME>
-       <TEXT>___________</TEXT>
-       <LINE>020</LINE>
+       <TEXT>?__________</TEXT>
+       <LINE>018</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>011</LENGTH>
        <VISLENGTH>011</VISLENGTH>
@@ -417,7 +388,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT12</NAME>
        <TEXT>SSL_ID</TEXT>
-       <LINE>021</LINE>
+       <LINE>019</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>006</LENGTH>
        <VISLENGTH>006</VISLENGTH>
@@ -431,8 +402,8 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-SSL_ID</NAME>
-       <TEXT>______</TEXT>
-       <LINE>021</LINE>
+       <TEXT>?_____</TEXT>
+       <LINE>019</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>006</LENGTH>
        <VISLENGTH>006</VISLENGTH>
@@ -449,7 +420,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>TEXT30</NAME>
        <TEXT>&quot;No_Config_Found&quot;_Message</TEXT>
-       <LINE>023</LINE>
+       <LINE>021</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>025</LENGTH>
        <VISLENGTH>025</VISLENGTH>
@@ -463,7 +434,7 @@
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZABAPLINT_GLOB_DATA-NO_CONFIG</NAME>
        <TEXT>_</TEXT>
-       <LINE>023</LINE>
+       <LINE>021</LINE>
        <COLUMN>034</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>001</VISLENGTH>
