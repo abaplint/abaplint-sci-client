@@ -48,6 +48,8 @@ Select 'Configuration' and maintain the connection to your [abaplint Server](htt
 
 ![sci06](img/sci-06.png)
 
+**Important:** The code under test leaves your ABAP system! Be sure to use a secure and controllable abaplint Server.
+
 Optional parameters:
 
 - Dependency depth - Defines over how many levels the check will try to resolve dependencies of ABAP classes (via inheritance, interfaces, attributes, or types)
