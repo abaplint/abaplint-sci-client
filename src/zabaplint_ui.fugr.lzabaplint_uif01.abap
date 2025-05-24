@@ -476,7 +476,7 @@ FORM show_diff USING iv_type TYPE c.
     lo_ajson_util          TYPE REF TO zcl_abapgit_ajson_utilities,
     lv_json_comp           TYPE string,
     lv_json_curr           TYPE string,
-    lo_diff                TYPE REF TO zcl_abapgit_diff,
+    lo_diff                TYPE REF TO zif_abapgit_diff,
     lt_diff                TYPE zif_abapgit_definitions=>ty_diffs_tt,
     lt_alv                 TYPE STANDARD TABLE OF ty_alv WITH DEFAULT KEY,
     lo_alv                 TYPE REF TO cl_salv_table,
@@ -519,6 +519,7 @@ FORM show_diff USING iv_type TYPE c.
       lv_json_curr = lo_ajson_util->sort( iv_json = lv_json_curr ).
 
       CREATE OBJECT lo_diff
+        TYPE zcl_abapgit_diff
         EXPORTING
           iv_new = zcl_abapgit_convert=>string_to_xstring( lv_json_curr )
           iv_old = zcl_abapgit_convert=>string_to_xstring( lv_json_comp ).
