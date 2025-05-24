@@ -137,6 +137,7 @@
       "if": true,
       "when": false,
       "while": true,
+      "loopAllowIfSubrc": false,
       "case": true,
       "select": true,
       "do": true,
