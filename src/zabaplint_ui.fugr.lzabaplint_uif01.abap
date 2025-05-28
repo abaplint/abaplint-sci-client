@@ -518,11 +518,9 @@ FORM show_diff USING iv_type TYPE c.
       lv_json_comp = lo_ajson_util->sort( iv_json = lv_json_comp ).
       lv_json_curr = lo_ajson_util->sort( iv_json = lv_json_curr ).
 
-      CREATE OBJECT lo_diff
-        TYPE zcl_abapgit_diff
-        EXPORTING
-          iv_new = zcl_abapgit_convert=>string_to_xstring( lv_json_curr )
-          iv_old = zcl_abapgit_convert=>string_to_xstring( lv_json_comp ).
+      lo_diff = zcl_abapgit_diff_factory=>get( )->create(
+        iv_new = zcl_abapgit_convert=>string_to_xstring( lv_json_curr )
+        iv_old = zcl_abapgit_convert=>string_to_xstring( lv_json_comp ) ).
 
       lt_diff = lo_diff->get( ).
 
