@@ -6,13 +6,21 @@
 CLASS lcl_editor DEFINITION FINAL.
 
   PUBLIC SECTION.
+    CONSTANTS: BEGIN OF gc_compare_level,
+                 identical    TYPE i VALUE 100,
+                 same_content TYPE i VALUE 50,
+                 different    TYPE i VALUE 0,
+               END OF gc_compare_level.
     CLASS-METHODS:
       save,
       get RETURNING VALUE(rv_json) TYPE string,
       is_dirty RETURNING VALUE(rv_dirty) TYPE abap_bool,
       get_devclass RETURNING VALUE(rv_devclass) TYPE devclass,
       update IMPORTING iv_json TYPE string,
-      switch IMPORTING iv_devclass TYPE devclass.
+      switch IMPORTING iv_devclass TYPE devclass,
+      compare IMPORTING VALUE(iv_json)  TYPE string
+              RETURNING VALUE(rv_level) TYPE i
+              RAISING zcx_abapgit_ajson_error.
 
   PRIVATE SECTION.
     CLASS-DATA:
@@ -111,6 +119,34 @@ CLASS lcl_editor IMPLEMENTATION.
 
     go_editor->set_textstream( lv_content ).
     go_editor->set_focus( go_editor ).
+
+  ENDMETHOD.
+
+  METHOD compare.
+    DATA lo_ajson_util TYPE REF TO zcl_abapgit_ajson_utilities.
+    DATA lv_editor_json TYPE string.
+    DATA lv_json_sorted TYPE string.
+    DATA lv_editor_json_sorted TYPE string.
+
+    CREATE OBJECT lo_ajson_util.
+    lv_editor_json = get( ).
+    IF lv_editor_json IS NOT INITIAL.
+      REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>cr_lf IN lv_editor_json WITH cl_abap_char_utilities=>newline.
+      lv_editor_json_sorted = lo_ajson_util->sort( iv_json = lv_editor_json ).
+    ENDIF.
+    IF iv_json IS NOT INITIAL.
+      REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>cr_lf IN iv_json WITH cl_abap_char_utilities=>newline.
+      lv_json_sorted = lo_ajson_util->sort( iv_json = iv_json ).
+    ENDIF.
+    IF lv_editor_json = iv_json.
+      MESSAGE s008(zabaplint).
+      rv_level = gc_compare_level-identical.
+    ELSEIF lv_editor_json_sorted = lv_json_sorted.
+      MESSAGE s009(zabaplint).
+      rv_level = gc_compare_level-same_content.
+    ELSE.
+      rv_level = gc_compare_level-different.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -418,19 +454,32 @@ FORM update_git.
   ENDIF.
 
   DATA lx_error TYPE REF TO zcx_abapgit_exception.
+  DATA lx_ajson_error TYPE REF TO zcx_abapgit_ajson_error.
   TRY.
       DATA lo_abaplint TYPE REF TO zcl_abaplint_abapgit.
       DATA lv_json TYPE string.
+
       CREATE OBJECT lo_abaplint.
 
       lv_json = lo_abaplint->fetch_config( lv_devclass ).
-      IF NOT lv_json IS INITIAL.
-        lcl_editor=>update( lv_json ).
+      IF lv_json IS NOT INITIAL.
+        CASE lcl_editor=>compare( lv_json ).
+          WHEN lcl_editor=>gc_compare_level-identical.
+            MESSAGE s008(zabaplint).
+          WHEN lcl_editor=>gc_compare_level-same_content.
+            MESSAGE s009(zabaplint).
+            lcl_editor=>update( lv_json ).
+          WHEN OTHERS.
+            lcl_editor=>update( lv_json ).
+        ENDCASE.
+
       ELSE.
         MESSAGE e002(zabaplint).
       ENDIF.
     CATCH zcx_abapgit_exception INTO lx_error.
       MESSAGE lx_error TYPE 'E'.
+    CATCH zcx_abapgit_ajson_error INTO lx_ajson_error.
+      MESSAGE lx_ajson_error TYPE 'E'.
   ENDTRY.
 
 ENDFORM.
@@ -445,14 +494,29 @@ FORM update_with_default_conf.
 
   DATA lo_backend TYPE REF TO zcl_abaplint_backend.
   DATA lv_json TYPE string.
+  DATA lv_config_json TYPE string.
   DATA lx_error TYPE REF TO zcx_abaplint_error.
+  DATA lx_ajson_error TYPE REF TO zcx_abapgit_ajson_error.
+
   CREATE OBJECT lo_backend.
 
   TRY.
       lv_json = lo_backend->get_default_config( ).
-      lcl_editor=>update( lv_json ).
+
+      CASE lcl_editor=>compare( lv_json ).
+        WHEN lcl_editor=>gc_compare_level-identical.
+          MESSAGE s008(zabaplint).
+        WHEN lcl_editor=>gc_compare_level-same_content.
+          MESSAGE s009(zabaplint).
+          lcl_editor=>update( lv_json ).
+        WHEN OTHERS.
+          lcl_editor=>update( lv_json ).
+      ENDCASE.
+
     CATCH zcx_abaplint_error INTO lx_error.
-      MESSAGE lx_error->message TYPE 'E'.
+      MESSAGE lx_error TYPE 'E'.
+    CATCH zcx_abapgit_ajson_error INTO lx_ajson_error.
+      MESSAGE lx_ajson_error TYPE 'E'.
   ENDTRY.
 
 ENDFORM.
