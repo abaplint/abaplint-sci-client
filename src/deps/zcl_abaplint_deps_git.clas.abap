@@ -9,6 +9,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
         !iv_git_url     TYPE string
         !it_packages    TYPE tab_packages
         !iv_git_name    TYPE string
+        !iv_git_branch  TYPE string OPTIONAL
         !iv_git_email   TYPE string
         !iv_git_comment TYPE string .
     METHODS run
@@ -30,6 +31,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
     DATA mv_git_url TYPE string .
     DATA mt_packages TYPE tab_packages .
     DATA mv_git_name TYPE string .
+    DATA mv_git_branch  TYPE string.
     DATA mv_git_email TYPE string .
     DATA mv_git_comment TYPE string .
 
@@ -52,6 +54,12 @@ CLASS zcl_abaplint_deps_git DEFINITION
   PRIVATE SECTION.
 
     DATA mv_depth TYPE i .
+
+    METHODS define_branch_name
+      RETURNING
+        VALUE(rv_result) TYPE string
+      RAISING
+        zcx_abapgit_exception.
 ENDCLASS.
 
 
@@ -111,6 +119,9 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
     mv_git_url = iv_git_url.
     mt_packages = it_packages.
     mv_git_name = iv_git_name.
+    IF iv_git_branch IS NOT INITIAL.
+      mv_git_branch = |refs/heads/{ iv_git_branch }|.
+    ENDIF.
     mv_git_email = iv_git_email.
     mv_git_comment = iv_git_comment.
 
@@ -178,7 +189,7 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
       i_total              = 3
       i_output_immediately = abap_true ).
 
-    lv_branch_name = zcl_abapgit_git_transport=>branches( mv_git_url )->get_head_symref( ).
+    lv_branch_name = define_branch_name( ).
 
     ls_remote = zcl_abapgit_git_porcelain=>pull_by_branch(
       iv_url         = mv_git_url
@@ -218,5 +229,14 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
         iv_branch_name = lv_branch_name ).
     ENDIF.
 
+  ENDMETHOD.
+
+
+  METHOD define_branch_name.
+    IF mv_git_branch IS NOT INITIAL.
+      rv_result = zcl_abapgit_git_transport=>branches( mv_git_url )->find_by_name( mv_git_branch )-name.
+    ELSE.
+      rv_result = zcl_abapgit_git_transport=>branches( mv_git_url )->get_head_symref( ).
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.

@@ -17,6 +17,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_BRANCH</KEY>
+     <ENTRY>Git branch</ENTRY>
+     <LENGTH>18</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_CCOMM</KEY>
      <ENTRY>comment</ENTRY>
      <LENGTH>15</LENGTH>

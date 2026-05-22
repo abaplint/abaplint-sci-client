@@ -6,6 +6,7 @@ TYPES ty_names TYPE RANGE OF tadir-obj_name.
 DATA ltb_devc TYPE tab_packages.
 
 PARAMETERS p_git TYPE text200 OBLIGATORY.
+PARAMETERS p_branch TYPE text200.
 SELECT-OPTIONS: s_devc FOR tdevc-devclass OBLIGATORY.
 
 PARAMETERS: p_depth TYPE i DEFAULT 10,
@@ -85,6 +86,7 @@ FORM deps.
       CREATE OBJECT lo_deps
         EXPORTING
           iv_git_url     = |{ p_git }|
+          iv_git_branch  = |{ p_branch }|
           iv_git_name    = p_cname
           iv_git_email   = p_cemail
           iv_git_comment = p_ccomm
