@@ -340,6 +340,7 @@ CLASS zcl_abaplint_deps_serializer IMPLEMENTATION.
     DATA li_log   TYPE REF TO zif_abapgit_log.
 
     lo_cache = zcl_abaplint_deps_cache=>get_instance( ms_options-cache ).
+    lo_dot_abapgit = zcl_abapgit_dot_abapgit=>build_default( ).
 
     CREATE OBJECT lo_abap_language_version
       EXPORTING
