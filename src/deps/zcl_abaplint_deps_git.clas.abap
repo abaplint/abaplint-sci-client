@@ -57,7 +57,7 @@ CLASS zcl_abaplint_deps_git DEFINITION
 
     METHODS define_branch_name
       RETURNING
-        VALUE(result) TYPE string
+        VALUE(rv_result) TYPE string
       RAISING
         zcx_abapgit_exception.
 ENDCLASS.
@@ -234,9 +234,9 @@ CLASS zcl_abaplint_deps_git IMPLEMENTATION.
 
   METHOD define_branch_name.
     IF mv_git_branch IS NOT INITIAL.
-      result = zcl_abapgit_git_transport=>branches( mv_git_url )->find_by_name( mv_git_branch )-name.
+      rv_result = zcl_abapgit_git_transport=>branches( mv_git_url )->find_by_name( mv_git_branch )-name.
     ELSE.
-      result = zcl_abapgit_git_transport=>branches( mv_git_url )->get_head_symref( ).
+      rv_result = zcl_abapgit_git_transport=>branches( mv_git_url )->get_head_symref( ).
     ENDIF.
   ENDMETHOD.
 ENDCLASS.
