@@ -300,19 +300,20 @@ CLASS ZCL_ABAPLINT_CHECK IMPLEMENTATION.
 
   METHOD hash.
 
-    DATA: lv_hash TYPE hash160.
+    DATA lv_hash TYPE string.
 
-    CALL FUNCTION 'CALCULATE_HASH_FOR_CHAR'
-      EXPORTING
-        data           = iv_value
-      IMPORTING
-        hash           = lv_hash
-      EXCEPTIONS
-        unknown_alg    = 1
-        param_error    = 2
-        internal_error = 3
-        OTHERS         = 4.
-    IF sy-subrc <> 0.
+    TRY.
+        cl_abap_message_digest=>calculate_hash_for_char(
+          EXPORTING
+            if_algorithm  = 'SHA1'
+            if_data       = iv_value
+          IMPORTING
+            ef_hashstring = lv_hash ).
+      CATCH cx_abap_message_digest.
+        RETURN.
+    ENDTRY.
+
+    IF lv_hash IS INITIAL.
       RETURN.
     ENDIF.
 
